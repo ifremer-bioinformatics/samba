@@ -10,7 +10,7 @@ This workflow uses Qiime 2 (import/cutadapt/dada2) to analyse paired-end metabar
 
 ### Workflow parameters
 
-* nextflow.config : workflow workdir definition, processes (tasks) inputs and ressources parameters, reports definitions (Check TO_BE_SET parameters and replace with your own values)
+* nextflow.config : workflow workdir definition, processes (tasks) inputs and resources parameters, reports definitions (Check TO_BE_SET parameters and replace with your own values)
 * MB.nf : each step is describe within its command line
 
 ### How to run

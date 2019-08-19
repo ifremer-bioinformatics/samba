@@ -30,14 +30,14 @@ process q2_import {
     --input-path ${q2_manifest} \
     --output-path 'data.qza' \
     --type 'SampleData[PairedEndSequencesWithQuality]' \
-    --input-format PairedEndFastqManifestPhred33V2 > q2_import.log &&
+    --input-format PairedEndFastqManifestPhred33V2 > q2_import.log 2>&1
     qiime demux summarize \
     --verbose \
     --i-data 'data.qza' \
-    --o-visualization 'data.qzv' >> q2_import.log &&
+    --o-visualization 'data.qzv' >> q2_import.log 2>&1
     qiime tools export \
     --input-path 'data.qzv' \
-    --output-path 'summary_output' >> q2_import.log
+    --output-path 'summary_output' >> q2_import.log 2>&1
     """
 }
 
@@ -65,22 +65,19 @@ process q2_cutadapt {
     --p-error-rate ${params.cutadapt.errorRate} \
     --p-discard-untrimmed --p-match-read-wildcards \
     --p-overlap ${params.cutadapt.overlap} \
-    --o-trimmed-sequences 'data_trimmed.qza' > q2_cutadapt.log &&
+    --o-trimmed-sequences 'data_trimmed.qza' > q2_cutadapt.log 
     qiime demux summarize \
     --verbose \
     --i-data 'data_trimmed.qza' \
-    --o-visualization 'data_trimmed.qzv' >> q2_cutadapt.log &&
+    --o-visualization 'data_trimmed.qzv' >> q2_cutadapt.log 2>&1
     qiime tools export \
     --input-path 'data_trimmed.qzv' \
-    --output-path 'trimmed_output' >> q2_cutadapt.log
+    --output-path 'trimmed_output' >> q2_cutadapt.log 2>&1
     """
 }
 
 /* Run dada2 */
 process q2_dada2 {
-
-    //Run only if dada2 parameters have been set
-    //when : complete = true
 
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
     publishDir "${params.outdir}/dada2", mode: 'copy'
@@ -102,7 +99,7 @@ process q2_dada2 {
     when :
     !params.first_run
 
-    shell :
+    script :
     """
     qiime dada2 denoise-paired \
     --verbose \
@@ -117,26 +114,26 @@ process q2_dada2 {
     --p-n-threads ${task.cpus} \
     --o-representative-sequences 'rep_seqs.qza' \
     --o-table 'table.qza' \
-    --o-denoising-stats 'stats.qza' > q2_dada2.log 2>&1 &&
+    --o-denoising-stats 'stats.qza' > q2_dada2.log 2>&1
     qiime metadata tabulate \
     --verbose \
     --m-input-file 'stats.qza' \
-    --o-visualization 'stats.qzv' >> q2_dada2.log 2>&1 &&
+    --o-visualization 'stats.qzv' >> q2_dada2.log 2>&1
     qiime feature-table summarize \
     --verbose \
     --i-table 'table.qza' \
     --o-visualization 'table.qzv' \
-    --m-sample-metadata-file ${q2_metadata} >> q2_dada2.log 2>&1 &&
+    --m-sample-metadata-file ${q2_metadata} >> q2_dada2.log 2>&1
     qiime feature-table tabulate-seqs \
     --verbose \
     --i-data 'rep_seqs.qza' \
-    --o-visualization 'rep_seqs.qzv' >> q2_dada2.log 2>&1 &&
+    --o-visualization 'rep_seqs.qzv' >> q2_dada2.log 2>&1
     qiime tools export \
     --input-path 'rep_seqs.qzv' \
-    --output-path 'dada2_output' >> q2_dada2.log 2>&1 &&
+    --output-path 'dada2_output' >> q2_dada2.log 2>&1
     qiime tools export \
     --input-path 'table.qzv' \
-    --output-path 'dada2_output' >> q2_dada2.log 2>&1 &&
+    --output-path 'dada2_output' >> q2_dada2.log 2>&1
     qiime tools export \
     --input-path 'stats.qzv' \
     --output-path 'dada2_output' >> q2_dada2.log 2>&1

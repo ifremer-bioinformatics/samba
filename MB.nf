@@ -16,29 +16,30 @@ Channel.fromPath(params.stats.Rstatsscript, checkIfExists:true).set { Rstatsscri
 process q2_import {
 
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
-    publishDir "${params.outdir}/01_import", mode: 'copy'
+    publishDir "${params.outdir}/01_import", mode: 'copy', pattern: 'data.qz*'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
 
-    input : file q2_manifest from manifest
+    input : file manifest from manifest
 
     output : 
         file 'data.qza' into imported_data
         file 'data.qzv' into imported_visu
-        file 'summary_output' into imported_summary
+        file 'import_output' into imported_summary
 
     shell :
     """
     qiime tools import \
-    --input-path ${q2_manifest} \
-    --output-path 'data.qza' \
+    --input-path ${manifest} \
+    --output-path data.qza \
     --type 'SampleData[PairedEndSequencesWithQuality]' \
     --input-format PairedEndFastqManifestPhred33V2 > q2_import.log 2>&1
     qiime demux summarize \
     --verbose \
-    --i-data 'data.qza' \
-    --o-visualization 'data.qzv' >> q2_import.log 2>&1
+    --i-data data.qza \
+    --o-visualization data.qzv >> q2_import.log 2>&1
     qiime tools export \
-    --input-path 'data.qzv' \
-    --output-path 'summary_output' >> q2_import.log 2>&1
+    --input-path data.qzv \
+    --output-path import_output >> q2_import.log 2>&1
     """
 }
 
@@ -46,9 +47,10 @@ process q2_import {
 process q2_cutadapt {
 
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
-    publishDir "${params.outdir}/02_trimmed", mode: 'copy'
+    publishDir "${params.outdir}/02_trimmed", mode: 'copy', pattern: 'data*.qz*'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
     
-    input : file cutadapt_data from imported_data
+    input : file imported_data from imported_data
 
     output :
         file 'data_trimmed.qza' into trimmed_data
@@ -60,20 +62,20 @@ process q2_cutadapt {
     qiime cutadapt trim-paired \
     --verbose \
     --p-cores ${task.cpus} \
-    --i-demultiplexed-sequences ${cutadapt_data} \
+    --i-demultiplexed-sequences ${imported_data} \
     --p-front-f ${params.cutadapt.primerF} \
     --p-front-r ${params.cutadapt.primerR} \
     --p-error-rate ${params.cutadapt.errorRate} \
     --p-discard-untrimmed --p-match-read-wildcards \
     --p-overlap ${params.cutadapt.overlap} \
-    --o-trimmed-sequences 'data_trimmed.qza' > q2_cutadapt.log 
+    --o-trimmed-sequences data_trimmed.qza > q2_cutadapt.log 
     qiime demux summarize \
     --verbose \
-    --i-data 'data_trimmed.qza' \
-    --o-visualization 'data_trimmed.qzv' >> q2_cutadapt.log 2>&1
+    --i-data data_trimmed.qza \
+    --o-visualization data_trimmed.qzv >> q2_cutadapt.log 2>&1
     qiime tools export \
-    --input-path 'data_trimmed.qzv' \
-    --output-path 'trimmed_output' >> q2_cutadapt.log 2>&1
+    --input-path data_trimmed.qzv \
+    --output-path trimmed_output >> q2_cutadapt.log 2>&1
     """
 }
 
@@ -81,11 +83,12 @@ process q2_cutadapt {
 process q2_dada2 {
 
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
-    publishDir "${params.outdir}/03_dada2", mode: 'copy'
+    publishDir "${params.outdir}/03_dada2", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
 
     input : 
-        file dada2_data from trimmed_data
-        file q2_metadata from metadata        
+        file trimmed_data from trimmed_data
+        file metadata from metadata        
 
     output :
         file 'rep_seqs.qza' into data_repseqs
@@ -104,7 +107,7 @@ process q2_dada2 {
     """
     qiime dada2 denoise-paired \
     --verbose \
-    --i-demultiplexed-seqs ${dada2_data} \
+    --i-demultiplexed-seqs ${trimmed_data} \
     --p-trim-left-f ${params.dada2.trim3F} \
     --p-trim-left-r ${params.dada2.trim3R} \
     --p-trunc-len-f ${params.dada2.trunclenF} \
@@ -113,34 +116,34 @@ process q2_dada2 {
     --p-trunc-q ${params.dada2.minqual} \
     --p-chimera-method ${params.dada2.chimeras} \
     --p-n-threads ${task.cpus} \
-    --o-representative-sequences 'rep_seqs.qza' \
-    --o-table 'table.qza' \
-    --o-denoising-stats 'stats.qza' > q2_dada2.log 2>&1
+    --o-representative-sequences rep_seqs.qza \
+    --o-table table.qza \
+    --o-denoising-stats stats.qza > q2_dada2.log 2>&1
     qiime metadata tabulate \
     --verbose \
-    --m-input-file 'stats.qza' \
-    --o-visualization 'stats.qzv' >> q2_dada2.log 2>&1
+    --m-input-file stats.qza \
+    --o-visualization stats.qzv >> q2_dada2.log 2>&1
     qiime feature-table summarize \
     --verbose \
-    --i-table 'table.qza' \
-    --o-visualization 'table.qzv' \
-    --m-sample-metadata-file ${q2_metadata} >> q2_dada2.log 2>&1
+    --i-table table.qza \
+    --o-visualization table.qzv \
+    --m-sample-metadata-file ${metadata} >> q2_dada2.log 2>&1
     qiime feature-table tabulate-seqs \
     --verbose \
-    --i-data 'rep_seqs.qza' \
-    --o-visualization 'rep_seqs.qzv' >> q2_dada2.log 2>&1
+    --i-data rep_seqs.qza \
+    --o-visualization rep_seqs.qzv >> q2_dada2.log 2>&1
     qiime tools export \
-    --input-path 'rep_seqs.qzv' \
-    --output-path 'dada2_output' >> q2_dada2.log 2>&1
+    --input-path rep_seqs.qzv \
+    --output-path dada2_output >> q2_dada2.log 2>&1
     qiime tools export \
-    --input-path 'table.qzv' \
-    --output-path 'dada2_output' >> q2_dada2.log 2>&1
+    --input-path table.qzv \
+    --output-path dada2_output >> q2_dada2.log 2>&1
     qiime tools export \
-    --input-path 'stats.qzv' \
-    --output-path 'dada2_output' >> q2_dada2.log 2>&1
+    --input-path stats.qzv \
+    --output-path dada2_output >> q2_dada2.log 2>&1
     qiime tools export \
-    --input-path 'table.qza' \
-    --output-path 'dada2_output' >> q2_dada2.log 2>&1
+    --input-path table.qza \
+    --output-path dada2_output >> q2_dada2.log 2>&1
     """
 }
 
@@ -148,10 +151,12 @@ process q2_dada2 {
 process q2_taxonomy {
 
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
-    publishDir "${params.outdir}/04_taxonomy", mode: 'copy'
+    publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.tsv*'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
 
     input :
-        file repseq_data from data_repseqs
+        file data_repseqs from data_repseqs
 
     output :
         file 'taxonomy.qza' into data_taxonomy
@@ -169,17 +174,17 @@ process q2_taxonomy {
     --p-n-jobs ${task.cpus} \
     --p-confidence ${params.taxo.confidence} \
     --i-classifier ${params.taxo.database} \
-    --i-reads ${repseq_data} \
-    --o-classification 'taxonomy.qza' > q2_taxo.log 2>&1
+    --i-reads ${data_repseqs} \
+    --o-classification taxonomy.qza > q2_taxo.log 2>&1
     qiime metadata tabulate \
-    --m-input-file 'taxonomy.qza' \
-    --o-visualization 'taxonomy.qzv' >> q2_taxo.log 2>&1
+    --m-input-file taxonomy.qza \
+    --o-visualization taxonomy.qzv >> q2_taxo.log 2>&1
     qiime tools export \
-    --input-path 'taxonomy.qzv' \
-    --output-path 'taxo_output' >> q2_taxo.log 2>&1
-    mv 'taxo_output'/metadata.tsv 'ASV_taxonomy.tsv' >> q2_taxo.log 2>&1
-    sed -i '1,2d' 'ASV_taxonomy.tsv' >> q2_taxo.log 2>&1
-    sed -i '1 i\\#OTUID\ttaxonomy\tconfidence' 'ASV_taxonomy.tsv' >> q2_taxo.log 2>&1
+    --input-path taxonomy.qzv \
+    --output-path taxo_output >> q2_taxo.log 2>&1
+    mv taxo_output/metadata.tsv ASV_taxonomy.tsv >> q2_taxo.log 2>&1
+    sed -i '1,2d' ASV_taxonomy.tsv >> q2_taxo.log 2>&1
+    sed -i '1 i\\#OTUID\ttaxonomy\tconfidence' ASV_taxonomy.tsv >> q2_taxo.log 2>&1
     """ 
 }
 
@@ -187,7 +192,7 @@ process q2_taxonomy {
 process q2_output {
 
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
-    publishDir "${params.outdir}/05_output", mode: 'copy'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
 
     input :
         file taxonomy_tsv from taxonomy_tsv
@@ -216,38 +221,6 @@ process q2_output {
     """
 }
 
-/* Write report : moving folders for report editing */
-/*process report {
-
-    publishDir "${params.outdir}/06_report", mode: 'copy'
-
-    input :
-        file imported_summary from imported_summary
-        file trimmed_summary from trimmed_summary
-        file dada2_summary from dada2_summary
-        file taxo_summary from taxo_summary
-        file taxonomy_tsv from taxonomy_tsv
-        file output_biom from output_biom
-        file output_biom_tsv from output_biom_tsv
-
-    output :
-        file 'report_data' into report_data
-
-    //Run only if it is a complete run with full dada2 parameters set
-    when :
-    !params.first_run
- 
-    script :
-    """
-    cp -R ${imported_summary} report_data/
-    cp -R ${trimmed_summary} report_data/
-    cp -R ${dada2_summary} report_data/
-    cp -R ${taxo_summary} report_data/
-    cp ${output_biom} report_data/
-    cp ${output_biom_tsv} report_data/
-    """ 
-}
-*/
 /*
 process statisticalanalysis {
 

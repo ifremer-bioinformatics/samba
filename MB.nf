@@ -18,25 +18,31 @@ process q2_import {
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
     publishDir "${params.outdir}/01_import", mode: 'copy', pattern: 'data.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_import -> "cmd/${task.process}.sh" }
 
-    input : file manifest from manifest
+    input : 
+        file manifest from manifest
 
     output : 
         file 'data.qza' into imported_data
         file 'data.qzv' into imported_visu
         file 'import_output' into imported_summary
+        file '.command.sh' into cmd_import
 
-    shell :
+    script :
     """
+    #Import all samples paired-end files listed in manifest to qiime data structure
     qiime tools import \
     --input-path ${manifest} \
     --output-path data.qza \
     --type 'SampleData[PairedEndSequencesWithQuality]' \
     --input-format PairedEndFastqManifestPhred33V2 > q2_import.log 2>&1
+    #Summarize counts per sample for all samples
     qiime demux summarize \
     --verbose \
     --i-data data.qza \
     --o-visualization data.qzv >> q2_import.log 2>&1
+    #Export html report
     qiime tools export \
     --input-path data.qzv \
     --output-path import_output >> q2_import.log 2>&1
@@ -49,6 +55,7 @@ process q2_cutadapt {
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
     publishDir "${params.outdir}/02_trimmed", mode: 'copy', pattern: 'data*.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_cutadapt -> "cmd/${task.process}.sh" }
     
     input : file imported_data from imported_data
 
@@ -56,9 +63,15 @@ process q2_cutadapt {
         file 'data_trimmed.qza' into trimmed_data
         file 'data_trimmed.qzv' into trimmed_visu
         file 'trimmed_output' into trimmed_summary
+        file '.command.sh' into cmd_cutadapt 
 
-    shell :
+    //Run only if process is activated in params.config file
+    when :
+    params.cutadapt.enable
+
+    script :
     """
+    #Run cutadapt
     qiime cutadapt trim-paired \
     --verbose \
     --p-cores ${task.cpus} \
@@ -69,10 +82,12 @@ process q2_cutadapt {
     --p-discard-untrimmed --p-match-read-wildcards \
     --p-overlap ${params.cutadapt.overlap} \
     --o-trimmed-sequences data_trimmed.qza > q2_cutadapt.log 
+    #Summarize counts per sample for all samples
     qiime demux summarize \
     --verbose \
     --i-data data_trimmed.qza \
     --o-visualization data_trimmed.qzv >> q2_cutadapt.log 2>&1
+    #Export html report
     qiime tools export \
     --input-path data_trimmed.qzv \
     --output-path trimmed_output >> q2_cutadapt.log 2>&1
@@ -85,6 +100,7 @@ process q2_dada2 {
     beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
     publishDir "${params.outdir}/03_dada2", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_dada2 -> "cmd/${task.process}.sh" }
 
     input : 
         file trimmed_data from trimmed_data
@@ -98,13 +114,15 @@ process q2_dada2 {
         file 'table.qzv' into visu_table
         file 'stats.qzv' into visu_stats
         file 'dada2_output' into dada2_summary
+        file '.command.sh' into cmd_dada2
     
-    //Run only if it is a complete run with full dada2 parameters set
+    //Run only if process is activated in params.config file
     when :
-    !params.first_run
+    params.dada2.enable
 
     script :
     """
+    #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
     qiime dada2 denoise-paired \
     --verbose \
     --i-demultiplexed-seqs ${trimmed_data} \
@@ -119,19 +137,23 @@ process q2_dada2 {
     --o-representative-sequences rep_seqs.qza \
     --o-table table.qza \
     --o-denoising-stats stats.qza > q2_dada2.log 2>&1
+    #Generate a tabular view of taxonomy metadata
     qiime metadata tabulate \
     --verbose \
     --m-input-file stats.qza \
     --o-visualization stats.qzv >> q2_dada2.log 2>&1
+    #Generate visual and tabular summaries of a feature table
     qiime feature-table summarize \
     --verbose \
     --i-table table.qza \
     --o-visualization table.qzv \
     --m-sample-metadata-file ${metadata} >> q2_dada2.log 2>&1
+    #Generate tabular view of feature identifier to sequence mapping
     qiime feature-table tabulate-seqs \
     --verbose \
     --i-data rep_seqs.qza \
     --o-visualization rep_seqs.qzv >> q2_dada2.log 2>&1
+    #Export data to html
     qiime tools export \
     --input-path rep_seqs.qzv \
     --output-path dada2_output >> q2_dada2.log 2>&1
@@ -154,78 +176,67 @@ process q2_taxonomy {
     publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.tsv*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: 'Final_ASV_table*'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_taxo -> "cmd/${task.process}.sh" }
 
     input :
         file data_repseqs from data_repseqs
+        file dada2_summary from dada2_summary
 
     output :
         file 'taxonomy.qza' into data_taxonomy
         file 'taxonomy.qzv' into visu_taxonomy
         file 'ASV_taxonomy.tsv' into taxonomy_tsv
         file 'taxo_output' into taxo_summary
+        file 'Final_ASV_table_with_taxonomy.biom' into output_biom
+        file 'Final_ASV_table_with_taxonomy.tsv' into output_biom_tsv
+        file '.command.sh' into cmd_taxo
 
-    //Run only if it is a complete run with full dada2 parameters set
+    //Run only if process is activated in params.config file
     when :
-    !params.first_run
+    params.taxo.enable
 
     script :
     """
+    #Run RDP Classifier for taxonomy assignment
     qiime feature-classifier classify-sklearn \
     --p-n-jobs ${task.cpus} \
     --p-confidence ${params.taxo.confidence} \
     --i-classifier ${params.taxo.database} \
     --i-reads ${data_repseqs} \
     --o-classification taxonomy.qza > q2_taxo.log 2>&1
+    #Generate a tabular view of taxonomy metadata
     qiime metadata tabulate \
     --m-input-file taxonomy.qza \
     --o-visualization taxonomy.qzv >> q2_taxo.log 2>&1
+    #Export data
     qiime tools export \
     --input-path taxonomy.qzv \
     --output-path taxo_output >> q2_taxo.log 2>&1
+    #Rename tabular taxonomy file and modify header
     mv taxo_output/metadata.tsv ASV_taxonomy.tsv >> q2_taxo.log 2>&1
     sed -i '1,2d' ASV_taxonomy.tsv >> q2_taxo.log 2>&1
     sed -i '1 i\\#OTUID\ttaxonomy\tconfidence' ASV_taxonomy.tsv >> q2_taxo.log 2>&1
-    """ 
-}
-
-/* Prepare output report */
-process q2_output {
-
-    beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-
-    input :
-        file taxonomy_tsv from taxonomy_tsv
-        file dada2_summary from dada2_summary
-
-    output :
-        file 'Final_ASV_table_with_taxonomy.biom' into output_biom
-        file 'Final_ASV_table_with_taxonomy.tsv' into output_biom_tsv
-
-    //Run only if it is a complete run with full dada2 parameters set
-    when :
-    !params.first_run
-
-    script :
-    """
+    #Add taxonomy to count table (biom format)
     biom add-metadata \
     -i ${dada2_summary}/feature-table.biom \
     --observation-metadata-fp ${taxonomy_tsv} \
     -o Final_ASV_table_with_taxonomy.biom \
-    --sc-separated taxonomy > q2_output.log 2>&1
+    --sc-separated taxonomy >> q2_taxo.log 2>&1
+    #Convert biom table to tabular
     biom convert \
     -i Final_ASV_table_with_taxonomy.biom \
     -o Final_ASV_table_with_taxonomy.tsv \
     --to-tsv \
-    --header-key taxonomy >> q2_output.log 2>&1
-    """
+    --header-key taxonomy >> q2_taxo.log 2>&1
+    """ 
 }
 
 /*
 process statisticalanalysis {
 
     beforeScript ". /appli/bioinfo/R/3.6.1/env.sh" 
-    publishDir "${params.outdir}/07_statistical_analysis", mode: 'copy'
+    publishDir "${params.outdir}/05_statistical_analysis", mode: 'copy'
     
     input :
         file metadata from metadata
@@ -235,9 +246,9 @@ process statisticalanalysis {
     output :
         file 'R/FIGURES' into figures
 
-    //Run only if it is a complete run with full dada2 parameters set
+    //Run only if process is activated in params.config file
     when :
-    !params.first_run
+    params.stats.enable
     
     script :
     """

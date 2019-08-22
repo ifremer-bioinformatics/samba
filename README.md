@@ -13,18 +13,24 @@ This workflow uses Qiime 2 (import/cutadapt/dada2) to analyse paired-end metabar
 * nextflow.config : workflow workdir definition, processes (tasks) inputs and resources parameters, reports definitions (Check TO_BE_SET parameters and replace with your own values)
 * MB.nf : each step is describe within its command line
 
-### How to run
-```bash
+
+### How to get this worflow
+```
+#connect to datarmor
 ssh datarmor
-bash
-. /appli/bioinfo/nextflow/19.07.0/env.sh
+#move to the directory in which you want to get the workflow
 cd /TO/YOUR_WORKING_DIRECTORY
+#get a local copy of the workflow in the directory nextmb
 git clone https://gitlab.ifremer.fr/bioinfo/nextmb
 cd nextmb
-nextflow run MB.nf
 ```
-to resume (when a task has failed) :
+### How to run
+Don't forget to complete nextflow config files before running the workflow (see nextflow.config and config directory)
 
 ```bash
-nextflow run MB.nf -resume
+# RUN FROM SCRATCH
+./RunNextMB.sh
+
+# RUN RESUME (when a task has failed or if you run steps separately)
+./RunNextMB.sh -resume
 ```

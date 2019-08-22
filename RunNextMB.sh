@@ -8,4 +8,4 @@ TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
 nextflow run MB.nf $1 2>&1 $TIMESTAMP-nextflow.log
 
 #deactivate nextflow environment
-./appli/bioinfo/nextflow/19.07.0/delenv.sh
+. /appli/bioinfo/nextflow/19.07.0/delenv.sh

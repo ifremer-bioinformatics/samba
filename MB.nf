@@ -220,7 +220,7 @@ process q2_taxonomy {
     #Add taxonomy to count table (biom format)
     biom add-metadata \
     -i ${dada2_summary}/feature-table.biom \
-    --observation-metadata-fp ${taxonomy_tsv} \
+    --observation-metadata-fp ASV_taxonomy.tsv \
     -o Final_ASV_table_with_taxonomy.biom \
     --sc-separated taxonomy >> q2_taxo.log 2>&1
     #Convert biom table to tabular

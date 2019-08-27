@@ -1,4 +1,5 @@
 #!/usr/bin/env nextflow
+println "Workflow for project : $params.projectName"
 println "Workflow description : $workflow.manifest.description"
 println "Workflow gitLab URL : $workflow.manifest.homePage"
 println "Workflow authors : $workflow.manifest.author"
@@ -10,12 +11,14 @@ println "Workflow configuration file : $workflow.configFiles"
 
 Channel.fromPath(params.inmanifest, checkIfExists:true).set { manifest }
 Channel.fromPath(params.inmetadata, checkIfExists:true).set { metadata }
+Channel.fromPath(params.inmetadata, checkIfExists:true).set { metadata4stats }
+
 Channel.fromPath(params.stats.Rstatsscript, checkIfExists:true).set { Rstatsscript }
 
 /* Import metabarcode data */
 process q2_import {
 
-    beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
+    beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/01_import", mode: 'copy', pattern: 'data.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_import -> "cmd/${task.process}.sh" }
@@ -31,28 +34,14 @@ process q2_import {
 
     script :
     """
-    #Import all samples paired-end files listed in manifest to qiime data structure
-    qiime tools import \
-    --input-path ${manifest} \
-    --output-path data.qza \
-    --type 'SampleData[PairedEndSequencesWithQuality]' \
-    --input-format PairedEndFastqManifestPhred33V2 > q2_import.log 2>&1
-    #Summarize counts per sample for all samples
-    qiime demux summarize \
-    --verbose \
-    --i-data data.qza \
-    --o-visualization data.qzv >> q2_import.log 2>&1
-    #Export html report
-    qiime tools export \
-    --input-path data.qzv \
-    --output-path import_output >> q2_import.log 2>&1
+    ${baseDir}/lib/q2_import.sh ${manifest} data.qza data.qzv import_output > q2_import.log 2>&1
     """
 }
 
 /* Trim metabarcode data with cutadapt */
 process q2_cutadapt {
 
-    beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
+    beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/02_trimmed", mode: 'copy', pattern: 'data*.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_cutadapt -> "cmd/${task.process}.sh" }
@@ -97,7 +86,7 @@ process q2_cutadapt {
 /* Run dada2 */
 process q2_dada2 {
 
-    beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
+    beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/03_dada2", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_dada2 -> "cmd/${task.process}.sh" }
@@ -172,7 +161,7 @@ process q2_dada2 {
 /* Run taxonomy assignment */
 process q2_taxonomy {
 
-    beforeScript '. /appli/bioinfo/qiime/2019.04/env.sh'
+    beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.tsv*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
@@ -188,8 +177,8 @@ process q2_taxonomy {
         file 'taxonomy.qzv' into visu_taxonomy
         file 'ASV_taxonomy.tsv' into taxonomy_tsv
         file 'taxo_output' into taxo_summary
-        file 'Final_ASV_table_with_taxonomy.biom' into output_biom
-        file 'Final_ASV_table_with_taxonomy.tsv' into output_biom_tsv
+        file 'Final_ASV_table_with_taxonomy.biom' into biom
+        file 'Final_ASV_table_with_taxonomy.tsv' into biom_tsv
         file '.command.sh' into cmd_taxo
 
     //Run only if process is activated in params.config file
@@ -235,16 +224,18 @@ process q2_taxonomy {
 /*
 process statisticalanalysis {
 
-    beforeScript ". /appli/bioinfo/R/3.6.1/env.sh" 
+    beforeScript "${params.r_stats_env}"
     publishDir "${params.outdir}/05_statistical_analysis", mode: 'copy'
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_taxo -> "cmd/${task.process}.sh" }
     
     input :
-        file metadata from metadata
         file Rstatsscript from Rstatsscript
-        file output_biom_tsv from output_biom_tsv
+        file biom_tsv from biom_tsv
+        file metadata_stats from metadata4stats
 
     output :
-        file 'R/FIGURES' into figures
+        //file 'barplot_relabund_phylum.svg' into barplot_relabund_phylym
+        //file 'barplot_relabund_phylum_rarefied.svg' into barplot_relabund_phylum_rarefied
 
     //Run only if process is activated in params.config file
     when :
@@ -252,14 +243,13 @@ process statisticalanalysis {
     
     script :
     """
-    mkdir -p ${params.stats.data} 
-    mkdir -p ${params.stats.script}
-    cp ${metadata} ${params.stats.data}
-    sed -i 's/#SampleID/SampleID/g' ${params.stats.data}/q2_metadata
-    cp ${output_biom_tsv} ${params.stats.data}
-    sed -i '1d' ${params.stats.data}/Final_ASV_table_with_taxonomy.tsv
-    sed -i 's/#OTU ID/ASV_ID/g' ${params.stats.data}/Final_ASV_table_with_taxonomy.tsv
-    Rscript --vanilla ${Rstatsscript} ${projectName} ${params.stats.perc_abund_threshold} ${params.stats.distance} ${params.stats.column_sample_replicat} ${params.stats.exp_var_samples} > stats.log 2&>1
+    mkdir -p ${params.stats.data} ${params.stats.script} ${params.stats.figures}
+    cp ${metadata_stats} ${params.stats.data}
+    sed -i 's/#SampleID/SampleID/g' ${params.stats.data}/${metadata_stats}
+    cp ${biom_tsv} ${params.stats.data}
+    sed -i '1d' ${params.stats.data}/${biom_tsv}
+    sed -i 's/#OTU ID/ASV_ID/g' ${params.stats.data}/${biom_tsv}
+    Rscript --vanilla ${Rstatsscript} "toto" ${params.projectName} ${params.stats.perc_abund_threshold} ${params.stats.distance} ${params.stats.column_sample_replicat} ${params.stats.exp_var_samples}
     """
 }
 */

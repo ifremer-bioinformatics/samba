@@ -36,13 +36,13 @@ cmd="qiime demux summarize \
     --verbose \
     --i-data $data_trimmedqza \
     --o-visualization $data_trimmedqzv"
-echo cmd >> $logcmd
+echo $cmd >> $logcmd
 eval $cmd
 
 #Export html report
 cmd="qiime tools export \
     --input-path $data_trimmedqzv \
     --output-path $trimmed_output"
-echo cmd >> $logcmd
+echo $cmd >> $logcmd
 eval $cmd
 

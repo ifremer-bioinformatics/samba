@@ -21,7 +21,7 @@ process q2_import {
     beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/01_import", mode: 'copy', pattern: 'data.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_import -> "cmd/${task.process}.sh" }
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
 
     input : 
         file manifest from manifest
@@ -30,11 +30,11 @@ process q2_import {
         file 'data.qza' into imported_data
         file 'data.qzv' into imported_visu
         file 'import_output' into imported_summary
-        file '.command.sh' into cmd_import
+        file 'completecmd' into complete_cmd_import
 
     script :
     """
-    ${baseDir}/lib/q2_import.sh ${manifest} data.qza data.qzv import_output > q2_import.log 2>&1
+    ${baseDir}/lib/q2_import.sh ${manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
     """
 }
 
@@ -44,7 +44,7 @@ process q2_cutadapt {
     beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/02_trimmed", mode: 'copy', pattern: 'data*.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_cutadapt -> "cmd/${task.process}.sh" }
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
     
     input : file imported_data from imported_data
 
@@ -52,7 +52,7 @@ process q2_cutadapt {
         file 'data_trimmed.qza' into trimmed_data
         file 'data_trimmed.qzv' into trimmed_visu
         file 'trimmed_output' into trimmed_summary
-        file '.command.sh' into cmd_cutadapt 
+        file 'completecmd' into complete_cmd_cutadapt
 
     //Run only if process is activated in params.config file
     when :
@@ -60,26 +60,7 @@ process q2_cutadapt {
 
     script :
     """
-    #Run cutadapt
-    qiime cutadapt trim-paired \
-    --verbose \
-    --p-cores ${task.cpus} \
-    --i-demultiplexed-sequences ${imported_data} \
-    --p-front-f ${params.cutadapt.primerF} \
-    --p-front-r ${params.cutadapt.primerR} \
-    --p-error-rate ${params.cutadapt.errorRate} \
-    --p-discard-untrimmed --p-match-read-wildcards \
-    --p-overlap ${params.cutadapt.overlap} \
-    --o-trimmed-sequences data_trimmed.qza > q2_cutadapt.log 
-    #Summarize counts per sample for all samples
-    qiime demux summarize \
-    --verbose \
-    --i-data data_trimmed.qza \
-    --o-visualization data_trimmed.qzv >> q2_cutadapt.log 2>&1
-    #Export html report
-    qiime tools export \
-    --input-path data_trimmed.qzv \
-    --output-path trimmed_output >> q2_cutadapt.log 2>&1
+    ${baseDir}/lib/q2_cutadapt.sh ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd > q2_cutadapt.log 2>&1
     """
 }
 
@@ -89,72 +70,29 @@ process q2_dada2 {
     beforeScript "${params.qiime_env}"
     publishDir "${params.outdir}/03_dada2", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_dada2 -> "cmd/${task.process}.sh" }
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
 
     input : 
         file trimmed_data from trimmed_data
-        file metadata from metadata        
+        file metadata from metadata 
 
     output :
         file 'rep_seqs.qza' into data_repseqs
+        file 'rep_seqs.qzv' into visu_repseps
         file 'table.qza' into data_table
-        file 'stats.qza' into data_stats
-        file 'rep_seqs.qzv' into visu_repseqs
         file 'table.qzv' into visu_table
+        file 'stats.qza' into stats_table
         file 'stats.qzv' into visu_stats
         file 'dada2_output' into dada2_summary
-        file '.command.sh' into cmd_dada2
-    
+        file 'completecmd' into complete_cmd_dada2
+
     //Run only if process is activated in params.config file
     when :
     params.dada2.enable
 
     script :
     """
-    #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
-    qiime dada2 denoise-paired \
-    --verbose \
-    --i-demultiplexed-seqs ${trimmed_data} \
-    --p-trim-left-f ${params.dada2.trim3F} \
-    --p-trim-left-r ${params.dada2.trim3R} \
-    --p-trunc-len-f ${params.dada2.trunclenF} \
-    --p-trunc-len-r ${params.dada2.trunclenR} \
-    --p-max-ee ${params.dada2.maxee} \
-    --p-trunc-q ${params.dada2.minqual} \
-    --p-chimera-method ${params.dada2.chimeras} \
-    --p-n-threads ${task.cpus} \
-    --o-representative-sequences rep_seqs.qza \
-    --o-table table.qza \
-    --o-denoising-stats stats.qza > q2_dada2.log 2>&1
-    #Generate a tabular view of taxonomy metadata
-    qiime metadata tabulate \
-    --verbose \
-    --m-input-file stats.qza \
-    --o-visualization stats.qzv >> q2_dada2.log 2>&1
-    #Generate visual and tabular summaries of a feature table
-    qiime feature-table summarize \
-    --verbose \
-    --i-table table.qza \
-    --o-visualization table.qzv \
-    --m-sample-metadata-file ${metadata} >> q2_dada2.log 2>&1
-    #Generate tabular view of feature identifier to sequence mapping
-    qiime feature-table tabulate-seqs \
-    --verbose \
-    --i-data rep_seqs.qza \
-    --o-visualization rep_seqs.qzv >> q2_dada2.log 2>&1
-    #Export data to html
-    qiime tools export \
-    --input-path rep_seqs.qzv \
-    --output-path dada2_output >> q2_dada2.log 2>&1
-    qiime tools export \
-    --input-path table.qzv \
-    --output-path dada2_output >> q2_dada2.log 2>&1
-    qiime tools export \
-    --input-path stats.qzv \
-    --output-path dada2_output >> q2_dada2.log 2>&1
-    qiime tools export \
-    --input-path table.qza \
-    --output-path dada2_output >> q2_dada2.log 2>&1
+    ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
     """
 }
 
@@ -166,7 +104,7 @@ process q2_taxonomy {
     publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.tsv*'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
     publishDir "${params.outdir}/00_report", mode: 'copy', pattern: 'Final_ASV_table*'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_taxo -> "cmd/${task.process}.sh" }
+    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
 
     input :
         file data_repseqs from data_repseqs
@@ -179,7 +117,7 @@ process q2_taxonomy {
         file 'taxo_output' into taxo_summary
         file 'Final_ASV_table_with_taxonomy.biom' into biom
         file 'Final_ASV_table_with_taxonomy.tsv' into biom_tsv
-        file '.command.sh' into cmd_taxo
+        file 'completecmd' into complete_cmd_taxo
 
     //Run only if process is activated in params.config file
     when :
@@ -187,37 +125,7 @@ process q2_taxonomy {
 
     script :
     """
-    #Run RDP Classifier for taxonomy assignment
-    qiime feature-classifier classify-sklearn \
-    --p-n-jobs ${task.cpus} \
-    --p-confidence ${params.taxo.confidence} \
-    --i-classifier ${params.taxo.database} \
-    --i-reads ${data_repseqs} \
-    --o-classification taxonomy.qza > q2_taxo.log 2>&1
-    #Generate a tabular view of taxonomy metadata
-    qiime metadata tabulate \
-    --m-input-file taxonomy.qza \
-    --o-visualization taxonomy.qzv >> q2_taxo.log 2>&1
-    #Export data
-    qiime tools export \
-    --input-path taxonomy.qzv \
-    --output-path taxo_output >> q2_taxo.log 2>&1
-    #Rename tabular taxonomy file and modify header
-    mv taxo_output/metadata.tsv ASV_taxonomy.tsv >> q2_taxo.log 2>&1
-    sed -i '1,2d' ASV_taxonomy.tsv >> q2_taxo.log 2>&1
-    sed -i '1 i\\#OTUID\ttaxonomy\tconfidence' ASV_taxonomy.tsv >> q2_taxo.log 2>&1
-    #Add taxonomy to count table (biom format)
-    biom add-metadata \
-    -i ${dada2_summary}/feature-table.biom \
-    --observation-metadata-fp ASV_taxonomy.tsv \
-    -o Final_ASV_table_with_taxonomy.biom \
-    --sc-separated taxonomy >> q2_taxo.log 2>&1
-    #Convert biom table to tabular
-    biom convert \
-    -i Final_ASV_table_with_taxonomy.biom \
-    -o Final_ASV_table_with_taxonomy.tsv \
-    --to-tsv \
-    --header-key taxonomy >> q2_taxo.log 2>&1
+    ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.confidence} ${params.taxo.database} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv completecmd > q2_taxo.log 2>&1
     """ 
 }
 

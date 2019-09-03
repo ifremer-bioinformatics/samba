@@ -8,20 +8,19 @@ println "Cmd line: $workflow.commandLine"
 println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
 println "Workflow configuration file : $workflow.configFiles"
+println "Manifest file : $params.inmanifest"
+println "Metadata file : $params.inmetadata"
 
 Channel.fromPath(params.inmanifest, checkIfExists:true).set { manifest }
-Channel.fromPath(params.inmetadata, checkIfExists:true).set { metadata }
-Channel.fromPath(params.inmetadata, checkIfExists:true).set { metadata4stats }
-
-Channel.fromPath(params.stats.Rstatsscript, checkIfExists:true).set { Rstatsscript }
+Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata4stats }
 
 /* Import metabarcode data */
 process q2_import {
 
     beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/01_import", mode: 'copy', pattern: 'data.qz*'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
 
     input : 
         file manifest from manifest
@@ -42,9 +41,9 @@ process q2_import {
 process q2_cutadapt {
 
     beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/02_trimmed", mode: 'copy', pattern: 'data*.qz*'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
     
     input : file imported_data from imported_data
 
@@ -68,9 +67,9 @@ process q2_cutadapt {
 process q2_dada2 {
 
     beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/03_dada2", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
 
     input : 
         file trimmed_data from trimmed_data
@@ -100,11 +99,11 @@ process q2_dada2 {
 process q2_taxonomy {
 
     beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/04_taxonomy", mode: 'copy', pattern: '*.tsv*'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern: 'Final_ASV_table*'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'Final_ASV_table*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
 
     input :
         file data_repseqs from data_repseqs
@@ -129,21 +128,50 @@ process q2_taxonomy {
     """ 
 }
 
-/*
-process statisticalanalysis {
+process prepare_data_for_stats {
 
-    beforeScript "${params.r_stats_env}"
-    publishDir "${params.outdir}/05_statistical_analysis", mode: 'copy'
-    publishDir "${params.outdir}/00_report", mode: 'copy', pattern : '.command.sh', saveAs : { cmd_taxo -> "cmd/${task.process}.sh" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_prepare_stats -> "cmd/${task.process}_complete.sh" }
     
     input :
-        file Rstatsscript from Rstatsscript
+        file metadata from metadata4stats
         file biom_tsv from biom_tsv
-        file metadata_stats from metadata4stats
 
     output :
-        //file 'barplot_relabund_phylum.svg' into barplot_relabund_phylym
-        //file 'barplot_relabund_phylum_rarefied.svg' into barplot_relabund_phylum_rarefied
+        file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
+        file 'metadata_stats.tsv' into metadata_stats
+        file 'completecmd' into complete_cmd_prepare_stats
+ 
+    when :
+    params.prepare_data_for_stats.enable
+
+    script :
+    """
+    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv completecmd > stats_prepare_data.log 2&>1
+    """
+  
+}
+
+process stats_alpha {
+
+    beforeScript "${params.r_stats_env}"
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES", mode: 'copy', pattern : '*.svg'
+    
+    input :
+        file biom_tsv from biom_tsv_stats
+        file metadata_stats from metadata_stats
+
+    output :
+        file 'completecmd' into complete_cmd_alpha
+        file 'alpha_div_plots.svg' into alpha_div_plots
+        file 'barplot_relabund_phylum.svg' into barplot_relabund_phylum
+        file 'barplot_relabund_family.svg' into barplot_relabund_family
+        file 'barplot_relabund_genus.svg' into barplot_relabund_genus
+        file 'heatmap_class.svg' into heatmap_class
+        file 'heatmap_family.svg' into heatmap_family
+        file 'heatmap_genus.svg' into heatmap_genus
 
     //Run only if process is activated in params.config file
     when :
@@ -151,13 +179,8 @@ process statisticalanalysis {
     
     script :
     """
-    mkdir -p ${params.stats.data} ${params.stats.script} ${params.stats.figures}
-    cp ${metadata_stats} ${params.stats.data}
-    sed -i 's/#SampleID/SampleID/g' ${params.stats.data}/${metadata_stats}
-    cp ${biom_tsv} ${params.stats.data}
-    sed -i '1d' ${params.stats.data}/${biom_tsv}
-    sed -i 's/#OTU ID/ASV_ID/g' ${params.stats.data}/${biom_tsv}
-    Rscript --vanilla ${Rstatsscript} "toto" ${params.projectName} ${params.stats.perc_abund_threshold} ${params.stats.distance} ${params.stats.column_sample_replicat} ${params.stats.exp_var_samples}
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R ${params.projectName} ${biom_tsv} ${metadata_stats} ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg > stats_alpha_diversity.log 2>&1
+    cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }
-*/
+

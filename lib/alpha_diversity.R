@@ -37,7 +37,7 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 
-alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance){
+alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, phyloseq_obj){
     #Input data
     rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE)
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
@@ -58,7 +58,8 @@ alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund
     TAX = tax_table(tax)
     METADATA = sample_data(metadata)
     PHYLOSEQ = phyloseq(ABUND,TAX,METADATA)
-    
+    saveRDS(PHYLOSEQ, file=phyloseq_obj)
+ 
     #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
     ## ** Beginning of the script : Analysis of the alpha diversity **         ####
     
@@ -93,7 +94,6 @@ alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund
     #### /2\ Taxonomic diversity ####
     
     ## ___ Barplot representation ####
-    
     ## ______ at the phylum level ####
     Relabund_phylum = PHYLOSEQ %>%
       tax_glom(taxrank="Phylum") %>%
@@ -220,8 +220,9 @@ main <- function() {
     heatmap_class = args[10]
     heatmap_family = args[11]
     heatmap_genus = args[12]
+    phyloseq_obj = args[13]
     #Run alpha diversity calculations
-    alphadiversity(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance)
+    alphadiversity(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance,phyloseq_obj)
 
 }
 if (!interactive()) {

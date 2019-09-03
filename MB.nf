@@ -158,6 +158,7 @@ process stats_alpha {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "cmd/${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
     
     input :
         file biom_tsv from biom_tsv_stats
@@ -172,6 +173,7 @@ process stats_alpha {
         file 'heatmap_class.svg' into heatmap_class
         file 'heatmap_family.svg' into heatmap_family
         file 'heatmap_genus.svg' into heatmap_genus
+        file 'phyloseq.rds' into phyloseq_rds
 
     //Run only if process is activated in params.config file
     when :
@@ -179,7 +181,7 @@ process stats_alpha {
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R ${params.projectName} ${biom_tsv} ${metadata_stats} ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R ${params.projectName} ${biom_tsv} ${metadata_stats} ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg phyloseq.rds > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }

@@ -186,3 +186,28 @@ process stats_alpha {
     """
 }
 
+process stats_beta_rarefied {
+
+    beforeScript "${params.r_stats_env}"
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+
+    input :
+        file phyloseq_rds from phyloseq_rds
+     
+    output :
+        file 'completecmd' into complete_cmd_beta_rarefied
+        file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
+        file 'ASV_ordination_plot_rarefied.svg' into ASV_ordination_plot_rarefied
+        file 'ASV_ordination_plot_wrapped_rarefied.svg' into ASV_ordination_plot_wrapped_rarefied
+        file 'samples_ordination_plot_rarefied.svg' into samples_ordination_plot_rarefied
+        file 'split_graph_ordination_plot_rarefied.svg' into split_graph_ordination_plot_rarefied
+     
+    script:
+    """
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ASV_ordination_plot_rarefied.svg ${params.stats.distance} ${params.stats.replicats} ASV_ordination_plot_wrapped_rarefied.svg samples_ordination_plot_rarefied.svg split_graph_ordination_plot_rarefied.svg > stats_beta_diversity_rarefied.log 2>&1
+    cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
+    """
+ 
+}

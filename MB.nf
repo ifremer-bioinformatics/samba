@@ -149,20 +149,21 @@ process prepare_data_for_stats {
     """
     ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv completecmd > stats_prepare_data.log 2&>1
     """
-  
 }
+
+metadata_stats.into { metadata_alpha ; metadata_beta ; metadata_beta_rarefied }
 
 process stats_alpha {
 
     beforeScript "${params.r_stats_env}"
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "cmd/${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
-    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.svg'
     publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
     
     input :
         file biom_tsv from biom_tsv_stats
-        file metadata_stats from metadata_stats
+        file metadata from metadata_alpha
 
     output :
         file 'completecmd' into complete_cmd_alpha
@@ -181,9 +182,38 @@ process stats_alpha {
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R ${params.projectName} ${biom_tsv} ${metadata_stats} ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg phyloseq.rds > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R ${params.projectName} ${biom_tsv} ${metadata} ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg phyloseq.rds > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
+}
+
+phyloseq_rds.into { phyloseq_rds_beta ; phyloseq_rds_beta_rarefied }
+
+process stats_beta {
+
+    beforeScript "${params.r_stats_env}"
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_non_normalized", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+
+    input :
+        file phyloseq_rds from phyloseq_rds_beta
+        file metadata from metadata_beta
+ 
+    output :
+        file 'completecmd' into complete_cmd_beta
+        file 'ASV_ordination_plot.svg' into ASV_ordination_plot
+        file 'ASV_ordination_plot_wrapped.svg' into ASV_ordination_plot_wrapped
+        file 'samples_ordination_plot.svg' into samples_ordination_plot
+        file 'split_graph_ordination_plot.svg' into split_graph_ordination_plot
+ 
+    script:
+    """
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ASV_ordination_plot.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ASV_ordination_plot_wrapped.svg samples_ordination_plot.svg split_graph_ordination_plot.svg ${metadata} > stats_beta_diversity.log 2>&1
+    cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
+    """
+ 
 }
 
 process stats_beta_rarefied {
@@ -194,7 +224,8 @@ process stats_beta_rarefied {
     publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
-        file phyloseq_rds from phyloseq_rds
+        file phyloseq_rds from phyloseq_rds_beta_rarefied
+        file metadata from metadata_beta_rarefied
      
     output :
         file 'completecmd' into complete_cmd_beta_rarefied
@@ -203,10 +234,10 @@ process stats_beta_rarefied {
         file 'ASV_ordination_plot_wrapped_rarefied.svg' into ASV_ordination_plot_wrapped_rarefied
         file 'samples_ordination_plot_rarefied.svg' into samples_ordination_plot_rarefied
         file 'split_graph_ordination_plot_rarefied.svg' into split_graph_ordination_plot_rarefied
-     
+
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ASV_ordination_plot_rarefied.svg ${params.stats.distance} ${params.stats.replicats} ASV_ordination_plot_wrapped_rarefied.svg samples_ordination_plot_rarefied.svg split_graph_ordination_plot_rarefied.svg > stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ASV_ordination_plot_rarefied.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ASV_ordination_plot_wrapped_rarefied.svg samples_ordination_plot_rarefied.svg split_graph_ordination_plot_rarefied.svg ${metadata} > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
  

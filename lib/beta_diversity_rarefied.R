@@ -50,7 +50,7 @@ rarefied_table = cbind(as.data.frame(otu_table(PHYLOSEQ_rarefied)),as.data.frame
 write.table(rarefied_table,final_rarefied_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".",quote=F) 
 
 ## /1\ Ordination process ####
-ord_rarefied = ordinate(PHYLOSEQ_rarefied, "NMDS", distance,trymax = 100)
+ord_rarefied = ordinate(PHYLOSEQ_rarefied, "NMDS", distance, trymax = 100)
 
 ## /2\ ASV analysis ####
 color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
@@ -79,6 +79,7 @@ plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="taxa",color="Class") +
 ggsave(filename=ASV_ordination_plot_wrapped_rarefied,width=13,height=10)
 
 ## /3\ Sample analysis ####
+color_samples = sample(color_vector,length(levels(metadata[,replicats])))
 
 plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="samples",color=replicats) +
   geom_polygon(aes(fill=Replicats)) +

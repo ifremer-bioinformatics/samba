@@ -200,8 +200,6 @@ alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund
      theme(legend.title=element_text(size=14)) +
      theme(legend.text=element_text(size=12))
     ggsave(filename=heatmap_genus,width=15,height=20)
-
-
 }
 
 
@@ -211,6 +209,7 @@ main <- function() {
     project_name = args[1]
     biom_tsv = args[2]
     metadata = args[3]
+    print(metadata)
     threshold = args[4]
     distance = args[5]
     alpha_div_plots = args[6]
@@ -223,14 +222,7 @@ main <- function() {
     phyloseq_obj = args[13]
     #Run alpha diversity calculations
     alphadiversity(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance,phyloseq_obj)
-
 }
 if (!interactive()) {
         main()
 }
-
-#### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
-## ** End of the script **                                                 ####
-
-#save.image(file=paste(SCRIPT,RData_name,sep=""))
-#file.copy(from="../../../libs/Rscript_qiime2_snakemake.R",to=paste(SCRIPT,Rscript,sep=""))

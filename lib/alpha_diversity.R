@@ -37,28 +37,28 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 
-alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, phyloseq_obj){
+alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance){
     #Input data
-    rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE)
-    metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
+#    rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE)
+#    metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     
     #Reformatting of the input data
-    abund = rawASVtable[,1:length(rawASVtable)-1]
-    row.names(abund) = abund$ASV_ID
-    abund = abund %>% select (-ASV_ID)
-    tax = rawASVtable[,c(1,length(names(rawASVtable)))]
-    tax = data.frame(tax$ASV_ID,do.call(rbind,list(str_split_fixed(tax$taxonomy, ";",7))))
-    colnames(tax) = c("ASV_ID","Kingdom","Phylum","Class","Order","Family","Genus","Species")
-    row.names(tax) = tax$ASV_ID
-    tax = as.matrix(tax %>% select (-ASV_ID))
+#    abund = rawASVtable[,1:length(rawASVtable)-1]
+#    row.names(abund) = abund$ASV_ID
+#    abund = abund %>% select (-ASV_ID)
+#    tax = rawASVtable[,c(1,length(names(rawASVtable)))]
+#    tax = data.frame(tax$ASV_ID,do.call(rbind,list(str_split_fixed(tax$taxonomy, ";",7))))
+#    colnames(tax) = c("ASV_ID","Kingdom","Phylum","Class","Order","Family","Genus","Species")
+#    row.names(tax) = tax$ASV_ID
+#    tax = as.matrix(tax %>% select (-ASV_ID))
     
     ## Construction of the phyloseq object ####
-    ABUND = otu_table(abund,taxa_are_rows=TRUE)
-    TAX = tax_table(tax)
-    METADATA = sample_data(metadata)
-    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA)
-    saveRDS(PHYLOSEQ, file=phyloseq_obj)
+#    ABUND = otu_table(abund,taxa_are_rows=TRUE)
+#    TAX = tax_table(tax)
+#    METADATA = sample_data(metadata)
+#    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA)
+#    saveRDS(PHYLOSEQ, file=phyloseq_obj)
  
     #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
     ## ** Beginning of the script : Analysis of the alpha diversity **         ####
@@ -206,22 +206,18 @@ alphadiversity <- function(biom_tsv, metadata, alpha_div_plots, barplot_relabund
 main <- function() {
     # Get arguments from RScript command line
     args = commandArgs(trailingOnly=TRUE)
-    project_name = args[1]
-    biom_tsv = args[2]
-    metadata = args[3]
-    print(metadata)
-    threshold = args[4]
-    distance = args[5]
-    alpha_div_plots = args[6]
-    barplot_relabund_phylum = args[7]
-    barplot_relabund_family = args[8]
-    barplot_relabund_genus = args[9]
-    heatmap_class = args[10]
-    heatmap_family = args[11]
-    heatmap_genus = args[12]
-    phyloseq_obj = args[13]
+    PHYLOSEQ = readRDS(args[1])
+    threshold = args[2]
+    distance = args[3]
+    alpha_div_plots = args[4]
+    barplot_relabund_phylum = args[6]
+    barplot_relabund_family = args[7]
+    barplot_relabund_genus = args[8]
+    heatmap_class = args[9]
+    heatmap_family = args[10]
+    heatmap_genus = args[11]
     #Run alpha diversity calculations
-    alphadiversity(biom_tsv, metadata, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance,phyloseq_obj)
+    alphadiversity(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance)
 }
 if (!interactive()) {
         main()

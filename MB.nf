@@ -130,7 +130,10 @@ process q2_taxonomy {
 
 process prepare_data_for_stats {
 
+    beforeScript "${params.r_stats_env}"
+
     publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_prepare_stats -> "cmd/${task.process}_complete.sh" }
     
     input :
@@ -140,6 +143,7 @@ process prepare_data_for_stats {
     output :
         file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
         file 'metadata_stats.tsv' into metadata_stats
+        file 'phyloseq.rds' into phyloseq_rds
         file 'completecmd' into complete_cmd_prepare_stats
  
     when :
@@ -148,25 +152,26 @@ process prepare_data_for_stats {
     script :
     """
     ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv completecmd > stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv >> stats_prepare_data.log 2&>1 
     """
 }
 
-metadata_stats.into { metadata_alpha ; metadata_beta ; metadata_beta_rarefied ; metadata_beta_deseq2 ; metadata_beta_css }
+//Duplicate channels needed in several processes
+metadata_stats.into { metadata_beta ; metadata_beta_rarefied ; metadata_beta_deseq2 ; metadata_beta_css }
+phyloseq_rds.into { phyloseq_rds_alpha ; phyloseq_rds_beta ; phyloseq_rds_beta_rarefied ; phyloseq_rds_beta_deseq2 ; phyloseq_rds_beta_css }
 
 process stats_alpha {
 
     beforeScript "${params.r_stats_env}"
+
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "cmd/${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.svg'
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
     
     input :
-        file biom_tsv from biom_tsv_stats
-        file metadata from metadata_alpha
+        file phyloseq_rds from phyloseq_rds_alpha
 
     output :
-        file 'completecmd' into complete_cmd_alpha
         file 'alpha_div_plots.svg' into alpha_div_plots
         file 'barplot_relabund_phylum.svg' into barplot_relabund_phylum
         file 'barplot_relabund_family.svg' into barplot_relabund_family
@@ -174,7 +179,7 @@ process stats_alpha {
         file 'heatmap_class.svg' into heatmap_class
         file 'heatmap_family.svg' into heatmap_family
         file 'heatmap_genus.svg' into heatmap_genus
-        file 'phyloseq.rds' into phyloseq_rds
+        file 'completecmd' into complete_cmd_alpha
 
     //Run only if process is activated in params.config file
     when :
@@ -182,12 +187,11 @@ process stats_alpha {
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R ${params.projectName} ${biom_tsv} ${metadata} ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg phyloseq.rds > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }
 
-phyloseq_rds.into { phyloseq_rds_beta ; phyloseq_rds_beta_rarefied ; phyloseq_rds_beta_deseq2 ; phyloseq_rds_beta_css }
 
 process stats_beta {
 

@@ -151,7 +151,7 @@ process prepare_data_for_stats {
     """
 }
 
-metadata_stats.into { metadata_alpha ; metadata_beta ; metadata_beta_rarefied }
+metadata_stats.into { metadata_alpha ; metadata_beta ; metadata_beta_rarefied ; metadata_beta_deseq2 ; metadata_beta_css }
 
 process stats_alpha {
 
@@ -187,7 +187,7 @@ process stats_alpha {
     """
 }
 
-phyloseq_rds.into { phyloseq_rds_beta ; phyloseq_rds_beta_rarefied }
+phyloseq_rds.into { phyloseq_rds_beta ; phyloseq_rds_beta_rarefied ; phyloseq_rds_beta_deseq2 ; phyloseq_rds_beta_css }
 
 process stats_beta {
 
@@ -242,3 +242,56 @@ process stats_beta_rarefied {
     """
  
 }
+
+process stats_beta_deseq2 {
+
+    beforeScript "${params.r_stats_env}"
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_deseq2", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+
+    input :
+        file phyloseq_rds from phyloseq_rds_beta_deseq2
+        file metadata from metadata_beta_deseq2
+
+    output :
+        file 'completecmd' into complete_cmd_beta_deseq2
+        file 'Final_deseq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
+        file 'ASV_ordination_plot_deseq2.svg' into ASV_ordination_plot_deseq2
+        file 'ASV_ordination_plot_wrapped_deseq2.svg' into ASV_ordination_plot_wrapped_deseq2
+        file 'samples_ordination_plot_deseq2.svg' into samples_ordination_plot_deseq2
+        file 'split_graph_ordination_plot_deseq2.svg' into split_graph_ordination_plot_deseq2
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ASV_ordination_plot_deseq2.svg ASV_ordination_plot_wrapped_deseq2.svg samples_ordination_plot_deseq2.svg split_graph_ordination_plot_deseq2.svg ${params.stats.distance} ${params.stats.column_sample_replicat} > stats_beta_diversity_deseq2.log 2>&1
+    cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
+    """
+}
+
+process stats_beta_css {
+
+    beforeScript "${params.r_stats_env}"
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_css -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_css", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+
+    input :
+        file phyloseq_rds from phyloseq_rds_beta_css
+        file metadata from metadata_beta_css
+
+    output :
+        file 'completecmd' into complete_cmd_beta_css
+        file 'Final_css_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
+        file 'ASV_ordination_plot_css.svg' into ASV_ordination_plot_css
+        file 'ASV_ordination_plot_wrapped_css.svg' into ASV_ordination_plot_wrapped_css
+        file 'samples_ordination_plot_css.svg' into samples_ordination_plot_css
+        file 'split_graph_ordination_plot_css.svg' into split_graph_ordination_plot_css
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ASV_ordination_plot_css.svg ASV_ordination_plot_wrapped_css.svg samples_ordination_plot_css.svg split_graph_ordination_plot_css.svg ${params.stats.distance} ${params.stats.column_sample_replicat} > stats_beta_diversity_css.log 2>&1
+    cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
+    """
+}
+

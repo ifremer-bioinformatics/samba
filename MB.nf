@@ -192,7 +192,6 @@ process stats_alpha {
     """
 }
 
-
 process stats_beta {
 
     beforeScript "${params.r_stats_env}"
@@ -298,4 +297,3 @@ process stats_beta_css {
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 }
-

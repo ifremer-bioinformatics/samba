@@ -210,12 +210,12 @@ main <- function() {
     threshold = args[2]
     distance = args[3]
     alpha_div_plots = args[4]
-    barplot_relabund_phylum = args[6]
-    barplot_relabund_family = args[7]
-    barplot_relabund_genus = args[8]
-    heatmap_class = args[9]
-    heatmap_family = args[10]
-    heatmap_genus = args[11]
+    barplot_relabund_phylum = args[5]
+    barplot_relabund_family = args[6]
+    barplot_relabund_genus = args[7]
+    heatmap_class = args[8]
+    heatmap_family = args[9]
+    heatmap_genus = args[10]
     #Run alpha diversity calculations
     alphadiversity(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance)
 }

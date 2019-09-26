@@ -35,8 +35,9 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 library("metagenomeSeq")
+library("vegan")
 
-betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_ordination_plot_css, ASV_ordination_plot_wrapped_css, samples_ordination_plot_css, split_graph_ordination_plot_css, distance, replicats) {
+betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_ordination_plot_css, ASV_ordination_plot_wrapped_css, samples_ordination_plot_css, split_graph_ordination_plot_css, distance, replicats, metadata) {
 
     #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
     ## ** Beginning of the script: analysis of the beta diversity **           ####
@@ -58,7 +59,11 @@ betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_
     write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",") 
     
     ### /1\ Ordination process ####
+    metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     ord_css = ordinate(PHYLOSEQ_css,"NMDS", distance, trymax = 1000)
+    color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
+    color_samples = sample(color_vector,length(levels(metadata[,replicats])))
+    color_ord_class = sample(color_vector,length(unique(PHYLOSEQ_css@tax_table@.Data[,3])))
     
     ### /2\ ASV analysis ####
     
@@ -87,8 +92,6 @@ betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_
     ### /3\ Sample analysis ####
     group_css = get_variable(PHYLOSEQ_css, replicats)
     anosim_result_css = anosim(distance(PHYLOSEQ_css,"bray"),group_css, permutations = 999)
-    color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
-    color_samples = sample(color_vector,length(levels(metadata[,replicats])))
     
     plot_ordination(PHYLOSEQ_css,ord_css,type="samples",color=replicats) +
       theme_classic() +
@@ -100,9 +103,11 @@ betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_
       theme(axis.text=element_text(size=12,color="black")) +
       scale_fill_manual(values=alpha(color_samples,0.4)) +
       scale_color_manual(values=color_samples) +
-      annotate(geom="text",x=min(ord_css$points[,1]),y=max(ord_css$points[,1]),label=paste("Stress:",round(ord_css$stress,4),sep=" ")) +
       stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Species)) +
-      annotate(geom="text",x=min(ord_css$points[,1]),y=max(ord_css$points[,1])-0.3,label=paste("Anosim (based on species) : p-value",anosim_result$signif,sep=" "))
+      annotate(geom="text",x=min(ord_css$points[,1])+0.01,y=max(ord_css$points[,1]),label=paste("Stress:",round(ord_css$stress,4),
+                                                                                             "\nANOSIM statistic R:",round(anosim_result_css$statistic,4),
+                                                                                             "\nAnosim (based on Sample_Location) : p-value",anosim_result_css$signif,sep=" "))
+
     ggsave(filename=samples_ordination_plot_css,width=12,height=10)
     
     ### /4\ Split graphic ####
@@ -134,7 +139,8 @@ main <- function(){
     split_graph_ordination_plot_css = args[6]
     distance = args[7]
     replicats = args[8]
-    betadiversity_css(PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_ordination_plot_css, ASV_ordination_plot_wrapped_css, samples_ordination_plot_css, split_graph_ordination_plot_css, distance, replicats)
+    metadata = args[9]
+    betadiversity_css(PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_ordination_plot_css, ASV_ordination_plot_wrapped_css, samples_ordination_plot_css, split_graph_ordination_plot_css, distance, replicats, metadata)
 }
 
 if (!interactive()) {

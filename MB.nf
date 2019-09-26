@@ -164,7 +164,6 @@ process stats_alpha {
 
     beforeScript "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "cmd/${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.svg'
     
@@ -196,7 +195,7 @@ process stats_beta {
 
     beforeScript "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_non_normalized", mode: 'copy', pattern : '*.svg'
     publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
@@ -222,7 +221,7 @@ process stats_beta {
 process stats_beta_rarefied {
 
     beforeScript "${params.r_stats_env}"
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : '*.svg'
     publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
@@ -249,7 +248,7 @@ process stats_beta_rarefied {
 process stats_beta_deseq2 {
 
     beforeScript "${params.r_stats_env}"
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "cmd/${task.process}.R" }
+    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_deseq2", mode: 'copy', pattern : '*.svg'
     publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
@@ -267,7 +266,7 @@ process stats_beta_deseq2 {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ASV_ordination_plot_deseq2.svg ASV_ordination_plot_wrapped_deseq2.svg samples_ordination_plot_deseq2.svg split_graph_ordination_plot_deseq2.svg ${params.stats.distance} ${params.stats.column_sample_replicat} > stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ASV_ordination_plot_deseq2.svg ASV_ordination_plot_wrapped_deseq2.svg samples_ordination_plot_deseq2.svg split_graph_ordination_plot_deseq2.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ${metadata} > stats_beta_diversity_deseq2.log 2>&1
     cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """
 }
@@ -293,7 +292,7 @@ process stats_beta_css {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ASV_ordination_plot_css.svg ASV_ordination_plot_wrapped_css.svg samples_ordination_plot_css.svg split_graph_ordination_plot_css.svg ${params.stats.distance} ${params.stats.column_sample_replicat} > stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ASV_ordination_plot_css.svg ASV_ordination_plot_wrapped_css.svg samples_ordination_plot_css.svg split_graph_ordination_plot_css.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ${metadata} > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 }

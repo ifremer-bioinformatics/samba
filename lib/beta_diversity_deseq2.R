@@ -36,7 +36,7 @@ library("egg")
 library("DESeq2")
 library("vegan")
 
-betadiversity_deseq2 <- function (PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy, ASV_ordination_plot_deseq2, ASV_ordination_plot_wrapped_deseq2, samples_ordination_plot_deseq2, split_graph_ordination_plot_deseq2, distance, replicats) {
+betadiversity_deseq2 <- function (PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy, ASV_ordination_plot_deseq2, ASV_ordination_plot_wrapped_deseq2, samples_ordination_plot_deseq2, split_graph_ordination_plot_deseq2, distance, replicats, metadata) {
 
     #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
     ## ** Beginning of the script: analysis of the beta diversity **           ####
@@ -61,8 +61,10 @@ betadiversity_deseq2 <- function (PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy
     write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",") 
     
     ### /1\ Ordination process ####
+    metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     ord_deseq2 = ordinate(PHYLOSEQ_deseq2, "NMDS", distance,trymax = 1000)
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
+    color_samples = sample(color_vector,length(levels(metadata[,replicats])))
     color_ord_class = sample(color_vector,length(unique(PHYLOSEQ_deseq2@tax_table@.Data[,3])))
     
     ### /2\ ASV analysis ####
@@ -91,7 +93,8 @@ betadiversity_deseq2 <- function (PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy
     
     ### /3\ Sample analysis ####
     group_deseq2 = get_variable(PHYLOSEQ_deseq2, replicats)
-    anosim_result_deseq2 = anosim(distance(PHYLOSEQ_deseq2,"bray"),group_deseq2, permutations = 999)
+    PHYLOSEQ_deseq2_dist = phyloseq::distance(PHYLOSEQ_deseq2, "bray")
+    anosim_result_deseq2 = anosim(PHYLOSEQ_deseq2_dist,group_deseq2, permutations = 999)
     
     plot_ordination(PHYLOSEQ_deseq2,ord_deseq2,type="samples",color=replicats) +
       theme_classic() +
@@ -103,9 +106,11 @@ betadiversity_deseq2 <- function (PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy
       theme(axis.text=element_text(size=12,color="black")) +
       scale_fill_manual(values=alpha(color_samples,0.4)) +
       scale_color_manual(values=color_samples) +
-      annotate(geom="text",x=min(ord_deseq2$points[,1]),y=max(ord_deseq2$points[,1]),label=paste("Stress:",round(ord_deseq2$stress,4),sep=" ")) +
       stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Species)) +
-      annotate(geom="text",x=min(ord_deseq2$points[,1]),y=max(ord_deseq2$points[,1])-0.3,label=paste("Anosim (based on species) : p-value",anosim_result$signif,sep=" "))
+      annotate(geom="text",x=min(ord_deseq2$points[,1])+0.01,y=max(ord_deseq2$points[,1]),label=paste("Stress:",round(ord_deseq2$stress,4),
+                                                                                             "\nANOSIM statistic R:",round(anosim_result_deseq2$statistic,4),
+                                                                                             "\nAnosim (based on Sample_Location) : p-value",anosim_result_deseq2$signif,sep=" "))
+
     ggsave(filename=samples_ordination_plot_deseq2,width=12,height=10)
     
     ### /4\ Split graphic ####
@@ -137,7 +142,8 @@ main <- function(){
     split_graph_ordination_plot_deseq2 = args[6]
     distance = args[7]
     replicats = args[8] 
-    betadiversity_deseq2(PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy, ASV_ordination_plot_deseq2, ASV_ordination_plot_wrapped_deseq2, samples_ordination_plot_deseq2, split_graph_ordination_plot_deseq2, distance, replicats)
+    metadata = args[9]
+    betadiversity_deseq2(PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy, ASV_ordination_plot_deseq2, ASV_ordination_plot_wrapped_deseq2, samples_ordination_plot_deseq2, split_graph_ordination_plot_deseq2, distance, replicats, metadata)
 }
 
 if (!interactive()) {

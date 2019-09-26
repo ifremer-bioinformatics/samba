@@ -30,12 +30,6 @@
 library("dplyr")
 library("stringr")
 library("phyloseq")
-#library("ggplot2")
-#library("RColorBrewer")
-#library("svglite")
-#library("tidyr")
-#library("gridExtra")
-#library("egg")
 
 create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata) {
     #Input data

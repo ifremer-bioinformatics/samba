@@ -45,7 +45,6 @@ betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxo
     #~~~~~~~~~~~~~~~#
     # Rarefied data #
     #~~~~~~~~~~~~~~~#
-    #FIGURES.rarefied = paste(FIGURES,"RAREFIED/",sep="")
     PHYLOSEQ_rarefied = rarefy_even_depth(PHYLOSEQ, sample.size=min(sample_sums(PHYLOSEQ)),rngseed=1000,replace=TRUE,trimOTUs=TRUE)
     rarefied_table = cbind(as.data.frame(otu_table(PHYLOSEQ_rarefied)),as.data.frame(tax_table(PHYLOSEQ_rarefied)))
     write.table(rarefied_table,final_rarefied_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".",quote=F) 
@@ -84,10 +83,7 @@ betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxo
     color_samples = sample(color_vector,length(levels(metadata[,replicats])))
     group_rarefied = get_variable(PHYLOSEQ_rarefied,replicats)
     anosim_result_rarefied = anosim(distance(PHYLOSEQ_rarefied,"bray"),group_rarefied, permutations = 999)
-    print(anosim_result_rarefied)
-    print("plot ordination") 
     plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="samples",color=replicats) +
-      geom_polygon(aes(fill=Replicats)) +
       theme_classic() +
       geom_point(size=3) +
       geom_text(aes(label=rownames(sample_data(PHYLOSEQ_rarefied))),col="black",size=2.5,vjust=2,hjust=1) +
@@ -98,8 +94,8 @@ betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxo
       scale_fill_manual(values=alpha(color_samples,0.4)) +
       scale_color_manual(values=color_samples) +
       annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1]),label=paste("Stress:",round(ord_rarefied$stress,4),sep=" ")) +
-      #stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Species)) +
-      #annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1])-0.3,label=paste("Anosim (based on species) : p-value",anosim_result_rarefied$signif,sep=" "))
+      stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Species)) +
+      annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1])-0.3,label=paste("Anosim (based on species) : p-value",anosim_result_rarefied$signif,sep=" "))
     ggsave(filename=samples_ordination_plot_rarefied,width=12,height=10)
 
    print("plot ordination")

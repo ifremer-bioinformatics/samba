@@ -116,6 +116,8 @@ process q2_taxonomy {
         file 'taxo_output' into taxo_summary
         file 'Final_ASV_table_with_taxonomy.biom' into biom
         file 'Final_ASV_table_with_taxonomy.tsv' into biom_tsv
+        file 'taxonomic_database.qza' into trained_database
+        file 'db_seqs_amplicons.qza' into db_seqs_filtered
         file 'completecmd' into complete_cmd_taxo
 
     //Run only if process is activated in params.config file
@@ -124,7 +126,7 @@ process q2_taxonomy {
 
     script :
     """
-    ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.confidence} ${params.taxo.database} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv completecmd > q2_taxo.log 2>&1
+    ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
     """ 
 }
 

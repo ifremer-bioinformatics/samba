@@ -101,7 +101,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       psmelt() %>%
       arrange(Phylum)
     
-    color_phylum = sample(color_vector,length(levels(Relabund_phylum$Phylum)))
+    color_phylum = color_vector[1:length(levels(Relabund_phylum$Phylum))]
     
     ggplot(Relabund_phylum,aes(x=Sample,y=Abundance,fill=Phylum)) +
       geom_bar(stat = "identity",position="fill") +
@@ -126,7 +126,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       filter(Abundance > threshold) %>%
       arrange(Family)
     
-    color_family = sample(color_vector,length(unique(Relabund_family$Family)))
+    color_family = color_vector[1:length(levels(Relabund_family$Family))]
     
     ggplot(Relabund_family,aes(x=Sample,y=Abundance,fill=Family)) +
       geom_bar(stat = "identity",position="fill") +
@@ -150,7 +150,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       filter(Abundance > threshold) %>%
       arrange(Genus)
     
-    color_genus = sample(color_vector,length(unique(Relabund_genus$Genus)))
+    color_genus = color_vector[1:length(levels(Relabund_genus$Genus))]
     
     ggplot(Relabund_genus, aes(x = Sample, y = Abundance, fill = Genus)) +
       geom_bar(stat = "identity",position="fill") +

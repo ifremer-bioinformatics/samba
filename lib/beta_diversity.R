@@ -49,7 +49,7 @@ betadiversity <- function(PHYLOSEQ, ASV_ordination_plot, distance, replicats, AS
     ## /1\ Ordination process ####
     ord = ordinate(PHYLOSEQ,"NMDS",distance,trymax = 1000)
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
-    color_ord_class = sample(color_vector,length(unique(PHYLOSEQ@tax_table@.Data[,3])))
+    color_ord_class = color_vector[1:length(unique(PHYLOSEQ@tax_table@.Data[,3]))]
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
 
     ## /2\ ASV analysis ####
@@ -77,7 +77,7 @@ betadiversity <- function(PHYLOSEQ, ASV_ordination_plot, distance, replicats, AS
     ggsave(filename=ASV_ordination_plot_wrapped,width=13,height=10)
     
     ## /3\ Sample analysis ####
-    color_samples = sample(color_vector,length(levels(metadata[,replicats])))
+    color_samples = color_vector[1:length(levels(metadata[,replicats]))]
     
     group = get_variable(PHYLOSEQ, replicats)
     anosim_result = anosim(distance(PHYLOSEQ,"bray"),group, permutations = 999)

@@ -62,8 +62,8 @@ betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, ASV_
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     ord_css = ordinate(PHYLOSEQ_css,"NMDS", distance, trymax = 1000)
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
-    color_samples = sample(color_vector,length(levels(metadata[,replicats])))
-    color_ord_class = sample(color_vector,length(unique(PHYLOSEQ_css@tax_table@.Data[,3])))
+    color_samples = color_vector[1:length(levels(metadata[,replicats]))]
+    color_ord_class = color_vector[1:length(unique(PHYLOSEQ_css@tax_table@.Data[,3]))]
     
     ### /2\ ASV analysis ####
     

@@ -54,7 +54,7 @@ betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxo
     
     ## /2\ ASV analysis ####
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
-    color_ord_class = sample(color_vector,length(unique(PHYLOSEQ_rarefied@tax_table@.Data[,3])))
+    color_ord_class = color_vector[1:length(unique(PHYLOSEQ_rarefied@tax_table@.Data[,3]))]
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     
     ## ______ NMDS ####
@@ -80,7 +80,7 @@ betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxo
     ggsave(filename=ASV_ordination_plot_wrapped_rarefied,width=13,height=10)
     
     ## /3\ Sample analysis ####
-    color_samples = sample(color_vector,length(levels(metadata[,replicats])))
+    color_samples = color_vector[1:length(levels(metadata[,replicats]))]
     group_rarefied = get_variable(PHYLOSEQ_rarefied,replicats)
     anosim_result_rarefied = anosim(distance(PHYLOSEQ_rarefied,"bray"),group_rarefied, permutations = 999)
     plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="samples",color=replicats) +

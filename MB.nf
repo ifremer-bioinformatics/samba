@@ -14,122 +14,138 @@ println "Metadata file : $params.inmetadata"
 Channel.fromPath(params.inmanifest, checkIfExists:true).set { manifest }
 Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata4stats }
 
-/* Import metabarcode data */
-process q2_import {
+// IF NOT STATS ONLY, PERFORM QIIME STEPS
+if(!params.stats_only){
 
-    beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
-
-    input : 
-        file manifest from manifest
-
-    output : 
-        file 'data.qza' into imported_data
-        file 'data.qzv' into imported_visu
-        file 'import_output' into imported_summary
-        file 'completecmd' into complete_cmd_import
-
-    script :
-    """
-    ${baseDir}/lib/q2_import.sh ${manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
-    """
-}
-
-/* Trim metabarcode data with cutadapt */
-process q2_cutadapt {
-
-    beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+    /* Import metabarcode data */
     
-    input : file imported_data from imported_data
+    process q2_import {
+    
+        beforeScript "${params.qiime_env}"
+        publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
+    
+        input : 
+            file manifest from manifest
+    
+        output : 
+            file 'data.qza' into imported_data
+            file 'data.qzv' into imported_visu
+            file 'import_output' into imported_summary
+            file 'completecmd' into complete_cmd_import
+    
+        script :
+        """
+        ${baseDir}/lib/q2_import.sh ${manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
+        """
+    }
+    
+    /* Trim metabarcode data with cutadapt */
+    process q2_cutadapt {
+    
+        beforeScript "${params.qiime_env}"
+        publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+        
+        input : file imported_data from imported_data
+    
+        output :
+            file 'data_trimmed.qza' into trimmed_data
+            file 'data_trimmed.qzv' into trimmed_visu
+            file 'trimmed_output' into trimmed_summary
+            file 'completecmd' into complete_cmd_cutadapt
+    
+        //Run only if process is activated in params.config file
+        when :
+        params.cutadapt.enable
+    
+        script :
+        """
+        ${baseDir}/lib/q2_cutadapt.sh ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd > q2_cutadapt.log 2>&1
+        """
+    }
+    
+    /* Run dada2 */
+    process q2_dada2 {
+    
+        beforeScript "${params.qiime_env}"
+        publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
+    
+        input : 
+            file trimmed_data from trimmed_data
+            file metadata from metadata 
+    
+        output :
+            file 'rep_seqs.qza' into data_repseqs
+            file 'rep_seqs.qzv' into visu_repseps
+            file 'table.qza' into data_table
+            file 'table.qzv' into visu_table
+            file 'stats.qza' into stats_table
+            file 'stats.qzv' into visu_stats
+            file 'dada2_output' into dada2_summary
+            file 'completecmd' into complete_cmd_dada2
+    
+        //Run only if process is activated in params.config file
+        when :
+        params.dada2.enable
+    
+        script :
+        """
+        ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+        """
+    }
+    
+    /* Run taxonomy assignment */
+    process q2_taxonomy {
+    
+        beforeScript "${params.qiime_env}"
+        publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
+        publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'Final_ASV_table*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
+    
+        input :
+            file data_repseqs from data_repseqs
+            file dada2_summary from dada2_summary
+    
+        output :
+            file 'taxonomy.qza' into data_taxonomy
+            file 'taxonomy.qzv' into visu_taxonomy
+            file 'ASV_taxonomy.tsv' into taxonomy_tsv
+            file 'taxo_output' into taxo_summary
+            file 'Final_ASV_table_with_taxonomy.biom' into biom
+            file 'Final_ASV_table_with_taxonomy.tsv' into biom_tsv
+            file 'taxonomic_database.qza' into trained_database
+            file 'db_seqs_amplicons.qza' into db_seqs_filtered
+            file 'completecmd' into complete_cmd_taxo
+    
+        //Run only if process is activated in params.config file
+        when :
+        params.taxo.enable
+    
+        script :
+        """
+        #Specific region extraction before taxonomic assignation
+        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
+        # No extraction of specific ribosomal region before taxonomic assignation
+        #${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.confidence} ${params.taxo.database} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv completecmd > q2_taxo.log 2>&1
+        """ 
+    }
 
-    output :
-        file 'data_trimmed.qza' into trimmed_data
-        file 'data_trimmed.qzv' into trimmed_visu
-        file 'trimmed_output' into trimmed_summary
-        file 'completecmd' into complete_cmd_cutadapt
 
-    //Run only if process is activated in params.config file
-    when :
-    params.cutadapt.enable
-
-    script :
-    """
-    ${baseDir}/lib/q2_cutadapt.sh ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd > q2_cutadapt.log 2>&1
-    """
 }
-
-/* Run dada2 */
-process q2_dada2 {
-
-    beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
-
-    input : 
-        file trimmed_data from trimmed_data
-        file metadata from metadata 
-
-    output :
-        file 'rep_seqs.qza' into data_repseqs
-        file 'rep_seqs.qzv' into visu_repseps
-        file 'table.qza' into data_table
-        file 'table.qzv' into visu_table
-        file 'stats.qza' into stats_table
-        file 'stats.qzv' into visu_stats
-        file 'dada2_output' into dada2_summary
-        file 'completecmd' into complete_cmd_dada2
-
-    //Run only if process is activated in params.config file
-    when :
-    params.dada2.enable
-
-    script :
-    """
-    ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
-    """
+if(params.stats_only){
+    
+    //IF OTU TABLE ALREADY CREATED AND STAT ONLY STEPS NEEDED
+    
+    //Set biom_tsv path in params.conf
+    Channel.fromPath(params.incount_table, checkIfExists:true).set { biom_tsv }
 }
-
-/* Run taxonomy assignment */
-process q2_taxonomy {
-
-    beforeScript "${params.qiime_env}"
-    publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'Final_ASV_table*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
-
-    input :
-        file data_repseqs from data_repseqs
-        file dada2_summary from dada2_summary
-
-    output :
-        file 'taxonomy.qza' into data_taxonomy
-        file 'taxonomy.qzv' into visu_taxonomy
-        file 'ASV_taxonomy.tsv' into taxonomy_tsv
-        file 'taxo_output' into taxo_summary
-        file 'Final_ASV_table_with_taxonomy.biom' into biom
-        file 'Final_ASV_table_with_taxonomy.tsv' into biom_tsv
-        file 'taxonomic_database.qza' into trained_database
-        file 'db_seqs_amplicons.qza' into db_seqs_filtered
-        file 'completecmd' into complete_cmd_taxo
-
-    //Run only if process is activated in params.config file
-    when :
-    params.taxo.enable
-
-    script :
-    """
-    ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
-    """ 
-}
-
 process prepare_data_for_stats {
 
     beforeScript "${params.r_stats_env}"
@@ -177,18 +193,18 @@ process stats_alpha {
         file 'barplot_relabund_phylum.svg' into barplot_relabund_phylum
         file 'barplot_relabund_family.svg' into barplot_relabund_family
         file 'barplot_relabund_genus.svg' into barplot_relabund_genus
-        file 'heatmap_class.svg' into heatmap_class
-        file 'heatmap_family.svg' into heatmap_family
-        file 'heatmap_genus.svg' into heatmap_genus
+        //file 'heatmap_class.svg' into heatmap_class
+        //file 'heatmap_family.svg' into heatmap_family
+        //file 'heatmap_genus.svg' into heatmap_genus
         file 'completecmd' into complete_cmd_alpha
 
     //Run only if process is activated in params.config file
     when :
-    params.stats.enable
+    params.stats.alpha_enable
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg ${params.stats.exp_var_samples} > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }
@@ -207,10 +223,15 @@ process stats_beta {
  
     output :
         file 'completecmd' into complete_cmd_beta
-        file 'ASV_ordination_plot.svg' into ASV_ordination_plot
-        file 'ASV_ordination_plot_wrapped.svg' into ASV_ordination_plot_wrapped
+        //file 'ASV_ordination_plot.svg' into ASV_ordination_plot
+        //file 'ASV_ordination_plot_wrapped.svg' into ASV_ordination_plot_wrapped
         file 'samples_ordination_plot.svg' into samples_ordination_plot
-        file 'split_graph_ordination_plot.svg' into split_graph_ordination_plot
+        //file 'split_graph_ordination_plot.svg' into split_graph_ordination_plot
+
+    //Run only if process is activated in params.config file
+    when :
+    params.stats.beta_enable
+
  
     script:
     """
@@ -234,10 +255,14 @@ process stats_beta_rarefied {
     output :
         file 'completecmd' into complete_cmd_beta_rarefied
         file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
-        file 'ASV_ordination_plot_rarefied.svg' into ASV_ordination_plot_rarefied
-        file 'ASV_ordination_plot_wrapped_rarefied.svg' into ASV_ordination_plot_wrapped_rarefied
+        //file 'ASV_ordination_plot_rarefied.svg' into ASV_ordination_plot_rarefied
+        //file 'ASV_ordination_plot_wrapped_rarefied.svg' into ASV_ordination_plot_wrapped_rarefied
         file 'samples_ordination_plot_rarefied.svg' into samples_ordination_plot_rarefied
-        file 'split_graph_ordination_plot_rarefied.svg' into split_graph_ordination_plot_rarefied
+        //file 'split_graph_ordination_plot_rarefied.svg' into split_graph_ordination_plot_rarefied
+
+    //Run only if process is activated in params.config file
+    when :
+    params.stats.beta_enable
 
     script:
     """
@@ -261,10 +286,14 @@ process stats_beta_deseq2 {
     output :
         file 'completecmd' into complete_cmd_beta_deseq2
         file 'Final_deseq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        file 'ASV_ordination_plot_deseq2.svg' into ASV_ordination_plot_deseq2
-        file 'ASV_ordination_plot_wrapped_deseq2.svg' into ASV_ordination_plot_wrapped_deseq2
+        //file 'ASV_ordination_plot_deseq2.svg' into ASV_ordination_plot_deseq2
+        //file 'ASV_ordination_plot_wrapped_deseq2.svg' into ASV_ordination_plot_wrapped_deseq2
         file 'samples_ordination_plot_deseq2.svg' into samples_ordination_plot_deseq2
-        file 'split_graph_ordination_plot_deseq2.svg' into split_graph_ordination_plot_deseq2
+        //file 'split_graph_ordination_plot_deseq2.svg' into split_graph_ordination_plot_deseq2
+
+    //Run only if process is activated in params.config file
+    when :
+    params.stats.beta_enable
 
     script:
     """
@@ -287,14 +316,19 @@ process stats_beta_css {
     output :
         file 'completecmd' into complete_cmd_beta_css
         file 'Final_css_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        file 'ASV_ordination_plot_css.svg' into ASV_ordination_plot_css
-        file 'ASV_ordination_plot_wrapped_css.svg' into ASV_ordination_plot_wrapped_css
+        //file 'ASV_ordination_plot_css.svg' into ASV_ordination_plot_css
+        //file 'ASV_ordination_plot_wrapped_css.svg' into ASV_ordination_plot_wrapped_css
         file 'samples_ordination_plot_css.svg' into samples_ordination_plot_css
-        file 'split_graph_ordination_plot_css.svg' into split_graph_ordination_plot_css
+        //file 'split_graph_ordination_plot_css.svg' into split_graph_ordination_plot_css
+
+    //Run only if process is activated in params.config file
+    when :
+    params.stats.beta_enable
 
     script:
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ASV_ordination_plot_css.svg ASV_ordination_plot_wrapped_css.svg samples_ordination_plot_css.svg split_graph_ordination_plot_css.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ${metadata} > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
-}
+} 
+

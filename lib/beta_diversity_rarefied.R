@@ -54,65 +54,68 @@ betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxo
     
     ## /2\ ASV analysis ####
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
-    color_ord_class = color_vector[1:length(unique(PHYLOSEQ_rarefied@tax_table@.Data[,3]))]
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     
     ## ______ NMDS ####
-    plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="taxa",color="Class") + 
-      theme_classic() +
-      geom_point(size=4) +
-      scale_color_manual(values=color_ord_class) +
-      theme(legend.text=element_text(size=13)) +
-      theme(legend.title=element_text(size=14)) +
-      theme(axis.text=element_text(size=12,color="black")) +
-      annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1]),label=paste("Stress:",round(ord_rarefied$stress,4),sep=" "))
-    ggsave(filename=ASV_ordination_plot_rarefied,width=13,height=9)
-    
-    ## ______ wrapped NMDS ####
-    plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="taxa",color="Class") + 
-      theme_classic() +
-      geom_point(size=3) +
-      theme(legend.position="none") +
-      theme(strip.text.x=element_text(size=13,face="bold",color="blue")) +
-      scale_color_manual(values=color_ord_class) +
-      facet_wrap(~Class,4) +
-      theme(axis.text=element_text(size=12,color="black")) 
-    ggsave(filename=ASV_ordination_plot_wrapped_rarefied,width=13,height=10)
+ #   plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="taxa",color="Class") + 
+ #     theme_classic() +
+ #     geom_point(size=4) +
+ #     scale_color_manual(values=color_ord_class) +
+ #     theme(legend.text=element_text(size=13)) +
+ #     theme(legend.title=element_text(size=14)) +
+ #     theme(axis.text=element_text(size=12,color="black")) +
+ #     annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1]),label=paste("Stress:",round(ord_rarefied$stress,4),sep=" "))
+ #   ggsave(filename=ASV_ordination_plot_rarefied,width=13,height=9)
+ #   
+ #   ## ______ wrapped NMDS ####
+ #   plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="taxa",color="Class") + 
+ #     theme_classic() +
+ #     geom_point(size=3) +
+ #     theme(legend.position="none") +
+ #     theme(strip.text.x=element_text(size=13,face="bold",color="blue")) +
+ #     scale_color_manual(values=color_ord_class) +
+ #     facet_wrap(~Class,4) +
+ #     theme(axis.text=element_text(size=12,color="black")) 
+ #   ggsave(filename=ASV_ordination_plot_wrapped_rarefied,width=13,height=10)
     
     ## /3\ Sample analysis ####
-    color_samples = color_vector[1:length(levels(metadata[,replicats]))]
-    group_rarefied = get_variable(PHYLOSEQ_rarefied,replicats)
+    criteria = "Polymer"
+    color_ord_class = color_vector[1:length(unique(PHYLOSEQ_rarefied@tax_table@.Data[,3]))]
+    color_samples = color_vector[1:length(levels(metadata[,criteria]))]
+    group_rarefied = get_variable(PHYLOSEQ_rarefied, criteria)
     anosim_result_rarefied = anosim(distance(PHYLOSEQ_rarefied,"bray"),group_rarefied, permutations = 999)
-    plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="samples",color=replicats) +
+
+    plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="samples",color=criteria) +
       theme_classic() +
       geom_point(size=3) +
       geom_text(aes(label=rownames(sample_data(PHYLOSEQ_rarefied))),col="black",size=2.5,vjust=2,hjust=1) +
       theme(legend.text=element_text(size=13)) +
       theme(legend.title=element_text(size=14)) +
-      labs(color="Species") +
+      labs(color=criteria) +
       theme(axis.text=element_text(size=12,color="black")) +
       scale_fill_manual(values=alpha(color_samples,0.4)) +
       scale_color_manual(values=color_samples) +
-      annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1]),label=paste("Stress:",round(ord_rarefied$stress,4),sep=" ")) +
-      stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Species)) +
-      annotate(geom="text",x=min(ord_rarefied$points[,1]),y=max(ord_rarefied$points[,1])-0.3,label=paste("Anosim (based on species) : p-value",anosim_result_rarefied$signif,sep=" "))
+      stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=criteria)) +
+      labs(caption = paste("Stress:",round(ord_rarefied$stress,4),
+          "\nANOSIM statistic R:",round(anosim_result_rarefied$statistic,4),
+           paste("\nAnosim based on ", criteria,": p-value"),anosim_result_rarefied$signif,sep=" "))
     ggsave(filename=samples_ordination_plot_rarefied,width=12,height=10)
 
    print("plot ordination")
     
     ## /4\ Split graphic ####
     
-    plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="split",color="Class") +
-      theme_classic() +
-      geom_text(size=8,aes(label=Labels_NMDS),vjust=-0.8) +
-      theme(legend.text=element_text(size=20)) +
-      theme(legend.title=element_text(size=22)) +
-      theme(strip.text.x=element_text(size=22,face="bold",color="blue")) +
-      theme(axis.text=element_text(size=18,color="black")) +
-      theme(axis.title=element_text(size=19)) +
-      geom_point(size=5) +
-      scale_color_manual(values=c("black",color_ord_class))
-    ggsave(filename=split_graph_ordination_plot_rarefied,width=20,height=13)
+#    plot_ordination(PHYLOSEQ_rarefied,ord_rarefied,type="split",color="Class") +
+#      theme_classic() +
+#      geom_text(size=8,aes(label=Group),vjust=-0.8) +
+#      theme(legend.text=element_text(size=20)) +
+#      theme(legend.title=element_text(size=22)) +
+#      theme(strip.text.x=element_text(size=22,face="bold",color="blue")) +
+#      theme(axis.text=element_text(size=18,color="black")) +
+#      theme(axis.title=element_text(size=19)) +
+#      geom_point(size=5) +
+#      scale_color_manual(values=c("black",color_ord_class))
+#    ggsave(filename=split_graph_ordination_plot_rarefied,width=20,height=13)
     
     #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
     ## ** End of the script **                                                 ####

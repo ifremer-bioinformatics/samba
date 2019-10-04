@@ -37,29 +37,10 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 
-alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance){
-    #Input data
-#    rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE)
-#    metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
+alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, exp_var_samples){
+    
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     
-    #Reformatting of the input data
-#    abund = rawASVtable[,1:length(rawASVtable)-1]
-#    row.names(abund) = abund$ASV_ID
-#    abund = abund %>% select (-ASV_ID)
-#    tax = rawASVtable[,c(1,length(names(rawASVtable)))]
-#    tax = data.frame(tax$ASV_ID,do.call(rbind,list(str_split_fixed(tax$taxonomy, ";",7))))
-#    colnames(tax) = c("ASV_ID","Kingdom","Phylum","Class","Order","Family","Genus","Species")
-#    row.names(tax) = tax$ASV_ID
-#    tax = as.matrix(tax %>% select (-ASV_ID))
-    
-    ## Construction of the phyloseq object ####
-#    ABUND = otu_table(abund,taxa_are_rows=TRUE)
-#    TAX = tax_table(tax)
-#    METADATA = sample_data(metadata)
-#    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA)
-#    saveRDS(PHYLOSEQ, file=phyloseq_obj)
- 
     #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
     ## ** Beginning of the script : Analysis of the alpha diversity **         ####
     
@@ -74,7 +55,9 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     df = data.frame(alpha_rich,sample_data(PHYLOSEQ))
     df2 = gather(df,key="Measure",value="Value",Observed,Chao1,Shannon,InvSimpson,Pielou)
     df2$Measure = factor(df2$Measure,levels=c("Observed","Chao1","InvSimpson","Shannon","Pielou"))
-    plot_alpha_global=ggplot(df2, aes(x=Replicats,y=Value)) +
+    #write.table(df2, file="alpha_diversity.csv", sep=";", col.names=T, row.names=F)
+    ### ATTENTION VARIABLE EXP_VAR_SAMPLES A ESSAYER DE FAIRE PASSER A LA PLACE DE POLYMER SANS GUILLEMETS
+    plot_alpha_global=ggplot(df2, aes(x=Group,y=Value)) +
       facet_wrap(~Measure, scale="free") +
       geom_boxplot() +
       theme_classic() +
@@ -89,7 +72,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     plot2_alpha = plot_alpha_global %+% subset(df2 , Measure == "Shannon" | Measure == "Pielou")
     
     final_alpha_plot = arrangeGrob(grobs=lapply(list(plot1_alpha,plot2_alpha),set_panel_size,width=unit(10,"cm"),height=unit(10,"cm")))
-    ggsave(filename=alpha_div_plots,final_alpha_plot, width=14, height=11)
+    ggsave(filename=alpha_div_plots,final_alpha_plot, width=14, height=14)
 
     #### /2\ Taxonomic diversity ####
     
@@ -105,6 +88,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     
     ggplot(Relabund_phylum,aes(x=Sample,y=Abundance,fill=Phylum)) +
       geom_bar(stat = "identity",position="fill") +
+      facet_wrap(~Group, nrow=1, scale="free") +
       theme_classic() +
       scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) +
       theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) +
@@ -115,7 +99,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       theme(legend.title=element_text(size=13,face="bold")) +
       xlab("Samples") +
       scale_fill_manual(values=color_phylum)
-    ggsave(filename=barplot_relabund_phylum,width=12,height=10)
+    ggsave(filename=barplot_relabund_phylum,width=20,height=12)
 
 
     ## ______ at the family level ####
@@ -130,6 +114,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     
     ggplot(Relabund_family,aes(x=Sample,y=Abundance,fill=Family)) +
       geom_bar(stat = "identity",position="fill") +
+      facet_wrap(~Group, nrow=1, scale="free") +
       theme_classic() +
       scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) +
       theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) +
@@ -140,7 +125,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       theme(legend.title=element_text(size=13,face="bold")) +
       xlab("Samples") +
       scale_fill_manual(values=color_family)
-    ggsave(filename=barplot_relabund_family,width=12,height=10)
+    ggsave(filename=barplot_relabund_family,width=20,height=12)
 
     ## ______ at the genus level ####
     Relabund_genus = PHYLOSEQ %>%
@@ -154,6 +139,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     
     ggplot(Relabund_genus, aes(x = Sample, y = Abundance, fill = Genus)) +
       geom_bar(stat = "identity",position="fill") +
+      facet_wrap(~Group, nrow=1, scale="free") +
       theme_classic() +
       scale_y_continuous(labels=c("0","25","50","75","100"),expand=c(0,0)) +
       theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) +
@@ -164,42 +150,45 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       theme(legend.title=element_text(size=13,face="bold")) +
       xlab("Samples") +
       scale_fill_manual(values=color_genus)
-    ggsave(filename=barplot_relabund_genus,width=12,height=10)
+    ggsave(filename=barplot_relabund_genus,width=20,height=12)
 
     ## ___ Heatmap representation ####
     
     ## ______ at the class level ####
-    heatmap_data_class = tax_glom(PHYLOSEQ, taxrank="Class")
-    plot_heatmap(heatmap_data_class,"NMDS",distance,sample.label="Labels_NMDS",taxa.label="Class",taxa.order="Class",trans=NULL, low="#000033",high="#CCFF66",na.value="#000033") +
-     theme_classic() +
-     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
-     theme(axis.text.y=element_text(size=14,color="black")) +
-     theme(axis.title.y=element_text(size=16,face="bold")) +
-     theme(legend.title=element_text(size=14)) +
-     theme(legend.text=element_text(size=12))
-    ggsave(filename=heatmap_class,width=15,height=4)
-    
-    ## ______ at the family level ####
-    heatmap_data_family = tax_glom(PHYLOSEQ, taxrank="Family")
-    plot_heatmap(heatmap_data_family, "NMDS",distance,sample.label="Labels_NMDS",taxa.label="Family",taxa.order="Family",trans=NULL,low="#000033", high="#CCFF66",na.value="#000033") +
-     theme_classic() +
-     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
-     theme(axis.text.y=element_text(size=14,color="black")) +
-     theme(axis.title.y=element_text(size=16,face="bold")) +
-     theme(legend.title=element_text(size=14)) +
-     theme(legend.text=element_text(size=12))
-    ggsave(filename=heatmap_family,width=15,height=13)
-    
-    ## ______ at the genus level ####
-    heatmap_data_genus = tax_glom(PHYLOSEQ, taxrank="Genus")
-    plot_heatmap(heatmap_data_genus,"NMDS",distance,sample.label="Labels_NMDS",taxa.label="Genus",taxa.order="Genus",trans=NULL,low="#000033", high="#CCFF66",na.value="#000033") +
-     theme_classic() +
-     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
-     theme(axis.text.y=element_text(size=14,color="black")) +
-     theme(axis.title.y=element_text(size=16,face="bold")) +
-     theme(legend.title=element_text(size=14)) +
-     theme(legend.text=element_text(size=12))
-    ggsave(filename=heatmap_genus,width=15,height=20)
+#    heatmap_data_class = tax_glom(PHYLOSEQ, taxrank="Class")
+#    plot_heatmap(heatmap_data_class,"NMDS",distance,sample.label=NULL,taxa.label="Class",taxa.order="Class",trans=NULL, low="#000033",high="#CCFF66",na.value="#000033") +
+#     theme_classic() +
+#     facet_wrap(~Group, nrow=1, scale="free") +
+#     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
+#     theme(axis.text.y=element_text(size=14,color="black")) +
+#     theme(axis.title.y=element_text(size=16,face="bold")) +
+#     theme(legend.title=element_text(size=14)) +
+#     theme(legend.text=element_text(size=12))
+#    ggsave(filename=heatmap_class,width=18,height=14)
+#    
+#    ## ______ at the family level ####
+#    heatmap_data_family = tax_glom(PHYLOSEQ, taxrank="Family")
+#    plot_heatmap(heatmap_data_family, "NMDS",distance,sample.label=NULL,taxa.label="Family",taxa.order="Family",trans=NULL,low="#000033", high="#CCFF66",na.value="#000033") +
+#     theme_classic() +
+#     facet_wrap(~Group, nrow=1, scale="free") +
+#     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
+#     theme(axis.text.y=element_text(size=14,color="black")) +
+#     theme(axis.title.y=element_text(size=16,face="bold")) +
+#     theme(legend.title=element_text(size=14)) +
+#     theme(legend.text=element_text(size=12))
+#    ggsave(filename=heatmap_family,width=18,height=13)
+#    
+#    ## ______ at the genus level ####
+#    heatmap_data_genus = tax_glom(PHYLOSEQ, taxrank="Genus")
+#    plot_heatmap(heatmap_data_genus,"NMDS",distance,sample.label=NULL,taxa.label="Genus",taxa.order="Genus",trans=NULL,low="#000033", high="#CCFF66",na.value="#000033") +
+#     theme_classic() +
+#     facet_wrap(~Group, nrow=1, scale="free") +
+#     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
+#     theme(axis.text.y=element_text(size=14,color="black")) +
+#     theme(axis.title.y=element_text(size=16,face="bold")) +
+#     theme(legend.title=element_text(size=14)) +
+#     theme(legend.text=element_text(size=12))
+#    ggsave(filename=heatmap_genus,width=15,height=20)
 }
 
 
@@ -216,8 +205,9 @@ main <- function() {
     heatmap_class = args[8]
     heatmap_family = args[9]
     heatmap_genus = args[10]
+    exp_var_samples = args[11]
     #Run alpha diversity calculations
-    alphadiversity(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance)
+    alphadiversity(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, exp_var_samples)
 }
 if (!interactive()) {
         main()

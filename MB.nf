@@ -3,7 +3,7 @@ println "Workflow for project : $params.projectName"
 println "Workflow description : $workflow.manifest.description"
 println "Workflow gitLab URL : $workflow.manifest.homePage"
 println "Workflow authors : $workflow.manifest.author"
-println "Project : $workflow.projectDir"
+println "Workflow source code : $workflow.projectDir"
 println "Cmd line: $workflow.commandLine"
 println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
@@ -189,10 +189,10 @@ process stats_alpha {
         file phyloseq_rds from phyloseq_rds_alpha
 
     output :
-        file 'alpha_div_plots.svg' into alpha_div_plots
-        file 'barplot_relabund_phylum.svg' into barplot_relabund_phylum
-        file 'barplot_relabund_family.svg' into barplot_relabund_family
-        file 'barplot_relabund_genus.svg' into barplot_relabund_genus
+        file 'alpha_div_plots_*.svg' into alpha_div_plots
+        file 'barplot_relabund_phylum_*.svg' into barplot_relabund_phylum
+        file 'barplot_relabund_family_*.svg' into barplot_relabund_family
+        file 'barplot_relabund_genus_*.svg' into barplot_relabund_genus
         //file 'heatmap_class.svg' into heatmap_class
         //file 'heatmap_family.svg' into heatmap_family
         //file 'heatmap_genus.svg' into heatmap_genus
@@ -204,7 +204,7 @@ process stats_alpha {
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots.svg barplot_relabund_phylum.svg barplot_relabund_family.svg barplot_relabund_genus.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg ${params.stats.exp_var_samples} > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots_${params.stats.alpha_div_group}.svg barplot_relabund_phylum_${params.stats.alpha_div_group}.svg barplot_relabund_family_${params.stats.alpha_div_group}.svg barplot_relabund_genus_${params.stats.alpha_div_group}.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg ${params.stats.alpha_div_group} > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }
@@ -223,10 +223,7 @@ process stats_beta {
  
     output :
         file 'completecmd' into complete_cmd_beta
-        //file 'ASV_ordination_plot.svg' into ASV_ordination_plot
-        //file 'ASV_ordination_plot_wrapped.svg' into ASV_ordination_plot_wrapped
-        file 'samples_ordination_plot.svg' into samples_ordination_plot
-        //file 'split_graph_ordination_plot.svg' into split_graph_ordination_plot
+        file 'samples_ordination_plot_*.svg' into samples_ordination_plot
 
     //Run only if process is activated in params.config file
     when :
@@ -235,7 +232,7 @@ process stats_beta {
  
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ASV_ordination_plot.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ASV_ordination_plot_wrapped.svg samples_ordination_plot.svg split_graph_ordination_plot.svg ${metadata} > stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity.log 2>&1
     cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
     """
  
@@ -255,10 +252,7 @@ process stats_beta_rarefied {
     output :
         file 'completecmd' into complete_cmd_beta_rarefied
         file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
-        //file 'ASV_ordination_plot_rarefied.svg' into ASV_ordination_plot_rarefied
-        //file 'ASV_ordination_plot_wrapped_rarefied.svg' into ASV_ordination_plot_wrapped_rarefied
-        file 'samples_ordination_plot_rarefied.svg' into samples_ordination_plot_rarefied
-        //file 'split_graph_ordination_plot_rarefied.svg' into split_graph_ordination_plot_rarefied
+        file 'samples_ordination_plot_rarefied_*.svg' into samples_ordination_plot_rarefied
 
     //Run only if process is activated in params.config file
     when :
@@ -266,7 +260,7 @@ process stats_beta_rarefied {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ASV_ordination_plot_rarefied.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ASV_ordination_plot_wrapped_rarefied.svg samples_ordination_plot_rarefied.svg split_graph_ordination_plot_rarefied.svg ${metadata} > stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_rarefied_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
  
@@ -286,10 +280,7 @@ process stats_beta_deseq2 {
     output :
         file 'completecmd' into complete_cmd_beta_deseq2
         file 'Final_deseq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        //file 'ASV_ordination_plot_deseq2.svg' into ASV_ordination_plot_deseq2
-        //file 'ASV_ordination_plot_wrapped_deseq2.svg' into ASV_ordination_plot_wrapped_deseq2
-        file 'samples_ordination_plot_deseq2.svg' into samples_ordination_plot_deseq2
-        //file 'split_graph_ordination_plot_deseq2.svg' into split_graph_ordination_plot_deseq2
+        file 'samples_ordination_plot_deseq2_*.svg' into samples_ordination_plot_deseq2
 
     //Run only if process is activated in params.config file
     when :
@@ -297,7 +288,7 @@ process stats_beta_deseq2 {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ASV_ordination_plot_deseq2.svg ASV_ordination_plot_wrapped_deseq2.svg samples_ordination_plot_deseq2.svg split_graph_ordination_plot_deseq2.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ${metadata} > stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_deseq2_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity_deseq2.log 2>&1
     cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """
 }
@@ -316,10 +307,7 @@ process stats_beta_css {
     output :
         file 'completecmd' into complete_cmd_beta_css
         file 'Final_css_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        //file 'ASV_ordination_plot_css.svg' into ASV_ordination_plot_css
-        //file 'ASV_ordination_plot_wrapped_css.svg' into ASV_ordination_plot_wrapped_css
-        file 'samples_ordination_plot_css.svg' into samples_ordination_plot_css
-        //file 'split_graph_ordination_plot_css.svg' into split_graph_ordination_plot_css
+        file 'samples_ordination_plot_css_*.svg' into samples_ordination_plot_css
 
     //Run only if process is activated in params.config file
     when :
@@ -327,8 +315,7 @@ process stats_beta_css {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ASV_ordination_plot_css.svg ASV_ordination_plot_wrapped_css.svg samples_ordination_plot_css.svg split_graph_ordination_plot_css.svg ${params.stats.distance} ${params.stats.column_sample_replicat} ${metadata} > stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_css_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 } 
-

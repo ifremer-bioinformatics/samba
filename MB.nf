@@ -11,11 +11,34 @@ println "Workflow configuration file : $workflow.configFiles"
 println "Manifest file : $params.inmanifest"
 println "Metadata file : $params.inmetadata"
 
-Channel.fromPath(params.inmanifest, checkIfExists:true).set { manifest }
-Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata4stats }
+Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
+Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata4stats ; metadata4integrity }
 
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
 if(!params.stats_only){
+
+    /* Check data integrity */
+    
+    process data_integrity {
+        publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+    input :
+        file manifest from manifest4integrity
+        file metadata from metadata4integrity
+
+    output :
+        file 'verifications.ok' into ckeck_ok
+        //file 'verifications.bad' into check_bad
+        file 'data_integrity.csv' into data_integrity_csv
+    
+    //Run only if process is activated in params.config file
+    when :
+        params.data_integrity.enable
+
+    script :
+    """
+    ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} > data_integrity.log 2>&1
+    """
+   }
 
     /* Import metabarcode data */
     
@@ -34,6 +57,10 @@ if(!params.stats_only){
             file 'data.qzv' into imported_visu
             file 'import_output' into imported_summary
             file 'completecmd' into complete_cmd_import
+
+        //Run only if process is activated in params.config file
+        when :
+        params.qiime_import.enable
     
         script :
         """
@@ -144,7 +171,8 @@ if(params.stats_only){
     //IF OTU TABLE ALREADY CREATED AND STAT ONLY STEPS NEEDED
     
     //Set biom_tsv path in params.conf
-    Channel.fromPath(params.incount_table, checkIfExists:true).set { biom_tsv }
+    Channel.fromPath(params.inasv_table, checkIfExists:true).set { biom_tsv }
+    println "Input ASV table used for statistics steps : $params.inasv_table"
 }
 process prepare_data_for_stats {
 

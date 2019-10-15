@@ -14,7 +14,7 @@ This workflow uses Qiime 2 (import/cutadapt/dada2/R/phyloseq/vegan) to analyse p
 * config/params.config : workflow workdir definition, processes (tasks) inputs. Check this file and adapt to your data
 * config/resources.config : scheduler resources to attribute to each process. Check this file and adapt to your scheduler
 * config/report.config : nextflow automatic reports parameters 
-* MB.nf : each step is describe within its command line
+* MB.nf : each step is described within its command line
 
 
 ### How to get this worflow

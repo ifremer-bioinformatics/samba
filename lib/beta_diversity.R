@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the qiime2_snakemake workflow                 ####
+## Script name: R script for the qiime2_nextflow workflow                 ####
 ##                                                                           ##
 ## Purpose of script: Automated Statistical Analyzes of Metabarcoding Data   ##
 ##                                                                           ##

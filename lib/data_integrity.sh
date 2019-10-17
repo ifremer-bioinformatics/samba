@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## Command run by snakemake :
+## Command run by nextflow :
 ### data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.txt verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} > data_integrity.log 2>&1
 
 # Arguments

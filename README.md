@@ -40,6 +40,10 @@ This workflow will process paired-end metabarcoding data.
 * config/report.config : nextflow automatic reports parameters 
 * MB.nf : each step is described within its command line
 
+### Running script 
+
+* RunNextMB.sh : Script to run Nextflow command. Check this file and adapt to activate nextflow environment !
+
 ### How to get this worflow
 ```
 #connect to datarmor (for Ifremer users)

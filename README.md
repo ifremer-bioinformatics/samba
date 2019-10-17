@@ -56,8 +56,9 @@ git clone https://gitlab.ifremer.fr/bioinfo/nextmb
 cd nextmb
 ```
 ### How to run
-Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory)
-Note : This workflow is design to run on a cluster
+Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory).
+
+Note : This workflow is design to run on a cluster.
 
 ```bash
 # RUN FROM SCRATCH

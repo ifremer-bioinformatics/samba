@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ## Command run by nextflow process :
-### ${baseDir}/lib/q2_dada2_2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+### ${baseDir}/lib/q2_dada2_2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
 # store arguments in a special array 
 args=("$@") 
 
@@ -56,6 +56,7 @@ cmd="qiime feature-table summarize \
     --o-visualization $tableqzv \
     --m-sample-metadata-file $metadata"
 echo $cmd >> $logcmd
+echo $cmd
 eval $cmd
 
 #Generate tabular view of feature identifier to sequence mapping
@@ -77,6 +78,7 @@ cmd="qiime tools export \
     --input-path $tableqzv \
     --output-path $dada2_output"
 echo $cmd >> $logcmd
+echo $cmd 
 eval $cmd
 
 cmd="qiime tools export \

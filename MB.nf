@@ -33,7 +33,7 @@ if(!params.stats_only){
     
     //Run only if process is activated in params.config file
     when :
-        params.data_integrity.enable
+        params.data_integrity_enable
 
     script :
     """
@@ -59,6 +59,7 @@ if(!params.stats_only){
     
         input : 
             file manifest from manifest
+            file check_ok from ckeck_ok
     
         output : 
             file 'data.qza' into imported_data
@@ -68,7 +69,7 @@ if(!params.stats_only){
 
         //Run only if process is activated in params.config file
         when :
-        params.qiime_import.enable
+        params.qiime_import_enable
     
         script :
         """
@@ -84,7 +85,8 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
         
-        input : file imported_data from imported_data
+        input : 
+            file imported_data from imported_data
     
         output :
             file 'data_trimmed.qza' into trimmed_data
@@ -94,7 +96,7 @@ if(!params.stats_only){
     
         //Run only if process is activated in params.config file
         when :
-        params.cutadapt.enable
+        params.cutadapt_enable
     
         script :
         """
@@ -126,7 +128,7 @@ if(!params.stats_only){
     
         //Run only if process is activated in params.config file
         when :
-        params.dada2.enable
+        params.dada2_enable
     
         script :
         """
@@ -155,20 +157,17 @@ if(!params.stats_only){
             file 'taxo_output' into taxo_summary
             file 'Final_ASV_table_with_taxonomy.biom' into biom
             file 'Final_ASV_table_with_taxonomy.tsv' into biom_tsv
-            file 'taxonomic_database.qza' into trained_database
-            file 'db_seqs_amplicons.qza' into db_seqs_filtered
+            file 'taxonomic_database.qza' optional true into trained_database
+            file 'db_seqs_amplicons.qza' optional true into db_seqs_filtered
             file 'completecmd' into complete_cmd_taxo
     
         //Run only if process is activated in params.config file
         when :
-        params.taxo.enable
+        params.taxo_enable
     
         script :
         """
-        #Specific region extraction before taxonomic assignation
-        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
-        # No extraction of specific ribosomal region before taxonomic assignation
-        #${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.confidence} ${params.taxo.database} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv completecmd > q2_taxo.log 2>&1
+        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
         """ 
     }
 
@@ -201,7 +200,7 @@ process prepare_data_for_stats {
         file 'completecmd' into complete_cmd_prepare_stats
  
     when :
-    params.prepare_data_for_stats.enable
+    params.prepare_data_for_stats_enable
 
     script :
     """
@@ -236,7 +235,7 @@ process stats_alpha {
 
     //Run only if process is activated in params.config file
     when :
-    params.stats.alpha_enable
+    params.stats_alpha_enable
     
     script :
     """
@@ -263,7 +262,7 @@ process stats_beta {
 
     //Run only if process is activated in params.config file
     when :
-    params.stats.beta_enable
+    params.stats_beta_enable
 
  
     script:
@@ -292,7 +291,7 @@ process stats_beta_rarefied {
 
     //Run only if process is activated in params.config file
     when :
-    params.stats.beta_enable
+    params.stats_beta_enable
 
     script:
     """
@@ -320,7 +319,7 @@ process stats_beta_deseq2 {
 
     //Run only if process is activated in params.config file
     when :
-    params.stats.beta_enable
+    params.stats_beta_enable
 
     script:
     """
@@ -347,7 +346,7 @@ process stats_beta_css {
 
     //Run only if process is activated in params.config file
     when :
-    params.stats.beta_enable
+    params.stats_beta_enable
 
     script:
     """

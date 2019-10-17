@@ -1,42 +1,51 @@
 #!/usr/bin/env bash
 ## Command run by nextflow process :
 ###  ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
+
 # store arguments in a special array 
 args=("$@")
 
 cpus=${args[0]}
 db_seqs=${args[1]}
 db_tax=${args[2]}
-Fprimer=${args[3]}
-Rprimer=${args[4]}
-confidence=${args[5]}
-data_repseqs=${args[6]}
-taxoqza=${args[7]}
-taxoqzv=${args[8]}
-taxo_output=${args[9]}
-asv_taxo_tsv=${args[10]}
-dada2_summary=${args[11]}
-final_asv_taxo_biom=${args[12]}
-final_asv_taxo_tsv=${args[13]}
-database=${args[14]}
-db_seqs_filtered=${args[15]}
-logcmd=${args[16]}
+database_no_extract=${args[3]}
+extract_db=${args[4]}
+Fprimer=${args[5]}
+Rprimer=${args[6]}
+confidence=${args[7]}
+data_repseqs=${args[8]}
+taxoqza=${args[9]}
+taxoqzv=${args[10]}
+taxo_output=${args[11]}
+asv_taxo_tsv=${args[12]}
+dada2_summary=${args[13]}
+final_asv_taxo_biom=${args[14]}
+final_asv_taxo_tsv=${args[15]}
+database=${args[16]}
+db_seqs_filtered=${args[17]}
+logcmd=${args[18]}
 
-#Train the classifier
-cmd="qiime feature-classifier extract-reads \
-    --i-sequences $db_seqs \
-    --p-f-primer $Fprimer \
-    --p-r-primer $Rprimer \
-    --o-reads $db_seqs_filtered"
-echo $cmd > $logcmd
-eval $cmd
+if [ $extract_db = "yes" ]; then
+    #Train the classifier
+    cmd="qiime feature-classifier extract-reads \
+        --i-sequences $db_seqs \
+        --p-f-primer $Fprimer \
+        --p-r-primer $Rprimer \
+        --o-reads $db_seqs_filtered"
+    echo $cmd > $logcmd
+    eval $cmd
+    
+    cmd="qiime feature-classifier fit-classifier-naive-bayes \
+        --i-reference-reads $db_seqs_filtered \
+        --i-reference-taxonomy $db_tax \
+        --o-classifier $database"
+    echo $cmd >> $logcmd
+    eval $cmd
 
-cmd="qiime feature-classifier fit-classifier-naive-bayes \
-    --i-reference-reads $db_seqs_filtered \
-    --i-reference-taxonomy $db_tax \
-    --o-classifier $database"
-echo $cmd >> $logcmd
-eval $cmd
+else 
+    # Keep complete database
+    database=$database_no_extract
+fi
 
 #Run RDP Classifier for taxonomy assignment
 cmd="qiime feature-classifier classify-sklearn \

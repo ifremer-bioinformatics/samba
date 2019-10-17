@@ -21,13 +21,14 @@ if(!params.stats_only){
     
     process data_integrity {
         publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+
     input :
         file manifest from manifest4integrity
         file metadata from metadata4integrity
 
     output :
-        file 'verifications.ok' into ckeck_ok
-        //file 'verifications.bad' into check_bad
+        file 'verifications.ok' optional true into ckeck_ok
+        file 'verifications.bad' optional true into check_bad
         file 'data_integrity.csv' into data_integrity_csv
     
     //Run only if process is activated in params.config file
@@ -37,6 +38,13 @@ if(!params.stats_only){
     script :
     """
     ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} > data_integrity.log 2>&1
+    if test -f "verifications.bad"; then
+        echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
+        mkdir -p ${params.outdir}/${params.data_integrity_dirname}
+        cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
+        exit 1
+     fi
+
     """
    }
 

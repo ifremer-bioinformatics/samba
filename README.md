@@ -9,16 +9,21 @@ Several steps are available :
     * Checking number of forward and reverse reads by sample
     * Checking number of forward and reverse primers by sample
     * Checking if the same sequencer identifier is present over the data
+
 * Data import process :
     * Import data and create objects for Qiime2 analysis
     * Evaluate data quality
+
 * Trimming process :
     * Use Qiime2 cutadapt to remove primers from data
+
 * Sample inference process using Dada2 :
     * Extract ASVs (Amplicon Sequence Variants) from samples using Dada2
     * Create ASVs counting table
+
 * Taxonomy assignment process :
     * Use Qiime2 to assign each ASV according to a reference database using RDP
+
 * Statistical analysis process :
     * A step to prepare data for stats will create R Phyloseq object for downstream analysis
     * Alpha diversity boxplots and taxonomic graphs are created using R Phyloseq

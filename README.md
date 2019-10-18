@@ -58,7 +58,7 @@ cd nextmb
 ### How to run
 Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory).
 
-Note : This workflow is design to run on a cluster.
+Note : This workflow is design to run on a PBS pro cluster (See resources.config to change cluster options)
 
 ```bash
 # RUN FROM SCRATCH

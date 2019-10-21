@@ -29,7 +29,23 @@ This workflow will process paired-end metabarcoding data.
 ### Input files 
 
 * q2_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
+
+Mandatory columns are listed below :
+| sample-id | forward-absolute-filepath | reverse-absolute-filepath |
+| :-------: | :-----------------------: | :-----------------------: |
+| sample1   | /path/to/sample1-R1.fastq.gz | /path/to/sample1-R2.fastq.gz |
+| sample2   | /path/to/sample2-R1.fastq.gz | /path/to/sample2-R2.fastq.gz |
+| sample3   | /path/to/sample3-R1.fastq.gz | /path/to/sample3-R2.fastq.gz |
+
 * q2_metadata : tabular file describing samples metadata (prefer to use "\_" for long variable names) [required]
+
+Mandatory columns are sample-id and barcode. For your metadata colums, prefer to use "\_" to name your variables :
+| sample-id | barcode | your_metadata_1 | your_metadata_2 |
+| :-------: | :-----: | :-------------: | :-------------: | 
+| sample1   | ATTAC   | metadata1       | A               |
+| sample2   | ACTGA   | metadata1       | B               |
+| sample3   | CTTCA   | metadata2       | B               |
+
 * [inasv_table] : ASV table to use as input if running only statistics steps [optional]
 
 ### Workflow parameters
@@ -67,3 +83,8 @@ Note : This workflow is design to run on a PBS pro cluster (See resources.config
 # RUN RESUME (when a task has failed or if you run steps separately)
 ./RunNextMB.sh -resume
 ```
+
+### References 
+
+References databases (SILVA 132) are available on our [FTP](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.07/)
+Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils/), [associated publication](https://msystems.asm.org/content/2/3/e00195-16)

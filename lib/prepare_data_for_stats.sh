@@ -11,11 +11,13 @@ metadata_stats=${args[3]}
 logcmd=${args[4]}
 
 cmd="cp $metadata $metadata_stats; 
-sed -i 's/#SampleID/SampleID/g' $metadata_stats; 
+sed '0,/#/s/#//' $metadata_stats;
+sed -i '1s/-/_/g' $metadata_stats;
 cp $biom_tsv $asv_table; 
 sed -i '1d' $asv_table; 
 sed -i 's/#OTU ID/ASV_ID/g' $asv_table; 
 sed -i 's/D_.__//g' $asv_table"
 
+#sed -i 's/#SampleID/SampleID/g' $metadata_stats; 
 echo $cmd > $logcmd
 eval $cmd

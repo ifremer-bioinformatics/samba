@@ -203,7 +203,8 @@ main <- function() {
     heatmap_class = args[8]
     heatmap_family = args[9]
     heatmap_genus = args[10]
-    group = args[11]
+    #get group variable an replace "-" by "_"
+    group = str_replace(args[11], "-", "_")
     #Run alpha diversity calculations
     alphadiversity(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, group)
 }

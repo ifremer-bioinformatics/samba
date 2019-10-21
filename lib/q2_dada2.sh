@@ -17,11 +17,12 @@ trim3F=${args[9]}
 trim3R=${args[10]}
 trunclenF=${args[11]}
 trunclenR=${args[12]}
-maxee=${args[13]}
-minqual=${args[14]}
-chimeras=${args[15]}
-cpus=${args[16]}
-logcmd=${args[17]}
+maxee_f=${args[13]}
+maxee_r=${args[14]}
+minqual=${args[15]}
+chimeras=${args[16]}
+cpus=${args[17]}
+logcmd=${args[18]}
 
 #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
 cmd="qiime dada2 denoise-paired \
@@ -31,7 +32,8 @@ cmd="qiime dada2 denoise-paired \
     --p-trim-left-r $trim3R \
     --p-trunc-len-f $trunclenF \
     --p-trunc-len-r $trunclenR \
-    --p-max-ee $maxee \
+    --p-max-ee-f $maxee_f \
+    --p-max-ee-r $maxee_r \
     --p-trunc-q $minqual \
     --p-chimera-method $chimeras \
     --p-n-threads $cpus \

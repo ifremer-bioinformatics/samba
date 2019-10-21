@@ -36,6 +36,7 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 library("vegan")
+library("stringr")
 
 betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_rarefied, metadata) {
 
@@ -69,7 +70,8 @@ main <- function(){
     PHYLOSEQ = readRDS(args[1]) 
     final_rarefied_ASV_table_with_taxonomy = args[2]
     distance = args[3]
-    criteria = args[4]
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[4], "-", "_")
     samples_ordination_plot_rarefied = args[5]
     metadata = args[6]
     workflow_dir = args[7]

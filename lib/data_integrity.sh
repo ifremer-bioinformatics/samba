@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ## Command run by nextflow :
-### data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.txt verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} > data_integrity.log 2>&1
+### data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.txt verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
 
 # Arguments
 args=("$@")
@@ -15,6 +15,8 @@ barcode=${args[7]}
 sampleid=${args[8]}
 R1_files=${args[9]}
 R2_files=${args[10]}
+barcode_filter=${args[11]}
+primer_filter=${args[12]}
 
 # Creation of temporary files
 #get sample id list from manifest file
@@ -47,9 +49,9 @@ paste -d '	' tmp_sampleID tmp_barcodes tmp_reads tmp_barcodes_count_R1 tmp_barco
 
 # Barcode verification
 awk -v OFS='\t' '{$10 = ($4 != 0) ? sprintf("%.0f", $4/$3*100) : "0"}1' tmp_output | sort -nr -k 10 > tmp_output.tmp && mv tmp_output.tmp tmp_output
-if [ $(tail -n 1 tmp_output | awk '{print $10}') -ge 90 ] ; then touch barcodes_R1.ok ; else touch barcodes_R1.bad ; fi
+if [ $(tail -n 1 tmp_output | awk '{print $10}') -ge ${barcode_filter} ] ; then touch barcodes_R1.ok ; else touch barcodes_R1.bad ; fi
 awk -v OFS='\t' '{$11 = ($5 != 0) ? sprintf("%.0f", $5/$3*100) : "0"}1' tmp_output | sort -nr -k 11 > tmp_output.tmp && mv tmp_output.tmp tmp_output
-if [ $(tail -n 1 tmp_output | awk '{print $11}') -ge 90 ] ; then touch barcodes_R2.ok ; else touch barcodes_R2.bad ; fi
+if [ $(tail -n 1 tmp_output | awk '{print $11}') -ge ${barcode_filter} ] ; then touch barcodes_R2.ok ; else touch barcodes_R2.bad ; fi
 
 # Unique sequencer verification
 awk -v OFS='\t' '{$12 = ($6 != 0) ? sprintf("%.0f", $6/$3*100) : "0"}1' tmp_output | sort -nr -k 12 > tmp_output.tmp && mv tmp_output.tmp tmp_output
@@ -59,9 +61,9 @@ if [ $(tail -n 1 tmp_output | awk '{print $13}') -ge 100 ] ; then touch sequence
 
 # Primer verification
 awk -v OFS='\t' '{$14 = ($8 != 0) ? sprintf("%.0f", $8/$3*100) : "0"}1' tmp_output | sort -nr -k 14 > tmp_output.tmp && mv tmp_output.tmp tmp_output
-if [ $(tail -n 1 tmp_output | awk '{print $14}') -ge 70 ] ; then touch primer_R1.ok ; else touch primer_R1.bad ; fi
+if [ $(tail -n 1 tmp_output | awk '{print $14}') -ge ${primer_filter} ] ; then touch primer_R1.ok ; else touch primer_R1.bad ; fi
 awk -v OFS='\t' '{$15 = ($9 != 0) ? sprintf("%.0f", $9/$3*100) : "0"}1' tmp_output | sort -nr -k 15 > tmp_output.tmp && mv tmp_output.tmp tmp_output
-if [ $(tail -n 1 tmp_output | awk '{print $15}') -ge 70 ] ; then touch primer_R2.ok ; else touch primer_R2.bad ; fi
+if [ $(tail -n 1 tmp_output | awk '{print $15}') -ge ${primer_filter} ] ; then touch primer_R2.ok ; else touch primer_R2.bad ; fi
 
 # Results saving and remove all temporary files
 if [[ -e barcodes_R1.ok && -e barcodes_R2.ok && -e sequencer_R1.ok && -e sequencer_R2.ok && -e primer_R1.ok && -e primer_R2.ok ]] ; then touch ${verif_ok} ; else touch ${verif_bad} && echo '@@@ --- All verifications are not satisfied --- @@@' ; fi

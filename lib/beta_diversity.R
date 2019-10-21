@@ -36,6 +36,7 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 library("vegan")
+library("stringr")
 
 betadiversity <- function(PHYLOSEQ, distance, criteria, samples_ordination_plot, metadata) {
 
@@ -66,7 +67,8 @@ main  <- function(){
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = args[2]
-    criteria = args[3]
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
     samples_ordination_plot = args[4]
     metadata = args[5]
     workflow_dir = args[6]

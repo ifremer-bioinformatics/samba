@@ -37,7 +37,7 @@ if(!params.stats_only){
 
     script :
     """
-    ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} > data_integrity.log 2>&1
+    ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
     if test -f "verifications.bad"; then
         echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
         mkdir -p ${params.outdir}/${params.data_integrity_dirname}
@@ -132,7 +132,7 @@ if(!params.stats_only){
     
         script :
         """
-        ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+        ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
         """
     }
     
@@ -185,8 +185,8 @@ process prepare_data_for_stats {
 
     beforeScript "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
+    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_prepare_stats -> "cmd/${task.process}_complete.sh" }
     
     input :
@@ -217,8 +217,8 @@ process stats_alpha {
 
     beforeScript "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
-    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.svg'
     
     input :
         file phyloseq_rds from phyloseq_rds_alpha
@@ -228,9 +228,6 @@ process stats_alpha {
         file 'barplot_relabund_phylum_*.svg' into barplot_relabund_phylum
         file 'barplot_relabund_family_*.svg' into barplot_relabund_family
         file 'barplot_relabund_genus_*.svg' into barplot_relabund_genus
-        //file 'heatmap_class.svg' into heatmap_class
-        //file 'heatmap_family.svg' into heatmap_family
-        //file 'heatmap_genus.svg' into heatmap_genus
         file 'completecmd' into complete_cmd_alpha
 
     //Run only if process is activated in params.config file
@@ -248,9 +245,9 @@ process stats_beta {
 
     beforeScript "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
-    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_non_normalized", mode: 'copy', pattern : '*.svg'
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
         file phyloseq_rds from phyloseq_rds_beta
@@ -276,9 +273,9 @@ process stats_beta {
 process stats_beta_rarefied {
 
     beforeScript "${params.r_stats_env}"
-    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "${task.process}.R" }
-    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : '*.svg'
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "${task.process}.R" }
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
         file phyloseq_rds from phyloseq_rds_beta_rarefied
@@ -304,9 +301,9 @@ process stats_beta_rarefied {
 process stats_beta_deseq2 {
 
     beforeScript "${params.r_stats_env}"
-    publishDir "${params.outdir}/${params.stats_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "${task.process}.R" }
-    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_deseq2", mode: 'copy', pattern : '*.svg'
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "${task.process}.R" }
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_deseq2", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
         file phyloseq_rds from phyloseq_rds_beta_deseq2
@@ -332,8 +329,8 @@ process stats_beta_css {
 
     beforeScript "${params.r_stats_env}"
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_css -> "cmd/${task.process}.R" }
-    publishDir "${params.outdir}/${params.stats_dirname}/R/FIGURES/beta_diversity_css", mode: 'copy', pattern : '*.svg'
-    publishDir "${params.outdir}/${params.stats_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_css", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
         file phyloseq_rds from phyloseq_rds_beta_css

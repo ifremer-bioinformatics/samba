@@ -33,7 +33,7 @@ library("phyloseq")
 
 create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata) {
     #Input data
-    rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE)
+    rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     
     #Reformatting of the input data

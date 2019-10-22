@@ -59,7 +59,7 @@ if(!params.stats_only){
     
         input : 
             file manifest from manifest
-            file check_ok from ckeck_ok
+            //file check_ok from ckeck_ok
     
         output : 
             file 'data.qza' into imported_data
@@ -86,7 +86,7 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
         
         input : 
-            file imported_data from imported_data
+            //file imported_data from imported_data
     
         output :
             file 'data_trimmed.qza' into trimmed_data
@@ -103,7 +103,7 @@ if(!params.stats_only){
         ${baseDir}/lib/q2_cutadapt.sh ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd > q2_cutadapt.log 2>&1
         """
     }
-    
+
     /* Run dada2 */
     process q2_dada2 {
     
@@ -113,7 +113,8 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
     
         input : 
-            file trimmed_data from trimmed_data
+            //file trimmed_data from trimmed_data
+            file trimmed_data from imported_data 
             file metadata from metadata 
     
         output :
@@ -170,9 +171,8 @@ if(!params.stats_only){
         ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
         """ 
     }
-
-
 }
+
 if(params.stats_only){
     
     //IF OTU TABLE ALREADY CREATED AND STAT ONLY STEPS NEEDED
@@ -181,6 +181,7 @@ if(params.stats_only){
     Channel.fromPath(params.inasv_table, checkIfExists:true).set { biom_tsv }
     println "Input ASV table used for statistics steps : $params.inasv_table"
 }
+
 process prepare_data_for_stats {
 
     beforeScript "${params.r_stats_env}"
@@ -267,7 +268,6 @@ process stats_beta {
     Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity.log 2>&1
     cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
     """
- 
 }
 
 process stats_beta_rarefied {
@@ -294,8 +294,6 @@ process stats_beta_rarefied {
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_rarefied_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
-    """
- 
 }
 
 process stats_beta_deseq2 {

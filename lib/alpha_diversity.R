@@ -55,6 +55,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     #### /1\ Alpha diversity ####
     
     ## ___ Process of the analysis ####
+    print(sample_data(PHYLOSEQ)) 
     plot_alpha_global=ggplot(df2, aes_string(x=group,y="Value")) +
       facet_wrap(~Measure, scale="free") +
       geom_boxplot() +

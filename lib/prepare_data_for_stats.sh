@@ -11,7 +11,7 @@ metadata_stats=${args[3]}
 logcmd=${args[4]}
 
 cmd="cp $metadata $metadata_stats; 
-sed '0,/#/s/#//' $metadata_stats;
+sed -i '1s/#//' $metadata_stats;
 sed -i '1s/-/_/g' $metadata_stats;
 cp $biom_tsv $asv_table; 
 sed -i '1d' $asv_table; 

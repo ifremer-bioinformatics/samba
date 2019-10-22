@@ -42,11 +42,11 @@ Mandatory columns are listed below :
 
 Mandatory columns are sample-id and barcode. For your metadata colums, prefer to use "\_" to name your variables :
 
-| sample-id | barcode | your\_metadata\_1 | your\_metadata\_2 |
-| :-------: | :-----: | :-------------: | :-------------: | 
-| sample1   | ATTAC   | metadata1       | A               |
-| sample2   | ACTGA   | metadata1       | B               |
-| sample3   | CTTCA   | metadata2       | B               |
+sample-id | barcode | metadata\_1 | metadata\_2
+--- | --- | --- | ---
+sample1 | ATTAC | metadata1 | A
+sample2 | ACTGA | metadata1 | B
+sample3 | CTTCA | metadata2 | B
 
 * [inasv\_table] : ASV table to use as input if running only statistics steps [optional]
 

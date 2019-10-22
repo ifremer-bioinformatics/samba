@@ -1,5 +1,5 @@
-# nextmb
-## metabarcoding analysis workflow using nextflow
+# SAMBA
+## Standardized and Automated MetaBarcoding Analysis workflow using Nextflow
 
 This workflow will process paired-end metabarcoding data. 
 
@@ -54,11 +54,11 @@ Mandatory columns are sample-id and barcode. For your metadata colums, prefer to
 * config/params.config : workflow workdir definition, processes (tasks) parameters and activation. Check this file and adapt to your data !
 * config/resources.config : scheduler resources to attribute to each process. Check this file and adapt to your scheduler !
 * config/report.config : nextflow automatic reports parameters 
-* MB.nf : each step is described within its command line
+* SAMBA.nf : each step is described within its command line
 
-### Running script 
+### Running the workflow  
 
-* RunNextMB.sh : Script to run Nextflow command. Check this file and adapt to activate nextflow environment !
+* RunSAMBA.sh : Script to run Nextflow command. Check this file and adapt to activate nextflow environment !
 
 ### How to get this worflow
 ```
@@ -67,9 +67,9 @@ ssh datarmor
 #move to the directory in which you want to get the workflow
 cd /TO/YOUR_WORKING_DIRECTORY
 ## For all users :
-#get a local copy of the workflow in the directory nextmb
-git clone https://gitlab.ifremer.fr/bioinfo/nextmb
-cd nextmb
+#get a local copy of the workflow in the directory SAMBA-nextflow
+git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
+cd SAMBA-nextflow
 ```
 ### How to run
 Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory).
@@ -78,10 +78,10 @@ Note : This workflow is design to run on a PBS pro cluster (See resources.config
 
 ```bash
 # RUN FROM SCRATCH
-./RunNextMB.sh
+./RunSAMBA.sh
 
 # RUN RESUME (when a task has failed or if you run steps separately)
-./RunNextMB.sh -resume
+./RunSAMBA.sh -resume
 ```
 
 ### References 

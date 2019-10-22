@@ -31,6 +31,7 @@ This workflow will process paired-end metabarcoding data.
 * q2_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
 
 Mandatory columns are listed below :
+
 | sample-id | forward-absolute-filepath | reverse-absolute-filepath |
 | :-------: | :-----------------------: | :-----------------------: |
 | sample1   | /path/to/sample1-R1.fastq.gz | /path/to/sample1-R2.fastq.gz |
@@ -40,6 +41,7 @@ Mandatory columns are listed below :
 * q2_metadata : tabular file describing samples metadata (prefer to use "\_" for long variable names) [required]
 
 Mandatory columns are sample-id and barcode. For your metadata colums, prefer to use "\_" to name your variables :
+
 | sample-id | barcode | your_metadata_1 | your_metadata_2 |
 | :-------: | :-----: | :-------------: | :-------------: | 
 | sample1   | ATTAC   | metadata1       | A               |

@@ -32,11 +32,11 @@ This workflow will process paired-end metabarcoding data.
 
 Mandatory columns are listed below :
 
-| sample-id | forward-absolute-filepath | reverse-absolute-filepath |
-| :-------: | :-----------------------: | :-----------------------: |
-| sample1   | /path/to/sample1-R1.fastq.gz | /path/to/sample1-R2.fastq.gz |
-| sample2   | /path/to/sample2-R1.fastq.gz | /path/to/sample2-R2.fastq.gz |
-| sample3   | /path/to/sample3-R1.fastq.gz | /path/to/sample3-R2.fastq.gz |
+sample-id | forward-absolute-filepath | reverse-absolute-filepath 
+:---: | :---: | :---:
+sample1 | /path/to/sample1-R1.fastq.gz | /path/to/sample1-R2.fastq.gz
+sample2 | /path/to/sample2-R1.fastq.gz | /path/to/sample2-R2.fastq.gz
+sample3 | /path/to/sample3-R1.fastq.gz | /path/to/sample3-R2.fastq.gz
 
 * q2\_metadata : tabular file describing samples metadata (prefer to use "\_" for long variable names) [required]
 

@@ -48,6 +48,7 @@ Mandatory columns are sample-id and barcode. For your metadata colums, prefer to
 | sample2   | ACTGA   | metadata1       | B               |
 | sample3   | CTTCA   | metadata2       | B               |
 
+
 * [inasv_table] : ASV table to use as input if running only statistics steps [optional]
 
 ### Workflow parameters

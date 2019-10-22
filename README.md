@@ -28,7 +28,7 @@ This workflow will process paired-end metabarcoding data.
 
 ### Input files 
 
-* q2_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
+* q2\_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
 
 Mandatory columns are listed below :
 
@@ -38,18 +38,17 @@ Mandatory columns are listed below :
 | sample2   | /path/to/sample2-R1.fastq.gz | /path/to/sample2-R2.fastq.gz |
 | sample3   | /path/to/sample3-R1.fastq.gz | /path/to/sample3-R2.fastq.gz |
 
-* q2_metadata : tabular file describing samples metadata (prefer to use "\_" for long variable names) [required]
+* q2\_metadata : tabular file describing samples metadata (prefer to use "\_" for long variable names) [required]
 
 Mandatory columns are sample-id and barcode. For your metadata colums, prefer to use "\_" to name your variables :
 
-| sample-id | barcode | your_metadata_1 | your_metadata_2 |
+| sample-id | barcode | your\_metadata\_1 | your\_metadata\_2 |
 | :-------: | :-----: | :-------------: | :-------------: | 
 | sample1   | ATTAC   | metadata1       | A               |
 | sample2   | ACTGA   | metadata1       | B               |
 | sample3   | CTTCA   | metadata2       | B               |
 
-
-* [inasv_table] : ASV table to use as input if running only statistics steps [optional]
+* [inasv\_table] : ASV table to use as input if running only statistics steps [optional]
 
 ### Workflow parameters
 

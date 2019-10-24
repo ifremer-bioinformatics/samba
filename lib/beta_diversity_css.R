@@ -1,30 +1,28 @@
 #!/usr/bin/env Rscript
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the qiime2_nextflow workflow                 ####
+## Script name: R script for the SAMBA-nextflow workflow                   ####
 ##                                                                           ##
-## Purpose of script: Automated Statistical Analyzes of Metabarcoding Data   ##
+## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
 ##                                                                           ##
 ##                                                                           ##
 ##                                                                           ##
-## Author: Dr. Cyril NOEL                                                  ####
-##         Bioinformatics engineer                                           ##
+## Authors: Cyril NOEL and Laure QUINTRIC                                  ####
+##         Bioinformatics engineers                                          ##
 ##         SeBiMER, Ifremer                                                  ##
 ##                                                                           ##
-## Date Created: 2019-08-29                                                ####
+## Creation Date: 2019-08-29                                               ####
+## Modified on: 2019-10-23                                                 ####
 ##                                                                           ##
-## Copyright (c) Cyril NOEL, august-2019                                     ####
-## Email: cyril.noel@ifremer.fr                                            ####
+## Copyright (c) SeBiMER, august-2019                                      ####
+## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ##                                                                           ##
 ## Notes: This part of the script performs the beta diversity based on the   ##
-##        normalized abundance table using the CSS algorythm performed in    ##
-##        the metagenomeSeq R package                                        ##   
+##        rarefied abundance table                                           ##   
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-
-#### _____________________________________________________________________ ####
 
 ## Load up the packages needed ####
 library("phyloseq")

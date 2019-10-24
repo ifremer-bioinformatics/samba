@@ -55,7 +55,6 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     #### /1\ Alpha diversity ####
     
     ## ___ Process of the analysis ####
-    print(sample_data(PHYLOSEQ)) 
     plot_alpha_global=ggplot(df2, aes_string(x=group,y="Value")) +
       facet_wrap(~Measure, scale="free") +
       geom_boxplot() +
@@ -150,46 +149,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
       xlab("Samples") +
       scale_fill_manual(values=color_genus)
     ggsave(filename=barplot_relabund_genus,width=20,height=12)
-
-    ## ___ Heatmap representation ####
-    
-    ## ______ at the class level ####
-#    heatmap_data_class = tax_glom(PHYLOSEQ, taxrank="Class")
-#    plot_heatmap(heatmap_data_class,"NMDS",distance,sample.label=NULL,taxa.label="Class",taxa.order="Class",trans=NULL, low="#000033",high="#CCFF66",na.value="#000033") +
-#     theme_classic() +
-#     facet_wrap(group, nrow=1, scale="free") +
-#     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
-#     theme(axis.text.y=element_text(size=14,color="black")) +
-#     theme(axis.title.y=element_text(size=16,face="bold")) +
-#     theme(legend.title=element_text(size=14)) +
-#     theme(legend.text=element_text(size=12))
-#    ggsave(filename=heatmap_class,width=18,height=14)
-#    
-#    ## ______ at the family level ####
-#    heatmap_data_family = tax_glom(PHYLOSEQ, taxrank="Family")
-#    plot_heatmap(heatmap_data_family, "NMDS",distance,sample.label=NULL,taxa.label="Family",taxa.order="Family",trans=NULL,low="#000033", high="#CCFF66",na.value="#000033") +
-#     theme_classic() +
-#     facet_wrap(group, nrow=1, scale="free") +
-#     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
-#     theme(axis.text.y=element_text(size=14,color="black")) +
-#     theme(axis.title.y=element_text(size=16,face="bold")) +
-#     theme(legend.title=element_text(size=14)) +
-#     theme(legend.text=element_text(size=12))
-#    ggsave(filename=heatmap_family,width=18,height=13)
-#    
-#    ## ______ at the genus level ####
-#    heatmap_data_genus = tax_glom(PHYLOSEQ, taxrank="Genus")
-#    plot_heatmap(heatmap_data_genus,"NMDS",distance,sample.label=NULL,taxa.label="Genus",taxa.order="Genus",trans=NULL,low="#000033", high="#CCFF66",na.value="#000033") +
-#     theme_classic() +
-#     facet_wrap(group, nrow=1, scale="free") +
-#     theme(axis.text.x=element_text(angle=90,size=14,vjust=0.3,color="black")) +
-#     theme(axis.text.y=element_text(size=14,color="black")) +
-#     theme(axis.title.y=element_text(size=16,face="bold")) +
-#     theme(legend.title=element_text(size=14)) +
-#     theme(legend.text=element_text(size=12))
-#    ggsave(filename=heatmap_genus,width=15,height=20)
 }
-
 
 main <- function() {
     # Get arguments from RScript command line

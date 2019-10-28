@@ -293,6 +293,7 @@ process stats_beta_rarefied {
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.distance} ${params.stats.beta_div_criteria} samples_ordination_plot_rarefied_${params.stats.beta_div_criteria}.svg ${metadata} $workflow.projectDir > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
+    """
 }
 
 process stats_beta_deseq2 {

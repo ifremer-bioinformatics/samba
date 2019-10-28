@@ -9,7 +9,7 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 export NXF_TEMP=$SCRATCH
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run MB.nf $1
+nextflow -trace nextflow.executor run SAMBA.nf $1
 
 #deactivate nextflow environment
 . $BASEDIR/config/conda_envs/delenv.sh

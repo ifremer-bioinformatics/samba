@@ -12,7 +12,7 @@ export NXF_TEMP=$SCRATCH
 sed -i "s|PATH/TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run MB.nf $1
+nextflow -trace nextflow.executor run SAMBA.nf $1
 
 #deactivate nextflow environment
 . $BASEDIR/config/conda_envs/delenv.sh

@@ -14,10 +14,10 @@ export NXF_TEMP=$SCRATCH
 #set test directories
 if [ ! -z $TMP ] 
 then 
-  sed "s|outdir = "/PATH/TO/OUTDIR|outdir = "$TMP/output.test|g"
+  sed -i 's|/PATH/TO/OUTDIR/$projectName|$TMP/output.test/$projectName|g' config/params.config
   tax.db.test="$TMP/tax.databases.test"
 else 
-  sed "s|outdir = "/PATH/TO/OUTDIR|outdir = "$BASEDIR/output.test|g"
+  sed -i 's|/PATH/TO/OUTDIR/$projectName|$BASEDIR/output.test/$projectName|g' config/params.config
   tax.db.test="$BASEDIR/tax.databases.test"
 fi
 

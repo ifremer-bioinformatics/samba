@@ -59,7 +59,7 @@ if(!params.stats_only){
     
         input : 
             file manifest from manifest
-            //file check_ok from ckeck_ok
+            file check_ok from ckeck_ok
     
         output : 
             file 'data.qza' into imported_data
@@ -86,7 +86,7 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
         
         input : 
-            //file imported_data from imported_data
+            file imported_data from imported_data
     
         output :
             file 'data_trimmed.qza' into trimmed_data
@@ -113,8 +113,7 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
     
         input : 
-            //file trimmed_data from trimmed_data
-            file trimmed_data from imported_data 
+            file trimmed_data from trimmed_data
             file metadata from metadata 
     
         output :

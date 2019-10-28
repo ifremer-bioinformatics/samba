@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
 #activate nextflow environment
-. /appli/bioinfo/nextflow/19.07.0/env.sh
+. $BASEDIR/config/conda_envs/nextflow_env.sh
 
 #nextflow temp directory
 export NXF_TEMP=$SCRATCH
@@ -9,4 +12,4 @@ export NXF_TEMP=$SCRATCH
 nextflow -trace nextflow.executor run MB.nf $1
 
 #deactivate nextflow environment
-. /appli/bioinfo/nextflow/19.07.0/delenv.sh
+. $BASEDIR/config/conda_envs/delenv.sh

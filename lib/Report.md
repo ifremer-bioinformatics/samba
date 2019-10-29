@@ -5,7 +5,6 @@
 <span style="color:black"><u>**Authors:**</u> Laure QUINTRIC *(laure.quintric@ifremer.fr)* & Cyril NOËL *(cyril.noel@ifremer.fr)*  - SeBiMER (Ifremer)</span> 
 
 <p align="center"> <img src="https://w3z.ifremer.fr/var/storage/images/_aliases/logo_main/medias-ifremer/banques-images-docs-bioinfo/cellule_bioinfo_2/1428369-1-fre-FR/Cellule_bioinfo_2.png" width="150"</p><br>
-
 **Report established on October 29, 2019 at 14:50**
 
 [TOC]
@@ -477,61 +476,30 @@ biom convert \
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/barplot_relabund_phylum.svg"></p><br>
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/barplot_relabund_family.svg"></p><br>
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/barplot_relabund_genus.svg"></p><br>
-### IV.3. Heatmap representation
 
-<p align="center"> <img src="./R/FIGURES/alpha_diversity/heatmap_class.svg"></p><br>
-<p align="center"> <img src="./R/FIGURES/alpha_diversity/heatmap_family.svg"></p><br>
-<p align="center"> <img src="./R/FIGURES/alpha_diversity/heatmap_genus.svg"></p><br>
-### IV.4.  Beta diversity
 
-#### <span style = "color:grey;"><center>IV.4.a. Non-normalized data</center></span>
+### IV.3.  Beta diversity
 
-##### <i>IV.4.a.i. ASV resolution</i>
-
-<p align="center"> <img src="./R/FIGURES/beta_diversity/ASV_ordination_plot.svg"></p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity/ASV_ordination_plot_wrapped.svg"></p><br>
-##### <i>IV.4.a.ii. Sample resolution</i>
+#### <span style = "color:grey;"><center>IV.3.a. Non-normalized data</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity/samples_ordination_plot.svg"></p><br>
-##### <i>IV.4.a.iii. Split graphic</i>
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity/split-graph_ordination_plot.svg"></p><br>
-#### <span style = "color:grey;"><center>IV.4.b. Rarefied data</center></span>
 
-##### <i>IV.4.b.i. ASV resolution</i>
-
-<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/ASV_ordination_plot_rarefied.svg"></p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/ASV_ordination_plot_wrapped_rarefied.svg"></p><br>
-##### <i>IV.4.b.ii. Sample resolution</i>
+#### <span style = "color:grey;"><center>IV.3.b. Rarefied data</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/samples_ordination_plot_rarefied.svg"></p><br>
-##### <i>IV.4.b.iii. Split graphic</i>
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/split-graph_ordination_plot_rarefied.svg"></p><br>
-#### <span style = "color:grey;"><center>IV.4.c. Data normalized using DESeq2</center></span>
 
-##### <i>IV.4.c.i. ASV resolution</i>
-
-<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/ASV_ordination_plot_DESeq2.svg"></p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/ASV_ordination_plot_wrapped_DESeq2.svg"></p><br>
-##### <i>IV.4.c.ii. Sample resolution</i>
+#### <span style = "color:grey;"><center>IV.3.c. Data normalized using DESeq2</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/samples_ordination_plot_DESeq2.svg"></p><br>
-##### <i>IV.4.c.iii. Split graphic</i>
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/split-graph_ordination_plot_DESeq2.svg"></p><br>
-#### <span style = "color:grey;"><center>IV.4.d. Data normalized using CSS (metagenomeSeq R package)</center></span>
 
-##### <i>IV.4.d.i. ASV resolution</i>
-
-<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/ASV_ordination_plot_CSS.svg"></p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/ASV_ordination_plot_wrapped_CSS.svg"></p><br>
-##### <i>IV.4.d.ii. Sample resolution</i>
+#### <span style = "color:grey;"><center>IV.3.d. Data normalized using CSS (metagenomeSeq R package)</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/samples_ordination_plot_CSS.svg"></p><br>
-##### <i>IV.4.d.iii. Split graphic</i>
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/split-graph_ordination_plot_CSS.svg"></p><br>
+
 ## <span style="color:red">V. Statistical analyses specific to the project</span>
 
 ### 

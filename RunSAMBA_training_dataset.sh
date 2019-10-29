@@ -8,9 +8,6 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 #modify path to the training dataset data
 sed -i "s|PATH/TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
 
-#nextflow temp directory
-export NXF_TEMP=$SCRATCH
-
 #set test directories
 if [ ! -z $TMP ] 
 then 
@@ -18,11 +15,21 @@ then
   mkdir -p $TMP/tax.databases.test/
   export tax_db_dir=$TMP/tax.databases.test/
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE|$TMP/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
-else 
+  #nextflow temp directory
+  export NXF_TEMP=$TMP
+elseif [ ! -z $SCRATCH ] 
+then
+  sed -i 's|/PATH/TO/OUTDIR/$projectName|$SCRATCH/output.test/$projectName|g' config/params.config
+  mkdir -p $SCRATCH/tax.databases.test
+  export tax_db_dir=$SCRATCH/tax.databases.test/
+  sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE_silva_v132_99_16S.qza|$SCRATCH/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
+  export NXF_TEMP=$SCRATCH
+else
   sed -i 's|/PATH/TO/OUTDIR/$projectName|${baseDir}/output.test/$projectName|g' config/params.config
   mkdir -p $BASEDIR/tax.databases.test
   export tax_db_dir=$BASEDIR/tax.databases.test/
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE_silva_v132_99_16S.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
+  export NXF_TEMP=$BASEDIR
 fi
 
 #download taxonomic database

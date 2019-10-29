@@ -6,8 +6,7 @@
 
 <p align="center"> <img src="https://w3z.ifremer.fr/var/storage/images/_aliases/logo_main/medias-ifremer/banques-images-docs-bioinfo/cellule_bioinfo_2/1428369-1-fre-FR/Cellule_bioinfo_2.png" width="150"</p><br>
 
-
-**Report established on Septembre 10, 2019 at 11:08**
+**Report established on October 29, 2019 at 14:50**
 
 [TOC]
 
@@ -94,25 +93,17 @@ qiime tools export \
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
-   <li>A total of 1,788,208 reads were imported</li>
+   <li>A total of 413,355 reads were imported</li>
    <li>Demultiplexed sequence counts summary :</li>
 </ul>
 
-|                    | Minimum | Median |  Mean  | Maximum |
-| :----------------- | :-----: | :----: | :----: | :-----: |
-| **Sequence count** |  4,816  | 32,168 | 33,115 | 59,441  |
+|                    | Minimum | Median | Mean  | Maximum |
+| :----------------- | :-----: | :----: | :---: | :-----: |
+| **Sequence count** |  2,946  | 9,210  | 8,986 | 15,222  |
 
 <p align="center"> <img src="summary_import/demultiplex-summary.png" width="600"</p><br>
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
    <li>All descriptive statistics of your samples are available <a href="./summary_import/overview.html"><div style="display:inline-block;color:blue;"">here</div></a> (html output)</li>
-</ul>
-
-
-
-<div style="background-color:orange";><b><center>CONCLUSIONS</center></b></div><br>
-<ul style="margin: 0 ; padding: 0 ; text-align: justify">
-   No error was detected at this step. The rest of the workflow has been continued without
-   any modification
 </ul>
 
 
@@ -126,10 +117,10 @@ qiime tools export \
 </div><br>
 
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS</b></span>
-   <li>primerF : CCTACGGGNGGCWGCAG</li>
-   <li>primerR : GACTACHVGGGTATCTAAKCC</li>
+   <li>primerF : GTGCCAGCMGCCGCGGTAA [515F V4]</li>
+   <li>primerR : GACTACHVHHHTWTCTAAT [806R V4]</li>
    <li>errorRate : 0.1</li>
-   <li>overlap : 16</li>
+   <li>overlap : 18</li>
 </ul><br>
 
 ```bash
@@ -179,15 +170,15 @@ qiime tools export \
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br> 
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
-   <li>A total of 891,344 reads were conserved after primer trimming. At this stage, 
-       50.15% of reads eliminated 
+   <li>A total of 413,355 reads were conserved after primer trimming. At this stage, 
+       no read was eliminated 
    </li>
    <li>Demultiplexed sequence counts summary :</li>
 </ul>
 
-|                    | Minimum | Median |  Mean  | Maximum |
-| :----------------- | :-----: | :----: | :----: | :-----: |
-| **Sequence count** |  2,411  | 16,009 | 16,506 | 28,896  |
+|                    | Minimum | Median | Mean  | Maximum |
+| :----------------- | :-----: | :----: | :---: | :-----: |
+| **Sequence count** |  2,946  | 9,210  | 8,985 | 15,222  |
 
 <p align="center"> <img src="summary_cutadapt/demultiplex-summary.png" width="600"</p><br>
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
@@ -199,19 +190,6 @@ qiime tools export \
        <a href="./summary_cutadapt/quality-plot.html"><div style="display:inline-block;
        color:blue;">here</div></a> (html output)
    </li>
-</ul>
-
-
-
-<div style="background-color:orange";><b><center>CONCLUSIONS</center></b></div><br>
-<ul style = "margin: 0 ; padding: 0 ; text-align: justify">
-   No error was detected at this step. But, <u>a significant number of sequences have been
-   eliminated</u>. Looking in detail, it turns out that: <font color="red"><b>1) forward 
-   files are contaminated by reverse sequences</b></font> and <font color="red"><b>2) all
-   files appear to be from two different sequencing</b></font>. In addition, the results 
-   highlighted the duplication of barcode for different samples.<br>
-   However, no solution for the moment has been identified. So, the rest of the workflow
-   has still been continued without any modification
 </ul>
 
 
@@ -230,8 +208,8 @@ qiime tools export \
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS</b></span>
    <li>trim3F : 0</li>
    <li>trim3R : 0</li>
-   <li>trunclenF : 260</li>
-   <li>trunclenR : 220</li>
+   <li>trunclenF : 150</li>
+   <li>trunclenR : 150</li>
    <li>maxee : 2</li>
    <li>minqual : 2</li>
    <li>chimeras : consensus</li>
@@ -331,13 +309,12 @@ qiime tools export \
 
 | DADA2 step  |  Input  |    Filtered     |    Denoised     |     Merged      |  Non-chimeric   |
 | :---------: | :-----: | :-------------: | :-------------: | :-------------: | :-------------: |
-| Reads count | 891,344 | 510,865 (42.7%) | 407,370 (54.3%) | 255,952 (71.3%) | 230,955 (74.1%) |
+| Reads count | 413,355 | 361,923 (87.6%) | 341,381 (82.6%) | 224,823 (54.4%) | 222,957 (53.9%) |
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>Distribution of sequences in samples
    </li>
 </ul>  
 <p align="center"> <img src="export_dada2/sample-frequencies.png" width="600"</p><br>
-
 | Min ASV count | Mean ASV count | Median ASV count | Max ASV count |
 | :-----------: | :------------: | :--------------: | :-----------: |
 |      318      |     4,277      |      4,133       |     8,985     |
@@ -350,11 +327,11 @@ qiime tools export \
 
 | Sequence count | Min Length | Max Length | Mean Length | Range | Standard Deviation |
 | :------------: | :--------: | :--------: | :---------: | :---: | :----------------: |
-|     2,476      |    318     |    436     |   419.13    |  118  |       10.39        |
+|     2,594      |    221     |    286     |     253     |  65   |        3.3         |
 
 | Percentile:  |  2%  |  9%  | 25%  | 50%  | 75%  | 91%  | 98%  |
 | :----------: | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
-| Length (nts) | 402  | 402  | 407  | 422  | 427  | 427  | 428  |
+| Length (nts) | 252  | 253  | 253  | 253  | 253  | 254  | 255  |
 
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>Details about the samples can be found by going to 
@@ -369,15 +346,6 @@ qiime tools export \
 
 
 
-<div style="background-color:orange";><b><center>CONCLUSIONS</center></b></div><br>
-<ul style = "margin: 0 ; padding: 0 ;text-align: justify">
-   No error was detected at this step. But, <u>a significant number of sequences have been 
-   eliminated</u> mainly due to their <font color="red"><b>low quality</b></font> that did not fit into the parameters used 
-   or after the trimming could not be joined.
-</ul>
-
-
-
 ### III.4.  Taxonomic assignation
 
 <div style="text-align: justify">
@@ -387,7 +355,7 @@ qiime tools export \
 </div><br>
 
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS</b></span>
-   <li>database : /home/ref-bioinfo/tools_data/qiime2/DATABASE_silva_99_16S.qza</li>
+   <li>database : DATABASE_silva_99_16S.qza</li>
    <li>confidence : 0.8</li>
 </ul>
 
@@ -445,13 +413,6 @@ sed -i '1 i\#OTUID	taxonomy	confidence' {output.tax_tsv}
 
 
 
-<div style="background-color:orange";><b><center>CONCLUSIONS</center></b></div><br>
-<ul style="margin: 0 ; padding: 0 ;text-align: justify">
-   No error was detected at this step
-</ul>
-
-
-
 ### III.5.  Final output
 
 <div style="text-align: justify">
@@ -496,13 +457,6 @@ biom convert \
        color:blue;">tabulated</div></a> formats
    </li>
 </ul> 
-
-
-
-<div style="background-color:orange";><b><center>CONCLUSIONS</center></b></div><br>
-<ul style="margin: 0 ; padding: 0 ;text-align: justify">
-   No error was detected at this step
-</ul>
 
 
 

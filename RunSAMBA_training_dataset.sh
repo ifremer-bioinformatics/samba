@@ -17,7 +17,7 @@ then
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE|$TMP/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
   #nextflow temp directory
   export NXF_TEMP=$TMP
-elseif [ ! -z $SCRATCH ] 
+elif [ ! -z $SCRATCH ] 
 then
   sed -i 's|/PATH/TO/OUTDIR/$projectName|$SCRATCH/output.test/$projectName|g' config/params.config
   mkdir -p $SCRATCH/tax.databases.test

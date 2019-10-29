@@ -35,7 +35,6 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 library("vegan")
-library("stringr")
 
 betadiversity <- function(PHYLOSEQ, distance, criteria, samples_ordination_plot, metadata) {
 

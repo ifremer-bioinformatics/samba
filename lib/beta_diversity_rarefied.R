@@ -35,7 +35,6 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 library("vegan")
-library("stringr")
 
 betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_rarefied, metadata) {
 

@@ -19,7 +19,7 @@ then
   export tax_db_dir=$TMP/tax.databases.test/
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE|$TMP/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
 else 
-  sed -i 's|/PATH/TO/OUTDIR/$projectName|${basedir}/output.test/$projectName|g' config/params.config
+  sed -i 's|/PATH/TO/OUTDIR/$projectName|${baseDir}/output.test/$projectName|g' config/params.config
   mkdir -p $BASEDIR/tax.databases.test
   export tax_db_dir=$BASEDIR/tax.databases.test/
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config

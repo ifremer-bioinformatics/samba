@@ -23,12 +23,14 @@ then
   mkdir -p $SCRATCH/tax.databases.test
   export tax_db_dir=$SCRATCH/tax.databases.test/
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE_silva_v132_99_16S.qza|$SCRATCH/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
+  #nextflow temp directory
   export NXF_TEMP=$SCRATCH
 else
   sed -i 's|/PATH/TO/OUTDIR/$projectName|${baseDir}/output.test/$projectName|g' config/params.config
   mkdir -p $BASEDIR/tax.databases.test
   export tax_db_dir=$BASEDIR/tax.databases.test/
   sed -i "s|/PATH/TO/qiime2/2019.07/DATABASE_silva_v132_99_16S.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
+  #nextflow temp directory
   export NXF_TEMP=$BASEDIR
 fi
 

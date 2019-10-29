@@ -26,7 +26,44 @@ This workflow will process paired-end metabarcoding data.
     * A report folder will provide the metabarcoding workflow results
     * A workflow execution synthesis will be generated using Nextflow native DAG, timeline, trace and html report
 
-### Input files 
+## How to install
+
+### How to get this worflow
+```
+#connect to datarmor (for Ifremer users)
+ssh datarmor
+#move to the directory in which you want to get the workflow
+cd /TO/YOUR_WORKING_DIRECTORY
+## For all users :
+#get a local copy of the workflow in the directory SAMBA-nextflow
+git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
+cd SAMBA-nextflow
+```
+
+This workflow uses dependancies, please be sure to have the following dependencies installed beforehand:
+- Nextflow v19.07.0 -> conda install -c bioconda nextflow=19.07.0
+- Qiime2 v2019.04 -> https://docs.qiime2.org/2019.7/install/native/#install-miniconda
+- A R conda environment with the following R packages: dplyr, stringr, phyloseq, ggplot2, RColorBrewer, svglite, tidyr, gridExtra, egg, vegan, DESeq2, metagenomeSeq
+
+It will be necessary to modify according to your installations, the paths for the conda activation of your environments in the corresponding files located in config/conda_envs
+
+### To test the workflow
+```
+#Enter in your local copy
+cd SAMBA-nextflow
+#Run the workflow
+./RunSAMBA_training_dataset.sh 
+```
+
+This will create a 'output.test' folder at the root of the tool or in your $TMP if it exists
+
+## How to use with your own data
+
+### Input files
+
+Create a folder containing:
+
+* dna-sequence-raw : a folder with all your R1 and R2 fastq.gz files [required]
 
 * q2\_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
 
@@ -58,21 +95,6 @@ sample3 | CTTCA | metadata2 | B
 * config/report.config : nextflow automatic reports parameters 
 * SAMBA.nf : each step is described within its command line
 
-### Running the workflow  
-
-* RunSAMBA.sh : Script to run Nextflow command. Check this file and adapt to activate nextflow environment !
-
-### How to get this worflow
-```
-#connect to datarmor (for Ifremer users)
-ssh datarmor
-#move to the directory in which you want to get the workflow
-cd /TO/YOUR_WORKING_DIRECTORY
-## For all users :
-#get a local copy of the workflow in the directory SAMBA-nextflow
-git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
-cd SAMBA-nextflow
-```
 ### How to run
 Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory).
 

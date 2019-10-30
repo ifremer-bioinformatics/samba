@@ -1,10 +1,11 @@
-# <center><span style='text-align:center ; color:blue'>Report of your data processing using the QIIME 2 snakemake workflow created by the SeBiMER</span></center>
+# <center><span style='text-align:center ; color:blue'>Report of your data processing using the SAMBA workflow created by the SeBiMER</span></center>
 
 
 
 <span style="color:black"><u>**Authors:**</u> Laure QUINTRIC *(laure.quintric@ifremer.fr)* & Cyril NOËL *(cyril.noel@ifremer.fr)*  - SeBiMER (Ifremer)</span> 
 
-<p align="center"> <img src="https://w3z.ifremer.fr/var/storage/images/_aliases/logo_main/medias-ifremer/banques-images-docs-bioinfo/cellule_bioinfo_2/1428369-1-fre-FR/Cellule_bioinfo_2.png" width="150"</p><br>
+<p align="center"> <img src="https://w3z.ifremer.fr/var/storage/images/medias-ifremer/medias-bioinfo/service-de-bioinformatique/sebimer_orginal/1477220-1-fre-FR/SeBiMER_orginal_large.png" width="300"</p><br>
+
 **Report established on October 29, 2019 at 14:50**
 
 [TOC]
@@ -15,9 +16,8 @@
    This file was created using <b>Typora</b>, a free markdown editor and reader 
    (<i>https://typora.io/</i>). It allows to compile, in the form of a report, all results
    obtained by the metabarcoding analysis of your project 
-   (<font color="blue">Risk Manche</font>) performed using <b>the QIIME 2 snakemake 
-   workflow</b> (<i>qiime2_snakemake.sh</i>) created by the engineers of the 
-   Ifremer's Bioinformatics department (<b>SeBiMER</b>).<br><br>
+   (<font color="blue">training dataset</font>) performed using <b>the SAMBA workflow</b> 
+   created by the engineers of the Ifremer's Bioinformatics service (<b>SeBiMER</b>).<br><br>
    <u>NB:</u> This report includes links. In order not to break them, be sure to have 
    extracted the entire compressed file that was sent to you and open this html file only
    in this folder. If you need to transfer the report, you should transfer the entire 
@@ -29,13 +29,13 @@
 ## <span style="color:red">II. Description of the workflow</span>
 
 <div style = "text-align: justify">
-   The <i>qiime2_snakemake.sh</i> workflow developed by <u>Laure Quintric and 
+   The <i>SAMBA workflow</i> developed by <u>Laure Quintric and 
    Cyril Noël</u> allows you to <b>computerize your metabarcoding analysis </b> using the 
    <b>DADA2 package through QIIME 2</b> (Bolyen <i>et al.</i>, 2019 ; version 2019.07). It
    also performs <b>basic diversity analyses</b> (alpha and beta) via the use of a 
    <font color="green">homemade R script</font> using mainly the vegan, phyloseq and 
    ggplot2 R packages. Specific statistics based on your metadata can also be carried out.
-   This script is based on the use of the <b>Snakemake</b> workflow manager. All analysis 
+   This script is based on the use of the <b>NextFlow or Snakemake</b> workflow managers. All analysis 
    parameters are fully configurable via the <font color="red">config.yml file</font> 
    available in the workflow folder.
 </div>
@@ -78,14 +78,9 @@ qiime tools export \
 
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
-<li><span style="color:green"><b>step_01_q2import/data.qza</b> :</span> contains all data
-   </li>
-<li><span style="color:green"><b>step_01_q2import/data.qzv</b> :</span> contains all data 
-   in a viewable format using QIIME 2 View (<i>https://view.qiime2.org/</i>)
-   </li>
-<li><span style="color:green"><b>step_01_q2import/summary_import</b> <i>[directory]</i> :
-   </span> contains all descriptive statistics of your data
-   </li>
+<li><span style="color:green"><b>step_01_q2import/data.qza</b> :</span> contains all data</li>
+<li><span style="color:green"><b>step_01_q2import/data.qzv</b> :</span> contains all data in a viewable format using QIIME 2 View (<i>https://view.qiime2.org/</i>)</li>
+<li><span style="color:green"><b>step_01_q2import/summary_import</b> <i>[directory]</i> :</span> contains all descriptive statistics of your data</li>
 </ul>
 
 
@@ -154,24 +149,16 @@ qiime tools export \
 
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
-<li><span style="color:green"><b>step_02_q2cutadapt/data_trimmed.qza</b> :</span> contains
-   all data whose sequence of the primers has been found and trimmed
-   </li>
-<li><span style="color:green"><b>step_02_q2cutadapt/data_trimmed.qzv</b> :</span> contains
-   all data in a viewable format using QIIME 2 View (<i>https://view.qiime2.org/</i>)
-   </li>
-<li><span style="color:green"><b>step_02_q2cutadapt/summary_cutadapt</b> <i>[directory]</i>
-   :</span> contains all descriptive statistics of your data
-   </li>
+<li><span style="color:green"><b>step_02_q2cutadapt/data_trimmed.qza</b> :</span> contains all data whose sequence of the primers has been found and trimmed</li>
+<li><span style="color:green"><b>step_02_q2cutadapt/data_trimmed.qzv</b> :</span> contains all data in a viewable format using QIIME 2 View (<i>https://view.qiime2.org/</i>)</li>
+<li><span style="color:green"><b>step_02_q2cutadapt/summary_cutadapt</b> <i>[directory]</i> :</span> contains all descriptive statistics of your data</li>
 </ul>
 
 
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br> 
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
-   <li>A total of 413,355 reads were conserved after primer trimming. At this stage, 
-       no read was eliminated 
-   </li>
+   <li>A total of 413,355 reads were conserved after primer trimming. At this stage, no read was eliminated</li>
    <li>Demultiplexed sequence counts summary :</li>
 </ul>
 
@@ -181,14 +168,8 @@ qiime tools export \
 
 <p align="center"> <img src="summary_cutadapt/demultiplex-summary.png" width="600"</p><br>
 <ul style = "margin: 0 ; padding: 1 ; text-align: justify">
-   <li>All descriptive statistics of your samples after the trimming are available 
-       <a href="./summary_cutadapt/overview.html"><div style="display:inline-block;
-       color:blue;">here</div></a> (html output)
-       </li>
-   <li>The quality of your data before any quality filtering step is viewable
-       <a href="./summary_cutadapt/quality-plot.html"><div style="display:inline-block;
-       color:blue;">here</div></a> (html output)
-   </li>
+   <li>All descriptive statistics of your samples after the trimming are available <a href="./summary_cutadapt/overview.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
+   <li>The quality of your data before any quality filtering step is viewable <a href="./summary_cutadapt/quality-plot.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
 </ul>
 
 
@@ -272,38 +253,19 @@ qiime tools export \
 
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li><font color="green"><b>step_03_q2dada2/rep_seqs.qza (.qzv)</b> :</font> contain 
-       the representative sequences of the ASV (+viewable file)
-   </li>
-   <li><font color="green"><b>step_03_q2dada2/export_dada2/REPRESENTATIVE_SEQUENCES.fasta</b> :</font> 
-                                 fasta file containing the representative sequence of the ASVs
-   </li>
-   <li><font color="green"><b>step_03_q2dada2/table.qza (.qzv)</b> :</font> contain 
-       the abundance table (+viewable file)
-   </li>
-   <li><font color="green"><b>step_03_q2dada2/feature_table/feature-table.biom</b> :</font>
-       the ASV abundance table in biom format (used after in the workflow)
-   </li>
-   <li><font color="green"><b>step_03_q2dada2/stats.qza (.qzv)</b> <i>[directory]</i> :</font> 
-       contain the descriptive summary of your data obtained after this step with in 
-       particular the number of sequences eliminated at each substep of Dada2 
-       (quality filtering, denoising, merging and chimeras removal)
-   </li>
-   <li><font color="green"><b>step_03_q2dada2/export_dada2/STATS_DADA2.tsv</b> :</font> 
-       tabulated file of the descriptive summary
-   </li>
+   <li><font color="green"><b>step_03_q2dada2/rep_seqs.qza (.qzv)</b> :</font> contain the representative sequences of the ASV (+viewable file)</li>
+   <li><font color="green"><b>step_03_q2dada2/export_dada2/REPRESENTATIVE_SEQUENCES.fasta</b> :</font> fasta file containing the representative sequence of the ASVs</li>
+   <li><font color="green"><b>step_03_q2dada2/table.qza (.qzv)</b> :</font> contain the abundance table (+viewable file)</li>
+   <li><font color="green"><b>step_03_q2dada2/feature_table/feature-table.biom</b> :</font>the ASV abundance table in biom format (used after in the workflow)</li>
+   <li><font color="green"><b>step_03_q2dada2/stats.qza (.qzv)</b> <i>[directory]</i> :</font> contain the descriptive summary of your data obtained after this step with in particular the number of sequences eliminated at each substep of Dada2 (quality filtering, denoising, merging and chimeras removal)</li>
+   <li><font color="green"><b>step_03_q2dada2/export_dada2/STATS_DADA2.tsv</b> :</font> tabulated file of the descriptive summary</li>
 </ul>
 
 
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>The dynamics of the different step of filtering can be visualized in this 
-       <a href="./export_dada2/STATS_DADA2.html"><div style="display:inline-block;
-       color:blue;">html file</div></a> and are also available in a 
-       <a href="./export_dada2/STATS_DADA2.tsv"><div style="display:inline-block;
-       color:blue;">.tsv</div></a>
-   </li>
+   <li>The dynamics of the different step of filtering can be visualized in this <a href="./export_dada2/STATS_DADA2.html"><div style="display:inline-block;color:blue;">html file</div></a> and are also available in a <a href="./export_dada2/STATS_DADA2.tsv"><div style="display:inline-block;color:blue;">.tsv</div></a></li>
 </ul>
 
 | DADA2 step  |  Input  |    Filtered     |    Denoised     |     Merged      |  Non-chimeric   |
@@ -319,9 +281,7 @@ qiime tools export \
 |      318      |     4,277      |      4,133       |     8,985     |
 
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>Feature details are available <a href="./export_dada2/feature-frequency-detail.html">
-       <div style="display:inline-block;color:blue;">here</div></a> (html output)
-   </li>
+   <li>Feature details are available <a href="./export_dada2/feature-frequency-detail.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
 </ul>
 
 | Sequence count | Min Length | Max Length | Mean Length | Range | Standard Deviation |
@@ -333,14 +293,8 @@ qiime tools export \
 | Length (nts) | 252  | 253  | 253  | 253  | 253  | 254  | 255  |
 
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>Details about the samples can be found by going to 
-       <a href="./export_dada2/sample-frequency-detail.html">
-       <div style="display:inline-block;color:blue;">this interactive html page</div></a>
-   </li>
-   <li>Finally, you can retrieved the reference sequences of your ASVs in 
-       <a href="./export_dada2/REPRESENTATIVE_SEQUENCES.fasta">
-       <div style="display:inline-block;color:blue;">this fasta</div></a>
-   </li>
+   <li>Details about the samples can be found by going to <a href="./export_dada2/sample-frequency-detail.html"><div style="display:inline-block;color:blue;">this interactive html page</div></a></li>
+   <li>Finally, you can retrieved the reference sequences of your ASVs in <a href="./export_dada2/REPRESENTATIVE_SEQUENCES.fasta"><div style="display:inline-block;color:blue;">this fasta</div></a></li>
 </ul> 
 
 
@@ -391,23 +345,15 @@ sed -i '1 i\#OTUID	taxonomy	confidence' {output.tax_tsv}
 
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li><font color="green"><b>step_04_q2taxonomy/taxonomy.qza (.qzv)</b> :</font> contain 
-       the taxonomy affiliated at each ASV
-   </li>
-   <li><font color="green"><b>step_04_q2taxonomy/ASV_taxonomy.tsv</b> :</font> tabulated 
-       file containing the taxonomy and formatted for subsequent use
-   </li>
+   <li><font color="green"><b>step_04_q2taxonomy/taxonomy.qza (.qzv)</b> :</font> contain the taxonomy affiliated at each ASV</li>
+   <li><font color="green"><b>step_04_q2taxonomy/ASV_taxonomy.tsv</b> :</font> tabulated file containing the taxonomy and formatted for subsequent use</li>
 </ul>
 
 
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>The result of the taxonomic affiliation is available in 
-       <a href="./export_taxonomy/index.html"><div style="display:inline-block;color:blue;">
-       html</div></a> and <a href="./ASV_taxonomy.tsv"><div style="display:inline-block;
-       color:blue;">tabulated</div></a> formats
-   </li>
+   <li>The result of the taxonomic affiliation is available in <a href="./export_taxonomy/index.html"><div style="display:inline-block;color:blue;">html</div></a> and <a href="./ASV_taxonomy.tsv"><div style="display:inline-block;color:blue;">tabulated</div></a> formats</li>
 </ul> 
 
 
@@ -441,20 +387,14 @@ biom convert \
 
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li><font color="green"><b>step_05_q2output/Final_ASV_table_with_taxonomy.biom (.tsv)</b> :</font> 
-       final output in biom and tabulated format
-   </li>
+   <li><font color="green"><b>step_05_q2output/Final_ASV_table_with_taxonomy.biom (.tsv)</b> :</font> final output in biom and tabulated format</li>
 </ul>
 
 
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>The final output is available in <a href="./Final_ASV_table_with_taxonomy.biom">
-       <div style="display:inline-block;color:blue;">biom</div></a> and 
-       <a href="./Final_ASV_table_with_taxonomy.tsv"><div style="display:inline-block;
-       color:blue;">tabulated</div></a> formats
-   </li>
+   <li>The final output is available in <a href="./Final_ASV_table_with_taxonomy.biom"><div style="display:inline-block;color:blue;">biom</div></a> and <a href="./Final_ASV_table_with_taxonomy.tsv"><div style="display:inline-block;color:blue;">tabulated</div></a> formats</li>
 </ul> 
 
 
@@ -477,28 +417,23 @@ biom convert \
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/barplot_relabund_family.svg"></p><br>
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/barplot_relabund_genus.svg"></p><br>
 
-
 ### IV.3.  Beta diversity
 
 #### <span style = "color:grey;"><center>IV.3.a. Non-normalized data</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity/samples_ordination_plot.svg"></p><br>
 
-
 #### <span style = "color:grey;"><center>IV.3.b. Rarefied data</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/samples_ordination_plot_rarefied.svg"></p><br>
-
 
 #### <span style = "color:grey;"><center>IV.3.c. Data normalized using DESeq2</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/samples_ordination_plot_DESeq2.svg"></p><br>
 
-
 #### <span style = "color:grey;"><center>IV.3.d. Data normalized using CSS (metagenomeSeq R package)</center></span>
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/samples_ordination_plot_CSS.svg"></p><br>
-
 
 ## <span style="color:red">V. Statistical analyses specific to the project</span>
 

@@ -402,10 +402,10 @@ biom convert \
 ## <span style="color:red">IV. General statistical analyses</span>
 
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS</b></span>
-   <li>project_name : RiskManche_cDNA</li>
+   <li>project_name : training dataset</li>
    <li>perc_abund_threshold : 1</li>
    <li>distance : bray</li>
-   <li>column_sample_replicat : Sample_Location</li>
+   <li>column_sample_replicat : transect_name</li>
 </ul>
 
 ### IV.1.  Alpha diversity

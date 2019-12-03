@@ -135,8 +135,11 @@ if(!params.stats_only){
         ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
         """
     }
-    
+
+data_repseqs.into { repseqs_taxo ; repseqs_phylo }
+
     /* Run taxonomy assignment */
+
     process q2_taxonomy {
     
         beforeScript "${params.qiime_env}"
@@ -147,7 +150,7 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
     
         input :
-            file data_repseqs from data_repseqs
+            file data_repseqs from repseqs_taxo
             file dada2_summary from dada2_summary
     
         output :
@@ -173,16 +176,14 @@ if(!params.stats_only){
 
     /* Run phylogeny construction */
 
-data_repseqs.into { repseqs }
-
     process q2_phylogeny {
         beforeScript "${params.qiime_env}"
-        publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qza'
-        publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.txt'
+        publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
+        publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
 
         input :
-            file data_repseqs from repseqs
+            file repseqs from repseqs_phylo
 
         output :
             file 'aligned_repseq.qza' into aligned_repseq
@@ -191,7 +192,7 @@ data_repseqs.into { repseqs }
             file 'model.txt' into model
             file 'tree_bestmodel.qza' into tree_bestmodel
             file 'tree_log' into tree_bestmodel_log
-            file 'completecmd' into complete_cmd_taxo
+            file 'completecmd' into complete_cmd_phylogeny
 
         //Run only if process is activated in params.config file
         when :
@@ -199,7 +200,7 @@ data_repseqs.into { repseqs }
 
         script :
         """
-        ${baseDir}/lib/q2_phylogeny.sh data_repseqs aligned_repseq masked_aligned tree model ${params.phylogeny.alrt} ${params.phylogeny.bootstrap} tree_bestmodel tree_log ${task.cpus} completecmd > q2_phylogeny.log 2>&1
+        ${baseDir}/lib/q2_phylogeny.sh repseqs aligned_repseq masked_aligned tree model ${params.phylogeny.alrt} ${params.phylogeny.bootstrap} tree_bestmodel tree_log ${task.cpus} completecmd > q2_phylogeny.log 2>&1
         """
     }
 }

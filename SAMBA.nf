@@ -170,6 +170,35 @@ if(!params.stats_only){
         ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
         """ 
     }
+
+    /* Run phylogeny construction */
+    process q2_phylogeny {
+        beforeScript "${params.qiime_env}"
+        publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qza'
+        publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.txt'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
+
+        input :
+            file data_repseqs from data_repseqs
+
+        output :
+            file 'aligned_repseq.qza' into aligned_repseq
+            file 'masked-aligned_repseq.qza' into masked_aligned
+            file 'tree.qza' into tree
+            file 'model.txt' into model
+            file 'tree_bestmodel.qza' into tree_bestmodel
+            file 'tree_log' into tree_bestmodel_log
+            file 'completecmd' into complete_cmd_taxo
+
+        //Run only if process is activated in params.config file
+        when :
+        params.phylogeny_enable
+
+        script :
+        """
+        ${baseDir}/lib/q2_phylogeny.sh data_repseqs aligned_repseq masked_aligned tree model ${params.phylogeny.alrt} ${params.phylogeny.bootstrap} tree_bestmodel tree_log ${task.cpus} completecmd > q2_phylogeny.log 2>&1
+        """
+    }
 }
 
 if(params.stats_only){

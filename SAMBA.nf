@@ -172,6 +172,9 @@ if(!params.stats_only){
     }
 
     /* Run phylogeny construction */
+
+data_repseqs.into { repseqs }
+
     process q2_phylogeny {
         beforeScript "${params.qiime_env}"
         publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qza'
@@ -179,7 +182,7 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
 
         input :
-            file data_repseqs from data_repseqs
+            file data_repseqs from repseqs
 
         output :
             file 'aligned_repseq.qza' into aligned_repseq

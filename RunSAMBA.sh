@@ -23,7 +23,7 @@ else
 fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run SAMBA.nf $1
+nextflow -trace nextflow.executor run SAMBA.nf $1 >& $BASEDIR/nextflow.log 2>&1
 
 #deactivate nextflow environment
 . $BASEDIR/config/conda_envs/delenv.sh

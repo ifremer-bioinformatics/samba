@@ -5,9 +5,6 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 #activate nextflow environment
 . $BASEDIR/config/conda_envs/nextflow_env.sh
 
-#modify path to the training dataset data
-sed -i "s|PATH/TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
-
 #set test directories
 if [ ! -z $TMP ] 
 then 
@@ -35,7 +32,12 @@ else
 fi
 
 #download taxonomic database
-wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.07/DATABASE_silva_v132_99_16S.qza -O $tax_db_dir/DATABASE_silva_v132_99_16S.qza 
+DB=$tax_db_dir/DATABASE_silva_v132_99_16S.qza
+if [ -f "$DB" ]; then
+    echo "$DB exist"
+else
+    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.07/DATABASE_silva_v132_99_16S.qza -O $tax_db_dir/DATABASE_silva_v132_99_16S.qza
+fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
 nextflow -trace nextflow.executor run SAMBA.nf $1

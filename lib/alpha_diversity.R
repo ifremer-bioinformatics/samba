@@ -71,32 +71,36 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     final_alpha_plot = arrangeGrob(grobs=lapply(list(plot1_alpha,plot2_alpha),set_panel_size,width=unit(10,"cm"),height=unit(10,"cm")))
     ggsave(filename=alpha_div_plots,final_alpha_plot, width=14, height=14)
 
-    ## ___ Statistical significance of the index ####
-    anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich) 
 
-    #Anova on Observed richness
-    anova.Observed=aov(Observed~group,anova_data)
-    anova.Observed.res=summary(anova.Observed)
+    ## ___ Statistical significance of indexes  ####
+    anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich)
+    index = c("Observed","Chao1","Shannon","InvSimpson","Pielou")
+    anova_data$Depth = sample_sums(PHYLOSEQ)
+    variables = c()
 
-    #Anova on Chao1 index
-    anova.Chao1=aov(Chao1~group,anova_data)
-    anova.Chao1.res=summary(anova.Chao1)
+    for (var in sample_variables(PHYLOSEQ) ) {
+      l = length(levels(as.factor(get_variable(PHYLOSEQ,var))))
+      if(l > 1 && l < nsamples(PHYLOSEQ)){
+        variables <- cbind(variables,var)
+      }
+    }
 
-    #Anova on Shannon index
-    anova.Shannon=aov(Shannon~group,anova_data)
-    anova.Shannon.res=summary(anova.Shannon)
+    variables = paste(sep=" + ", "Depth", paste(collapse =" + ", variables ))
 
-    #Anova on Inv. Simpson index
-    anova.InvSimpson=aov(InvSimpson~group,anova_data)
-    anova.InvSimpson.res=summary(anova.InvSimpson)
+    sink(file = index_significance_tests , type = "output")
+    for (m in index){
+      f <- paste(m," ~ ", variables)
+      cat(sep = "", "###############################################################\n
+                     #Perform ANOVA on ",m,", which effects are significant\n
+                     anova.",m," <-aov( ",f,", anova_data)\n
+                     summary(anova.",m,")\n")
+      anova_res <- aov( as.formula(f), anova_data)
+      res <- summary(anova_res)
+      print(res)
+      cat("\n\n")
+    }
+    sink()
 
-    #Anova on Pielou index
-    anova.Pielou=aov(Pielou~group,anova_data)
-    anova.Pielou.res=summary(anova.Pielou)
-
-    #Output of significance test
-    index.list=list(Anova.Observed=anova.Observed.res,Anova.Chao1=anova.Chao1.res,Anova.Shannon=anova.Shannon.res,Anova.InvSimpson=anova.InvSimpson.res,Anova.Pielou=anova.Pielou.res)
-    capture.output(print(index.list),file=index_significance_tests)
 
     #### /2\ Taxonomic diversity ####
     

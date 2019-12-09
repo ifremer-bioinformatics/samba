@@ -96,7 +96,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
 
     #Output of significance test
     index.list=list(Anova.Observed=anova.Observed.res,Anova.Chao1=anova.Chao1.res,Anova.Shannon=anova.Shannon.res,Anova.InvSimpson=anova.InvSimpson.res,Anova.Pielou=anova.Pielou.res)
-    capture.output(print(index.list),file=paste(FIGURES.alpha,"index_significance_tests.txt",sep=""))
+    capture.output(print(index.list),file="index_significance_tests.txt")
 
     #### /2\ Taxonomic diversity ####
     

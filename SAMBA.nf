@@ -16,6 +16,26 @@ Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadat
 
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
 if(!params.stats_only){
+    /* Prepare inputs */
+
+    process prepare_inputs {
+        publishDir "${params.outdir}/${params.prepare_inputs_dirname}", mode: 'copy', pattern: 'q2_manifest'
+
+    input :
+        file manifest from manifest
+
+    output :
+        file 'q2_manifest' into q2_manifest
+
+    //Run only if process is activated in params.config file
+    when :
+        params.prepare_inputs_enable
+
+    script :
+    """
+    ${baseDir}/lib/prepare_inputs.sh ${manifest} > prepare_inputs.log 2>&1
+    """
+}
 
     /* Check data integrity */
     
@@ -58,7 +78,7 @@ if(!params.stats_only){
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
     
         input : 
-            file manifest from manifest
+            file q2_manifest from q2_manifest
             file check_ok from ckeck_ok
     
         output : 
@@ -73,7 +93,7 @@ if(!params.stats_only){
     
         script :
         """
-        ${baseDir}/lib/q2_import.sh ${manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
+        ${baseDir}/lib/q2_import.sh ${q2_manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
         """
     }
     
@@ -150,7 +170,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
     
         input :
-            file data_repseqs from repseqs_taxo
+            file repseqs_taxo from repseqs_taxo
             file dada2_summary from dada2_summary
     
         output :
@@ -170,7 +190,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
     
         script :
         """
-        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
+        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
         """ 
     }
 
@@ -183,7 +203,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
 
         input :
-            file repseqs from repseqs_phylo
+            file repseqs_phylo from repseqs_phylo
 
         output :
             file 'aligned_repseq.qza' into aligned_repseq
@@ -191,7 +211,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
             file 'tree.qza' into tree
             file 'model.txt' into model
             file 'tree_bestmodel.qza' into tree_bestmodel
-            file 'tree_log' into tree_bestmodel_log
+            file 'tree_log.txt' into tree_bestmodel_log
             file 'completecmd' into complete_cmd_phylogeny
 
         //Run only if process is activated in params.config file
@@ -200,7 +220,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
 
         script :
         """
-        ${baseDir}/lib/q2_phylogeny.sh repseqs aligned_repseq masked_aligned tree model ${params.phylogeny.alrt} ${params.phylogeny.bootstrap} tree_bestmodel tree_log ${task.cpus} completecmd > q2_phylogeny.log 2>&1
+        ${baseDir}/lib/q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza model.txt ${params.phylogeny.alrt} ${params.phylogeny.bootstrap} tree_bestmodel.qza tree_log.txt ${task.cpus} completecmd > q2_phylogeny.log 2>&1
         """
     }
 }
@@ -258,6 +278,7 @@ process stats_alpha {
 
     output :
         file 'alpha_div_plots_*.svg' into alpha_div_plots
+        file 'index_significance_tests.txt' into index_significance_tests
         file 'barplot_relabund_phylum_*.svg' into barplot_relabund_phylum
         file 'barplot_relabund_family_*.svg' into barplot_relabund_family
         file 'barplot_relabund_genus_*.svg' into barplot_relabund_genus
@@ -269,7 +290,7 @@ process stats_alpha {
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots_${params.stats.alpha_div_group}.svg barplot_relabund_phylum_${params.stats.alpha_div_group}.svg barplot_relabund_family_${params.stats.alpha_div_group}.svg barplot_relabund_genus_${params.stats.alpha_div_group}.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg ${params.stats.alpha_div_group} > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots_${params.stats.alpha_div_group}.svg barplot_relabund_phylum_${params.stats.alpha_div_group}.svg barplot_relabund_family_${params.stats.alpha_div_group}.svg barplot_relabund_genus_${params.stats.alpha_div_group}.svg heatmap_class.svg heatmap_family.svg heatmap_genus.svg ${params.stats.alpha_div_group} index_significance_tests > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }

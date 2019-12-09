@@ -71,6 +71,33 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
     final_alpha_plot = arrangeGrob(grobs=lapply(list(plot1_alpha,plot2_alpha),set_panel_size,width=unit(10,"cm"),height=unit(10,"cm")))
     ggsave(filename=alpha_div_plots,final_alpha_plot, width=14, height=14)
 
+    ## ___ Statistical significance of the index ####
+    anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich) 
+
+    #Anova on Observed richness
+    anova.Observed=aov(Observed~group,anova_data)
+    anova.Observed.res=summary(anova.Observed)
+
+    #Anova on Chao1 index
+    anova.Chao1=aov(Chao1~group,anova_data)
+    anova.Chao1.res=summary(anova.Chao1)
+
+    #Anova on Shannon index
+    anova.Shannon=aov(Shannon~group,anova_data)
+    anova.Shannon.res=summary(anova.Shannon)
+
+    #Anova on Inv. Simpson index
+    anova.InvSimpson=aov(InvSimpson~group,anova_data)
+    anova.InvSimpson.res=summary(anova.InvSimpson)
+
+    #Anova on Pielou index
+    anova.Pielou=aov(Pielou~group,anova_data)
+    anova.Pielou.res=summary(anova.Pielou)
+
+    #Output of significance test
+    index.list=list(Anova.Observed=anova.Observed.res,Anova.Chao1=anova.Chao1.res,Anova.Shannon=anova.Shannon.res,Anova.InvSimpson=anova.InvSimpson.res,Anova.Pielou=anova.Pielou.res)
+    capture.output(print(index.list),file=paste(FIGURES.alpha,"index_significance_tests.txt",sep=""))
+
     #### /2\ Taxonomic diversity ####
     
     ## ___ Barplot representation ####

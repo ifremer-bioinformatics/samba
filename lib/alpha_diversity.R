@@ -36,7 +36,7 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 
-alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, group){
+alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, group){
     
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     alpha_rich = estimate_richness(PHYLOSEQ,measures=c("Observed","Chao1","Shannon","InvSimpson"))
@@ -96,7 +96,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, b
 
     #Output of significance test
     index.list=list(Anova.Observed=anova.Observed.res,Anova.Chao1=anova.Chao1.res,Anova.Shannon=anova.Shannon.res,Anova.InvSimpson=anova.InvSimpson.res,Anova.Pielou=anova.Pielou.res)
-    capture.output(print(index.list),file="index_significance_tests.txt")
+    capture.output(print(index.list),file=index_significance_tests)
 
     #### /2\ Taxonomic diversity ####
     
@@ -192,8 +192,9 @@ main <- function() {
     heatmap_genus = args[10]
     #get group variable an replace "-" by "_"
     group = str_replace(args[11], "-", "_")
+    index_significance_tests = args[12]
     #Run alpha diversity calculations
-    alphadiversity(PHYLOSEQ, alpha_div_plots, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, group)
+    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, heatmap_class, heatmap_family, heatmap_genus, threshold, distance, group)
 }
 if (!interactive()) {
         main()

@@ -12,7 +12,7 @@
 ##         SeBiMER, Ifremer                                                  ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-10-23                                                 ####
+## Modified on: 2019-12-11                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
@@ -35,59 +35,165 @@ library("egg")
 library("DESeq2")
 library("vegan")
 library("stringr")
+library("dendextend")
 
-betadiversity_deseq2 <- function (PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_deseq2, metadata) { 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#                              #
+# DESeq2 normalization process #
+#                              #
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-    #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
-    ## ** Beginning of the script: analysis of the beta diversity **           ####
-    
+args = commandArgs(trailingOnly=TRUE)
+PHYLOSEQ = readRDS(args[1])
+final_deseq2_ASV_table_with_taxonomy = args[2]
+
+deseq2 = phyloseq_to_deseq2(PHYLOSEQ , ~ 1)
+gm_mean = function(x, na.rm=TRUE) {
+                   exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+                   }
+geoMeans = apply(counts(deseq2), 1, gm_mean)
+deseq2 = estimateSizeFactors(deseq2,geoMeans=geoMeans)
+deseq2 = estimateDispersions(deseq2,fitType="parametric",maxit=1000)
+deseq2_vst = getVarianceStabilizedData(deseq2)
+PHYLOSEQ_deseq2 = PHYLOSEQ
+otu_table(PHYLOSEQ_deseq2) = otu_table(deseq2_vst,taxa_are_rows=TRUE)
+otu_table(PHYLOSEQ_deseq2)[otu_table(PHYLOSEQ_deseq2) <0 ] <-0
+DESeq2_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_deseq2)),as.data.frame(tax_table(PHYLOSEQ_deseq2)))
+write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",")
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#										#
+# Function to standardize ordination analysis and plot for each distance matrix #
+#										#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+
+betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc) { 
+  
     #~~~~~~~~~~~~~~~~~~~~~~#
     # DESeq2 normalization #
     #~~~~~~~~~~~~~~~~~~~~~~#
-    deseq2 = phyloseq_to_deseq2(PHYLOSEQ , ~ 1)
-    gm_mean = function(x, na.rm=TRUE){
-      exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
-    }
-    geoMeans = apply(counts(deseq2), 1, gm_mean)
-    deseq2 = estimateSizeFactors(deseq2,geoMeans=geoMeans)
-    deseq2 = estimateDispersions(deseq2,fitType="parametric",maxit=1000)
-    deseq2_vst = getVarianceStabilizedData(deseq2)
-    PHYLOSEQ_deseq2 = PHYLOSEQ
-    otu_table(PHYLOSEQ_deseq2) = otu_table(deseq2_vst,taxa_are_rows=TRUE)
-    otu_table(PHYLOSEQ_deseq2)[otu_table(PHYLOSEQ_deseq2) <0 ] <-0
-    DESeq2_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_deseq2)),as.data.frame(tax_table(PHYLOSEQ_deseq2)))
-    write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",") 
     
+    ## Ordination process ####     
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
-    ord_deseq2 = ordinate(PHYLOSEQ_deseq2, "NMDS", distance,trymax = 1000)
+    
+    if (distance == "jaccard" | distance == "bray") {
+      ord_deseq2_nmds = ordinate(PHYLOSEQ_deseq2, "NMDS", distance,trymax = 1000)
+      ord_deseq2_pcoa = ordinate(PHYLOSEQ_deseq2, "PCoA", distance,trymax = 1000)
+    }
+    else {
+      ord_deseq2_nmds = ordinate(PHYLOSEQ_deseq2, "NMDS", distance)
+      ord_deseq2_pcoa = ordinate(PHYLOSEQ_deseq2, "PCoA", distance)
+    }
 
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     color_samples = color_vector[1:length(levels(metadata[,criteria]))]
     
     group_deseq2 = get_variable(PHYLOSEQ_deseq2, criteria)
-    PHYLOSEQ_deseq2_dist = phyloseq::distance(PHYLOSEQ_deseq2, "bray")
+    PHYLOSEQ_deseq2_dist = phyloseq::distance(PHYLOSEQ_deseq2, distance)
     anosim_result_deseq2 = anosim(PHYLOSEQ_deseq2_dist,group_deseq2, permutations = 999)
     
-    ### /3\ Sample analysis ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, sample ordination plot name, width of graph, heigth of graph, graph title
-    sample_nmds(PHYLOSEQ_deseq2, ord_deseq2, criteria, color_samples, anosim_result_deseq2, samples_ordination_plot_deseq2, 12, 10, "NMDS on deseq2 normalized data")
+    ### Sample analysis ####
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph, graph title
+    nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, anosim_result_deseq2, nmds_deseq2, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
+    mds_pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, anosim_result_deseq2, pcoa_deseq2, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
+
+    ## Hierarchical clsutering ####    
+    hc = hclust(PHYLOSEQ_deseq2_dist, method = method_hc)
+    dendro = as.dendrogram(hc)
+    group = data.frame(PHYLOSEQ_deseq2@sam_data[,criteria])[,1]
+    n_group = length(unique(group))
+    cols = color_vector[1:n_group]
+    col_group = cols[group]
+    plot.hc(dendro, group, cols, col_group, method_hc, distance, plot_hc, 12, 10)
 }
 
-main <- function(){
-    # Get arguments from RScript command line
-    args = commandArgs(trailingOnly=TRUE)
-    PHYLOSEQ = readRDS(args[1])
-    final_deseq2_ASV_table_with_taxonomy = args[2]
-    distance = args[3]
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#                                             #
+# Ordination process for each distance matrix #
+#                                             #
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+
+main_jaccard <- function(){
+    PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
+    distance = "jaccard"
     # get criteria and replace "-" character by "_"
-    criteria = str_replace(args[4], "-", "_")
-    samples_ordination_plot_deseq2 = args[5]
-    metadata = args[6]
-    workflow_dir = args[7]
-    if (!exists("sample_nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    betadiversity_deseq2(PHYLOSEQ, final_deseq2_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_deseq2, metadata)
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_deseq2 = args[6]
+    pcoa_deseq2 = args[10]
+    method_hc = args[14]
+    plot_hc = args[15]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
 if (!interactive()) {
-        main()
+        main_jaccard()
+}
+
+
+main_bray <- function(){
+    PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
+    distance = "bray"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_deseq2 = args[7]
+    pcoa_deseq2 = args[11]
+    method_hc = args[14]
+    plot_hc = args[16]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_bray()
+}
+
+main_unifrac <- function(){
+    PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
+    distance = "unifrac"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_deseq2 = args[8]
+    pcoa_deseq2 = args[12] 
+    method_hc = args[14]
+    plot_hc = args[17]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_unifrac()
+}
+
+main_wunifrac <- function(){
+    PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
+    distance = "wunifrac"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_deseq2 = args[9]
+    pcoa_deseq2 = args[13]
+    method_hc = args[14]
+    plot_hc = args[18]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_wunifrac()
 }

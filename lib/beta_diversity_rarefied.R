@@ -12,7 +12,7 @@
 ##         SeBiMER, Ifremer                                                  ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-10-23                                                 ####
+## Modified on: 2019-12-11                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
@@ -35,48 +35,154 @@ library("tidyr")
 library("gridExtra")
 library("egg")
 library("vegan")
+library("dendextend")
 
-betadiversity_rarefied <- function (PHYLOSEQ, final_rarefied_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_rarefied, metadata) {
+# @@@@@@@@@@@@@@@@@@@ #
+#                     #
+# Rarefaction process #
+#                     #
+# @@@@@@@@@@@@@@@@@@@ #
 
-    #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
-    ## ** Beginning of the script: analysis of the beta diversity **           ####
-    
+args = commandArgs(trailingOnly=TRUE)
+PHYLOSEQ = readRDS(args[1])
+final_rarefied_ASV_table_with_taxonomy = args[2]
+
+PHYLOSEQ_rarefied = rarefy_even_depth(PHYLOSEQ, sample.size=min(sample_sums(PHYLOSEQ)),rngseed=1000,replace=TRUE,trimOTUs=TRUE)
+rarefied_table = cbind(as.data.frame(otu_table(PHYLOSEQ_rarefied)),as.data.frame(tax_table(PHYLOSEQ_rarefied)))
+write.table(rarefied_table,final_rarefied_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".",quote=F)
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#										#
+# Function to standardize ordination analysis and plot for each distance matrix #
+#										#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+
+betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc) {
+   
     #~~~~~~~~~~~~~~~#
     # Rarefied data #
     #~~~~~~~~~~~~~~~#
-    PHYLOSEQ_rarefied = rarefy_even_depth(PHYLOSEQ, sample.size=min(sample_sums(PHYLOSEQ)),rngseed=1000,replace=TRUE,trimOTUs=TRUE)
-    rarefied_table = cbind(as.data.frame(otu_table(PHYLOSEQ_rarefied)),as.data.frame(tax_table(PHYLOSEQ_rarefied)))
-    write.table(rarefied_table,final_rarefied_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".",quote=F) 
 
+    ## Ordination process ####
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
-    ord_rarefied = ordinate(PHYLOSEQ_rarefied, "NMDS", distance, trymax = 1000)
+    
+    if (distance == "jaccard" | distance == "bray") {
+      ord_rarefied_nmds = ordinate(PHYLOSEQ_rarefied, "NMDS", distance, trymax = 1000)
+      ord_rarefied_pcoa = ordinate(PHYLOSEQ_rarefied, "PCoA", distance, trymax = 1000)
+    }
+    else {
+      ord_rarefied_nmds = ordinate(PHYLOSEQ_rarefied, "NMDS", distance)
+      ord_rarefied_pcoa = ordinate(PHYLOSEQ_rarefied, "PCoA", distance)
+    }
 
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     color_samples = color_vector[1:length(levels(metadata[,criteria]))]
     
     group_rarefied = get_variable(PHYLOSEQ_rarefied, criteria)
-    anosim_result_rarefied = anosim(distance(PHYLOSEQ_rarefied,"bray"),group_rarefied, permutations = 999)
+    anosim_result_rarefied = anosim(distance(PHYLOSEQ_rarefied,distance),group_rarefied, permutations = 999)
 
-    ## /3\ Sample analysis ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, sample ordination plot name, width of graph, heigth of graph, graph title
-    sample_nmds(PHYLOSEQ_rarefied, ord_rarefied, criteria, color_samples, anosim_result_rarefied, samples_ordination_plot_rarefied, 12, 10, "NMDS on rarefied data")
+    ## Sample analysis ####
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph, graph title
+    nmds(PHYLOSEQ_rarefied, ord_rarefied_nmds, criteria, color_samples, anosim_result_rarefied, nmds_rarefied, 12, 10, paste("NMDS on rarefied data","based on",distance,"distance",sep=" "))
+    mds_pcoa(PHYLOSEQ_rarefied, ord_rarefied_pcoa, criteria, color_samples, anosim_result_rarefied, pcoa_rarefied, 12, 10, paste("MDS-PCoA on rarefied data","based on",distance,"distance",sep=" "))
+
+    ## Hierarchical clsutering ####
+    dist = distance(PHYLOSEQ_rarefied, distance, type="samples")
+    hc = hclust(dist, method = method_hc)
+    dendro = as.dendrogram(hc)
+    group = data.frame(PHYLOSEQ_rarefied@sam_data[,criteria])[,1]
+    n_group = length(unique(group))
+    cols = color_vector[1:n_group]
+    col_group = cols[group]
+    plot.hc(dendro, group, cols, col_group, method_hc, distance, plot_hc, 12, 10)
 }
 
-main <- function(){
-    # Get arguments from RScript command line
-    args = commandArgs(trailingOnly=TRUE)
-    PHYLOSEQ = readRDS(args[1]) 
-    final_rarefied_ASV_table_with_taxonomy = args[2]
-    distance = args[3]
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#                                             #
+# Ordination process for each distance matrix #
+#                                             #
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+
+main_jaccard <- function(){
+    PHYLOSEQ_rarefied = PHYLOSEQ_rarefied 
+    distance = "jaccard"
     # get criteria and replace "-" character by "_"
-    criteria = str_replace(args[4], "-", "_")
-    samples_ordination_plot_rarefied = args[5]
-    metadata = args[6]
-    workflow_dir = args[7]
-    if (!exists("sample_nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    betadiversity_rarefied(PHYLOSEQ, final_rarefied_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_rarefied, metadata)
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_rarefied = args[6]
+    pcoa_rarefied = args[10]
+    method_hc = args[14]
+    plot_hc = args[15] 
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
 }
 
 if (!interactive()) {
-        main()
+        main_jaccard()
+}
+
+main_bray <- function(){
+    PHYLOSEQ_rarefied = PHYLOSEQ_rarefied
+    distance = "bray"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_rarefied = args[7]
+    pcoa_rarefied = args[11]
+    method_hc = args[14]
+    plot_hc = args[16]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_bray()
+}
+
+main_unifrac <- function(){
+    PHYLOSEQ_rarefied = PHYLOSEQ_rarefied
+    distance = "unifrac"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_rarefied = args[8]
+    pcoa_rarefied = args[12]
+    method_hc = args[14]
+    plot_hc = args[17]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_unifrac()
+}
+
+main_wunifrac <- function(){
+    PHYLOSEQ_rarefied = PHYLOSEQ_rarefied
+    distance = "wunifrac"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_rarefied = args[9]
+    pcoa_rarefied = args[13]
+    method_hc = args[14]
+    plot_hc = args[18]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_wunifrac()
 }

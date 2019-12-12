@@ -12,7 +12,7 @@
 ##         SeBiMER, Ifremer                                                  ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-10-23                                                 ####
+## Modified on: 2019-12-11                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
@@ -35,55 +35,162 @@ library("egg")
 library("metagenomeSeq")
 library("vegan")
 library("stringr")
+library("dendextend")
 
-betadiversity_css <- function (PHYLOSEQ, final_css_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_css, metadata) {
+# @@@@@@@@@@@@@@@@@@@@@@@@@ #
+#                           #
+# CSS normalization process #
+#                           #
+# @@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-    #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
-    ## ** Beginning of the script: analysis of the beta diversity **           ####
-    
+args = commandArgs(trailingOnly=TRUE)
+PHYLOSEQ = readRDS(args[1])
+final_css_ASV_table_with_taxonomy = args[2]
+
+css = phyloseq_to_metagenomeSeq(PHYLOSEQ)
+p = cumNormStatFast(css)
+css = cumNorm(css, p=p)
+css_norm_factor = normFactors(css)
+CSS_TABLE = MRcounts(css, norm = T)
+PHYLOSEQ_css = PHYLOSEQ
+otu_table(PHYLOSEQ_css) = otu_table(CSS_TABLE,taxa_are_rows=TRUE)
+CSS_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_css)),as.data.frame(tax_table(PHYLOSEQ_css)))
+write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",")
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#										#
+# Function to standardize ordination analysis and plot for each distance matrix #
+#										#
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+
+betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc) {
+
     #~~~~~~~~~~~~~~~~~~~#
     # CSS normalization #
     #~~~~~~~~~~~~~~~~~~~#
-    css = phyloseq_to_metagenomeSeq(PHYLOSEQ)
-    p = cumNormStatFast(css)
-    css = cumNorm(css, p=p)
-    css_norm_factor = normFactors(css)          
-    CSS_TABLE = MRcounts(css, norm = T)
-    PHYLOSEQ_css = PHYLOSEQ
-    otu_table(PHYLOSEQ_css) = otu_table(CSS_TABLE,taxa_are_rows=TRUE)
-    CSS_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_css)),as.data.frame(tax_table(PHYLOSEQ_css)))
-    write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",") 
     
+    ## Ordination process ####
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
-    ord_css = ordinate(PHYLOSEQ_css,"NMDS", distance, trymax = 1000)
+    
+    if (distance == "jaccard" | distance == "bray") {    
+      ord_css_nmds = ordinate(PHYLOSEQ_css,"NMDS", distance, trymax = 1000)
+      ord_css_pcoa = ordinate(PHYLOSEQ_css,"PCoA", distance, trymax = 1000)
+    }
+    else {
+      ord_css_nmds = ordinate(PHYLOSEQ_css,"NMDS", distance)
+      ord_css_pcoa = ordinate(PHYLOSEQ_css,"PCoA", distance)
+    }
 
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     color_samples = color_vector[1:length(levels(metadata[,criteria]))]
     
     group_css = get_variable(PHYLOSEQ_css, criteria)
-    anosim_result_css = anosim(distance(PHYLOSEQ_css,"bray"),group_css, permutations = 999)
+    anosim_result_css = anosim(distance(PHYLOSEQ_css,distance),group_css, permutations = 999)
     
-    ### /3\ Sample analysis ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, sample ordination plot name, width of graph, heigth of graph, graph title
-    sample_nmds(PHYLOSEQ_css, ord_css, criteria, color_samples, anosim_result_css, samples_ordination_plot_css, 12, 10, "NMDS on CSS normalized data")
+    ### Sample analysis ####
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph, graph title
+    nmds(PHYLOSEQ_css, ord_css_nmds, criteria, color_samples, anosim_result_css, nmds_css, 12, 10, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "))
+    mds_pcoa(PHYLOSEQ_css, ord_css_pcoa, criteria, color_samples, anosim_result_css, pcoa_css, 12, 10, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "))
+
+    ## Hierarchical clsutering ####    
+    dist = distance(PHYLOSEQ_css, distance, type="samples")
+    hc = hclust(dist, method = method_hc)
+    dendro = as.dendrogram(hc)
+    group = data.frame(PHYLOSEQ_css@sam_data[,criteria])[,1]
+    n_group = length(unique(group))
+    cols = color_vector[1:n_group]
+    col_group = cols[group]
+    plot.hc(dendro, group, cols, col_group, method_hc, distance, plot_hc, 12, 10)
+
 }
 
-main <- function(){
-    # Get arguments from RScript command line
-    args = commandArgs(trailingOnly=TRUE)
-    PHYLOSEQ = readRDS(args[1])
-    final_css_ASV_table_with_taxonomy = args[2]
-    distance = args[3]
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#                                             #
+# Ordination process for each distance matrix #
+#                                             #
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+
+main_jaccard <- function(){
+    PHYLOSEQ_css = PHYLOSEQ_css
+    distance = "jaccard"
     # get criteria and replace "-" character by "_"
-    criteria = str_replace(args[4], "-", "_")
-    samples_ordination_plot_css = args[5]
-    metadata = args[6]
-    workflow_dir = args[7]
-    if (!exists("sample_nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    betadiversity_css(PHYLOSEQ, final_css_ASV_table_with_taxonomy, distance, criteria, samples_ordination_plot_css, metadata)
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_css = args[6]
+    pcoa_css = args[10]
+    method_hc = args[14]
+    plot_hc = args[15]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
 }
 
 if (!interactive()) {
-        main()
+        main_jaccard()
+}
+
+main_bray <- function(){
+    PHYLOSEQ_css = PHYLOSEQ_css
+    distance = "bray"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_css = args[7]
+    pcoa_css = args[11]
+    method_hc = args[14]
+    plot_hc = args[16]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_bray()
+}
+
+main_unifrac <- function(){
+    PHYLOSEQ_css = PHYLOSEQ_css
+    distance = "unifrac"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_css = args[8]
+    pcoa_css = args[12]
+    method_hc = args[14]
+    plot_hc = args[17]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_unifrac()
+}
+
+main_wunifrac <- function(){
+    PHYLOSEQ_css = PHYLOSEQ_css
+    distance = "wunifrac"
+    # get criteria and replace "-" character by "_"
+    criteria = str_replace(args[3], "-", "_")
+    metadata = args[4]
+    workflow_dir = args[5]
+    nmds_css = args[9]
+    pcoa_css = args[13]
+    method_hc = args[14]
+    plot_hc = args[18]
+    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css,method_hc, plot_hc)
+}
+
+if (!interactive()) {
+        main_wunifrac()
 }
 

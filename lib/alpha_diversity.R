@@ -139,6 +139,12 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", nbtax, fill="Genus", group, color_bar, barplot_genus)
 }
 
+# @@@@@@@@@@@@@@@@@@@@@@@@ #
+#                          #
+# Alpha diversity analyses #
+#                          #
+# @@@@@@@@@@@@@@@@@@@@@@@@ #
+
 main <- function() {
     # Get arguments from RScript command line
     args = commandArgs(trailingOnly=TRUE)

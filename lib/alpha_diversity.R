@@ -26,7 +26,7 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## Install (if necessary) and load up the needed packages ####
-requiredPackages_CRAN = c("dplyr","stringr","ggplot2","svglite","tidyr","gridExtra","egg","reshape2","BiocManager")
+requiredPackages_CRAN = c("dplyr","stringr","ggplot2","svglite","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager")
 for(package in requiredPackages_CRAN){
   if(!require(package,character.only = TRUE)) install.packages(package)
   library(package,character.only = TRUE)

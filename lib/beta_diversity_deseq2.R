@@ -26,18 +26,18 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-## Load up the packages needed ####
-library("phyloseq")
-library("ggplot2")
-library("RColorBrewer")
-library("svglite")
-library("tidyr")
-library("gridExtra")
-library("egg")
-library("DESeq2")
-library("vegan")
-library("stringr")
-library("dendextend")
+## Install (if necessary) and load up the needed packages ####
+requiredPackages_CRAN = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager")
+for(package in requiredPackages_CRAN){
+  if(!require(package,character.only = TRUE)) install.packages(package)
+  library(package,character.only = TRUE)
+}
+
+requiredPackages_BIOCONDUCTOR = c("phyloseq"; "DESeq2")
+for(package in requiredPackages_BIOCONDUCTOR){
+  if(!require(package,character.only = TRUE)) BiocManager::install(package)
+  library(package,character.only = TRUE)
+}
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 #                              #
@@ -45,7 +45,9 @@ library("dendextend")
 #                              #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
+# Get arguments from RScript command line
 args = commandArgs(trailingOnly=TRUE)
+
 PHYLOSEQ = readRDS(args[1])
 final_deseq2_ASV_table_with_taxonomy = args[2]
 
@@ -94,8 +96,8 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, criteria,
     PHYLOSEQ_deseq2_dist = phyloseq::distance(PHYLOSEQ_deseq2, distance)
     anosim_result_deseq2 = anosim(PHYLOSEQ_deseq2_dist,group_deseq2, permutations = 999)
     
-    ### Sample analysis ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph, graph title
+    ## Sample analysis ####
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, anosim_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, anosim_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
 
@@ -118,7 +120,7 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, criteria,
 main_jaccard <- function(){
     PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
     distance = "jaccard"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -126,7 +128,9 @@ main_jaccard <- function(){
     pcoa_deseq2 = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
@@ -138,7 +142,7 @@ if (!interactive()) {
 main_bray <- function(){
     PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
     distance = "bray"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -146,7 +150,9 @@ main_bray <- function(){
     pcoa_deseq2 = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
@@ -157,7 +163,7 @@ if (!interactive()) {
 main_unifrac <- function(){
     PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
     distance = "unifrac"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -165,7 +171,9 @@ main_unifrac <- function(){
     pcoa_deseq2 = args[7] 
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2,  pcoa_deseq2, method_hc, plot_hc)
 }
 
@@ -176,7 +184,7 @@ if (!interactive()) {
 main_wunifrac <- function(){
     PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
     distance = "wunifrac"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -184,7 +192,9 @@ main_wunifrac <- function(){
     pcoa_deseq2 = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 

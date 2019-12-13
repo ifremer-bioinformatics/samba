@@ -96,12 +96,12 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, criteria,
     PHYLOSEQ_deseq2_dist = phyloseq::distance(PHYLOSEQ_deseq2, distance)
     anosim_result_deseq2 = anosim(PHYLOSEQ_deseq2_dist,group_deseq2, permutations = 999)
     
-    ## Sample analysis ####
+    ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, anosim_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, anosim_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
 
-    ## Hierarchical clsutering ####    
+    ## Hierarchical clustering ####    
     hc = hclust(PHYLOSEQ_deseq2_dist, method = method_hc)
     dendro = as.dendrogram(hc)
     group = data.frame(PHYLOSEQ_deseq2@sam_data[,criteria])[,1]

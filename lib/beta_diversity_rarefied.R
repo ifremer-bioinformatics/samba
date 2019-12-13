@@ -83,12 +83,12 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, crite
     group_rarefied = get_variable(PHYLOSEQ_rarefied, criteria)
     anosim_result_rarefied = anosim(distance(PHYLOSEQ_rarefied,distance),group_rarefied, permutations = 999)
 
-    ## Sample analysis ####
+    ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_rarefied, ord_rarefied_nmds, criteria, color_samples, anosim_result_rarefied, nmds_rarefied, distance, 12, 10, paste("NMDS on rarefied data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_rarefied, ord_rarefied_pcoa, criteria, color_samples, anosim_result_rarefied, pcoa_rarefied, distance, 12, 10, paste("MDS-PCoA on rarefied data","based on",distance,"distance",sep=" "))
 
-    ## Hierarchical clsutering ####
+    ## Hierarchical clustering ####
     dist = distance(PHYLOSEQ_rarefied, distance, type="samples")
     hc = hclust(dist, method = method_hc)
     dendro = as.dendrogram(hc)

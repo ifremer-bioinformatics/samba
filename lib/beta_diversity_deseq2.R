@@ -33,7 +33,7 @@ for(package in requiredPackages_CRAN){
   library(package,character.only = TRUE)
 }
 
-requiredPackages_BIOCONDUCTOR = c("phyloseq"; "DESeq2")
+requiredPackages_BIOCONDUCTOR = c("phyloseq", "DESeq2")
 for(package in requiredPackages_BIOCONDUCTOR){
   if(!require(package,character.only = TRUE)) BiocManager::install(package)
   library(package,character.only = TRUE)

@@ -27,18 +27,18 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-## Load up the packages needed ####
-library("phyloseq")
-library("ggplot2")
-library("RColorBrewer")
-library("svglite")
-library("tidyr")
-library("gridExtra")
-library("egg")
-library("metagenomeSeq")
-library("vegan")
-library("stringr")
-library("dendextend")
+## Install (if necessary) and load up the needed packages ####
+requiredPackages_CRAN = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager")
+for(package in requiredPackages_CRAN){
+  if(!require(package,character.only = TRUE)) install.packages(package)
+  library(package,character.only = TRUE)
+}
+
+requiredPackages_BIOCONDUCTOR = c("phyloseq","metagenomeSeq")
+for(package in requiredPackages_BIOCONDUCTOR){
+  if(!require(package,character.only = TRUE)) BiocManager::install(package)
+  library(package,character.only = TRUE)
+}
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@ #
 #                           #
@@ -90,12 +90,12 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, criteria, nmds_
     group_css = get_variable(PHYLOSEQ_css, criteria)
     anosim_result_css = anosim(distance(PHYLOSEQ_css,distance),group_css, permutations = 999)
     
-    ### Sample analysis ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph, graph title
+    ## Ordination plots ####
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_css, ord_css_nmds, criteria, color_samples, anosim_result_css, nmds_css, distance, 12, 10, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_css, ord_css_pcoa, criteria, color_samples, anosim_result_css, pcoa_css, distance, 12, 10, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "))
 
-    ## Hierarchical clsutering ####    
+    ## Hierarchical clustering ####    
     dist = distance(PHYLOSEQ_css, distance, type="samples")
     hc = hclust(dist, method = method_hc)
     dendro = as.dendrogram(hc)
@@ -115,7 +115,7 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, criteria, nmds_
 main_jaccard <- function(){
     PHYLOSEQ_css = PHYLOSEQ_css
     distance = "jaccard"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -123,7 +123,9 @@ main_jaccard <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
 }
 
@@ -134,7 +136,7 @@ if (!interactive()) {
 main_bray <- function(){
     PHYLOSEQ_css = PHYLOSEQ_css
     distance = "bray"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -142,7 +144,9 @@ main_bray <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
 }
 
@@ -153,7 +157,7 @@ if (!interactive()) {
 main_unifrac <- function(){
     PHYLOSEQ_css = PHYLOSEQ_css
     distance = "unifrac"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -161,7 +165,9 @@ main_unifrac <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
 }
 
@@ -172,7 +178,7 @@ if (!interactive()) {
 main_wunifrac <- function(){
     PHYLOSEQ_css = PHYLOSEQ_css
     distance = "wunifrac"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[3], "-", "_")
     metadata = args[4]
     workflow_dir = args[5]
@@ -180,7 +186,9 @@ main_wunifrac <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity_css(PHYLOSEQ_css, distance, metadata, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
 }
 

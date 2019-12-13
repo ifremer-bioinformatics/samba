@@ -44,7 +44,7 @@ library("dendextend")
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
  
-betadiversity <- function(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc) {
+betadiversity <- function(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc){
     
     #~~~~~~~~~~~~~~~~~~~~~#
     # Non-normalized data #
@@ -70,8 +70,8 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, me
 
     ## Sample analysis ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph
-    nmds(PHYLOSEQ, ord_nmds, criteria, color_samples, anosim_result, nmds, 12, 10, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
-    mds_pcoa(PHYLOSEQ, ord_pcoa, criteria, color_samples, anosim_result, pcoa, 12, 10, paste("MDS-PCoA on non-normalized data","based on",distance,"distance",sep=" "))
+    plot.nmds(PHYLOSEQ, ord_nmds, criteria, color_samples, anosim_result, nmds, distance, 12, 10, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
+    plot.pcoa(PHYLOSEQ, ord_pcoa, criteria, color_samples, anosim_result, pcoa, distance, 12, 10, paste("MDS-PCoA on non-normalized data","based on",distance,"distance",sep=" "))
     
     ## Hierarchical clsutering ####    
     dist = distance(PHYLOSEQ, distance, type="samples")
@@ -81,7 +81,7 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, me
     n_group = length(unique(group))
     cols = color_vector[1:n_group]
     col_group = cols[group]
-    plot.hc(dendro, group, cols, col_group, method_hc, distance, plot_hc, 12, 10)
+    plot.hc(dendro, group, cols, col_group, method_hc, plot_hc, distance, 12, 10)
 }
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
@@ -100,12 +100,10 @@ main_jaccard  <- function(){
     metadata = args[3]
     workflow_dir = args[4]
     nmds = args[5]
-    pcoa = args[9]
-    method_hc = args[13]
-    plot_hc = args[14]
-    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    pcoa = args[6]
+    method_hc = args[7]
+    plot_hc = args[8]
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 
@@ -115,7 +113,7 @@ if (!interactive()) {
 
 
 main_bray  <- function(){
-    # Get arguments from RScript command line
+    # Get arguments from RScript command lin
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = "bray"
@@ -123,13 +121,11 @@ main_bray  <- function(){
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
-    nmds = args[6]
-    pcoa = args[10]
-    method_hc = args[13]
-    plot_hc = args[15]
-    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    nmds = args[5]
+    pcoa = args[6]
+    method_hc = args[7]
+    plot_hc = args[8]
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 
@@ -146,13 +142,11 @@ main_unifrac  <- function(){
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
-    nmds = args[7]
-    pcoa = args[11]
-    method_hc = args[13]
-    plot_hc = args[16]
-    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    nmds = args[5]
+    pcoa = args[6]
+    method_hc = args[7]
+    plot_hc = args[8]
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 
@@ -169,18 +163,14 @@ main_wunifrac  <- function(){
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
-    nmds = args[8]
-    pcoa = args[12]
-    method_hc = args[13]
-    plot_hc = args[17]
-    if (!exists("nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("mds_pcoa", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
-    if (!exists("plot.hc", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    nmds = args[5]
+    pcoa = args[6]
+    method_hc = args[7]
+    plot_hc = args[8]
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
-
 
 if (!interactive()) {
         main_wunifrac()
 }
-

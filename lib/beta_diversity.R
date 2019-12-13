@@ -71,7 +71,7 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, me
     anosim_result = anosim(distance(PHYLOSEQ,distance),group, permutations = 999)
 
     ## Sample analysis ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, width of graph, heigth of graph
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, distance, width of graph, heigth of graph
     plot.nmds(PHYLOSEQ, ord_nmds, criteria, color_samples, anosim_result, nmds, distance, 12, 10, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ, ord_pcoa, criteria, color_samples, anosim_result, pcoa, distance, 12, 10, paste("MDS-PCoA on non-normalized data","based on",distance,"distance",sep=" "))
     
@@ -97,7 +97,7 @@ main_jaccard  <- function(){
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = "jaccard"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
@@ -105,7 +105,9 @@ main_jaccard  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 
@@ -119,7 +121,7 @@ main_bray  <- function(){
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = "bray"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
@@ -127,7 +129,9 @@ main_bray  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 
@@ -140,7 +144,7 @@ main_unifrac  <- function(){
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = "unifrac"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
@@ -148,7 +152,9 @@ main_unifrac  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 
@@ -161,7 +167,7 @@ main_wunifrac  <- function(){
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = "wunifrac"
-    # get criteria and replace "-" character by "_"
+    # Get criteria and replace "-" character by "_"
     criteria = str_replace(args[2], "-", "_")
     metadata = args[3]
     workflow_dir = args[4]
@@ -169,7 +175,9 @@ main_wunifrac  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
+    # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, criteria, nmds, pcoa, method_hc, plot_hc)
 }
 

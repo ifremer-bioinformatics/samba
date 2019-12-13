@@ -57,7 +57,7 @@ if(!params.stats_only){
 
     script :
     """
-    ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
+    ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
     if test -f "verifications.bad"; then
         echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
         mkdir -p ${params.outdir}/${params.data_integrity_dirname}
@@ -279,16 +279,19 @@ process stats_alpha {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : '*.png'
     
     input :
         file phyloseq_rds from phyloseq_rds_alpha
 
     output :
-        file 'alpha_div_plots_*.svg' into alpha_div_plots
+        file 'alpha_div_plots_*' into alpha_div_plots
         file 'index_significance_tests.txt' into index_significance_tests
-        file 'barplot_relabund_phylum_*.svg' into barplot_relabund_phylum
-        file 'barplot_relabund_family_*.svg' into barplot_relabund_family
-        file 'barplot_relabund_genus_*.svg' into barplot_relabund_genus
+        file 'barplot_phylum_*' into barplot_phylum
+        file 'barplot_class_*' into barplot_class
+        file 'barplot_order_*' into barplot_order
+        file 'barplot_family_*' into barplot_family
+        file 'barplot_genus_*' into barplot_genus
         file 'completecmd' into complete_cmd_alpha
 
     //Run only if process is activated in params.config file
@@ -297,7 +300,7 @@ process stats_alpha {
     
     script :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.perc_abund_threshold} ${params.stats.distance} alpha_div_plots_${params.stats.alpha_div_group}.svg barplot_relabund_phylum_${params.stats.alpha_div_group}.svg barplot_relabund_family_${params.stats.alpha_div_group}.svg barplot_relabund_genus_${params.stats.alpha_div_group}.svg ${params.stats.alpha_div_group} index_significance_tests.txt > stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.distance} alpha_div_plots_${params.stats.alpha_div_group} ${params.stats.kingdom} ${params.stats.nbtax} barplot_phylum_${params.stats.alpha_div_group} barplot_class_${params.stats.alpha_div_group} barplot_order_${params.stats.alpha_div_group} barplot_family_${params.stats.alpha_div_group} barplot_genus_${params.stats.alpha_div_group} ${params.stats.alpha_div_group} index_significance_tests.txt $workflow.projectDir > stats_alpha_diversity.log 2>&1
     cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }
@@ -308,6 +311,7 @@ process stats_beta {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode: 'copy', pattern : '*.svg'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode: 'copy', pattern : '*.png'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
@@ -316,18 +320,9 @@ process stats_beta {
  
     output :
         file 'completecmd' into complete_cmd_beta
-        file 'NMDS_jaccard_*.svg' into NMDS_jaccard
-        file 'NMDS_bray_*.svg' into NMDS_bray
-        file 'NMDS_unifrac_*.svg' into NMDS_unifrac
-        file 'NMDS_wunifrac_*.svg' into NMDS_wunifrac
-        file 'PCoA_jaccard_*.svg' into PCoA_jaccard
-        file 'PCoA_bray_*.svg' into PCoA_bray
-        file 'PCoA_unifrac_*.svg' into PCoA_unifrac
-        file 'PCoA_wunifrac_*.svg' into PCoA_wunifrac
-        file 'hclustering_jaccard*.svg' into hclustering_jaccard
-        file 'hclustering_bray*.svg' into hclustering_bray
-        file 'hclustering_unifrac*.svg' into hclustering_unifrac
-        file 'hclustering_wunifrac*.svg' into hclustering_wunifrac
+        file 'NMDS_*' into NMDS
+        file 'PCoA_*' into PCoA
+        file 'hclustering_*' into hclustering
 
     //Run only if process is activated in params.config file
     when :
@@ -336,7 +331,7 @@ process stats_beta {
  
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_jaccard_${params.stats.beta_div_criteria}.svg NMDS_bray_${params.stats.beta_div_criteria}.svg NMDS_unifrac_${params.stats.beta_div_criteria}.svg NMDS_wunifrac_${params.stats.beta_div_criteria}.svg PCoA_jaccard_${params.stats.beta_div_criteria}.svg PCoA_bray_${params.stats.beta_div_criteria}.svg PCoA_unifrac_${params.stats.beta_div_criteria}.svg PCoA_wunifrac_${params.stats.beta_div_criteria}.svg ${params.stats.hc_method} hclustering_jaccard_${params.stats.beta_div_criteria}.svg hclustering_bray_${params.stats.beta_div_criteria}.svg hclustering_unifrac_${params.stats.beta_div_criteria}.svg hclustering_wunifrac_${params.stats.beta_div_criteria}.svg > stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_${params.stats.beta_div_criteria} PCoA_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_${params.stats.beta_div_criteria} > stats_beta_diversity.log 2>&1
     cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
     """
 }
@@ -355,18 +350,9 @@ process stats_beta_rarefied {
     output :
         file 'completecmd' into complete_cmd_beta_rarefied
         file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
-        file 'NMDS_rarefied_jaccard_*.svg' into NMDS_rarefied_jaccard
-        file 'NMDS_rarefied_bray_*.svg' into NMDS_rarefied_bray
-        file 'NMDS_rarefied_unifrac_*.svg' into NMDS_rarefied_unifrac
-        file 'NMDS_rarefied_wunifrac_*.svg' into NMDS_rarefied_wunifrac
-        file 'PCoA_rarefied_jaccard_*.svg' into PCoA_rarefied_jaccard
-        file 'PCoA_rarefied_bray_*.svg' into PCoA_rarefied_bray
-        file 'PCoA_rarefied_unifrac_*.svg' into PCoA_rarefied_unifrac
-        file 'PCoA_rarefied_wunifrac_*.svg' into PCoA_rarefied_wunifrac
-        file 'hclustering_rarefied_jaccard*.svg' into hclustering_rarefied_jaccard
-        file 'hclustering_rarefied_bray*.svg' into hclustering_rarefied_bray
-        file 'hclustering_rarefied_unifrac*.svg' into hclustering_rarefied_unifrac
-        file 'hclustering_rarefied_wunifrac*.svg' into hclustering_rarefied_wunifrac
+        file 'NMDS_rarefied_*' into NMDS_rarefied
+        file 'PCoA_rarefied_*' into PCoA_rarefied
+        file 'hclustering_rarefied_*' into hclustering_rarefied
 
     //Run only if process is activated in params.config file
     when :
@@ -374,7 +360,7 @@ process stats_beta_rarefied {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_jaccard_${params.stats.beta_div_criteria}.svg NMDS_rarefied_bray_${params.stats.beta_div_criteria}.svg NMDS_rarefied_unifrac_${params.stats.beta_div_criteria}.svg NMDS_rarefied_wunifrac_${params.stats.beta_div_criteria}.svg PCoA_rarefied_jaccard_${params.stats.beta_div_criteria}.svg PCoA_rarefied_bray_${params.stats.beta_div_criteria}.svg PCoA_rarefied_unifrac_${params.stats.beta_div_criteria}.svg PCoA_rarefied_wunifrac_${params.stats.beta_div_criteria}.svg ${params.stats.hc_method} hclustering_rarefied_jaccard_${params.stats.beta_div_criteria}.svg hclustering_rarefied_bray_${params.stats.beta_div_criteria}.svg hclustering_rarefied_unifrac_${params.stats.beta_div_criteria}.svg hclustering_rarefied_wunifrac_${params.stats.beta_div_criteria}.svg > stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_${params.stats.beta_div_criteria} PCoA_rarefied_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_rarefied_${params.stats.beta_div_criteria} > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
 }
@@ -393,26 +379,17 @@ process stats_beta_deseq2 {
     output :
         file 'completecmd' into complete_cmd_beta_deseq2
         file 'Final_deseq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        file 'NMDS_deseq2_jaccard_*.svg' into NMDS_deseq2_jaccard
-        file 'NMDS_deseq2_bray_*.svg' into NMDS_deseq2_bray
-        file 'NMDS_deseq2_unifrac_*.svg' into NMDS_deseq2_unifrac
-        file 'NMDS_deseq2_wunifrac_*.svg' into NMDS_deseq2_wunifrac
-        file 'PCoA_deseq2_jaccard_*.svg' into PCoA_deseq2_jaccard
-        file 'PCoA_deseq2_bray_*.svg' into PCoA_deseq2_bray
-        file 'PCoA_deseq2_unifrac_*.svg' into PCoA_deseq2_unifrac
-        file 'PCoA_deseq2_wunifrac_*.svg' into PCoA_deseq2_wunifrac
-        file 'hclustering_deseq2_jaccard*.svg' into hclustering_deseq2_jaccard
-        file 'hclustering_deseq2_bray*.svg' into hclustering_deseq2_bray
-        file 'hclustering_deseq2_unifrac*.svg' into hclustering_deseq2_unifrac
-        file 'hclustering_deseq2_wunifrac*.svg' into hclustering_deseq2_wunifrac
-
+        file 'NMDS_deseq2_*' into NMDS_deseq2
+        file 'PCoA_deseq2_*' into PCoA_deseq2
+        file 'hclustering_deseq2_*' into hclustering_deseq2
+        
     //Run only if process is activated in params.config file
     when :
     params.stats_beta_enable
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_deseq2_jaccard_${params.stats.beta_div_criteria}.svg NMDS_deseq2_bray_${params.stats.beta_div_criteria}.svg NMDS_deseq2_unifrac_${params.stats.beta_div_criteria}.svg NMDS_deseq2_wunifrac_${params.stats.beta_div_criteria}.svg PCoA_deseq2_jaccard_${params.stats.beta_div_criteria}.svg PCoA_deseq2_bray_${params.stats.beta_div_criteria}.svg PCoA_deseq2_unifrac_${params.stats.beta_div_criteria}.svg PCoA_deseq2_wunifrac_${params.stats.beta_div_criteria}.svg ${params.stats.hc_method} hclustering_deseq2_jaccard_${params.stats.beta_div_criteria}.svg hclustering_deseq2_bray_${params.stats.beta_div_criteria}.svg hclustering_deseq2_unifrac_${params.stats.beta_div_criteria}.svg hclustering_deseq2_wunifrac_${params.stats.beta_div_criteria}.svg > stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_deseq2_${params.stats.beta_div_criteria} PCoA_deseq2_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_deseq2_${params.stats.beta_div_criteria} > stats_beta_diversity_deseq2.log 2>&1
     cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """
 }
@@ -431,18 +408,9 @@ process stats_beta_css {
     output :
         file 'completecmd' into complete_cmd_beta_css
         file 'Final_css_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        file 'NMDS_css_jaccard_*.svg' into NMDS_css_jaccard
-        file 'NMDS_css_bray_*.svg' into NMDS_css_bray
-        file 'NMDS_css_unifrac_*.svg' into NMDS_css_unifrac
-        file 'NMDS_css_wunifrac_*.svg' into NMDS_css_wunifrac
-        file 'PCoA_css_jaccard_*.svg' into PCoA_css_jaccard
-        file 'PCoA_css_bray_*.svg' into PCoA_css_bray
-        file 'PCoA_css_unifrac_*.svg' into PCoA_css_unifrac
-        file 'PCoA_css_wunifrac_*.svg' into PCoA_css_wunifrac
-        file 'hclustering_css_jaccard*.svg' into hclustering_css_jaccard
-        file 'hclustering_css_bray*.svg' into hclustering_css_bray
-        file 'hclustering_css_unifrac*.svg' into hclustering_css_unifrac
-        file 'hclustering_css_wunifrac*.svg' into hclustering_css_wunifrac
+        file 'NMDS_css_*' into NMDS_css
+        file 'PCoA_css_*' into PCoA_css
+        file 'hclustering_css_*' into hclustering_css
 
     //Run only if process is activated in params.config file
     when :
@@ -450,7 +418,7 @@ process stats_beta_css {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_css_jaccard_${params.stats.beta_div_criteria}.svg NMDS_css_bray_${params.stats.beta_div_criteria}.svg NMDS_css_unifrac_${params.stats.beta_div_criteria}.svg NMDS_css_wunifrac_${params.stats.beta_div_criteria}.svg PCoA_css_jaccard_${params.stats.beta_div_criteria}.svg PCoA_css_bray_${params.stats.beta_div_criteria}.svg PCoA_css_unifrac_${params.stats.beta_div_criteria}.svg PCoA_css_wunifrac_${params.stats.beta_div_criteria}.svg ${params.stats.hc_method} hclustering_css_jaccard_${params.stats.beta_div_criteria}.svg hclustering_css_bray_${params.stats.beta_div_criteria}.svg hclustering_css_unifrac_${params.stats.beta_div_criteria}.svg hclustering_css_wunifrac_${params.stats.beta_div_criteria}.svg > stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_css_${params.stats.beta_div_criteria} PCoA_css_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_css_${params.stats.beta_div_criteria} > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 }

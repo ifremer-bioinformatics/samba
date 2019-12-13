@@ -9,5 +9,5 @@ manifest=${args[0]}
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}")" ; cd ..  >/dev/null && pwd )"
 
 # Format the manifest input file
-sed -i "s|PATH/TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
+sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
 

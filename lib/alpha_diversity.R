@@ -25,36 +25,48 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-## Load up the packages needed ####
-library("dplyr")
-library("stringr")
-library("phyloseq")
-library("ggplot2")
-library("RColorBrewer")
-library("svglite")
-library("tidyr")
-library("gridExtra")
-library("egg")
-library("microbiome")
-library("reshape2")
+## Install (if necessary) and load up the needed packages ####
+requiredPackages_CRAN = c("dplyr","stringr","ggplot2","svglite","tidyr","gridExtra","egg","reshape2","BiocManager")
+for(package in requiredPackages_CRAN){
+  if(!require(package,character.only = TRUE)) install.packages(package)
+  library(package,character.only = TRUE)
+}
+
+requiredPackages_BIOCONDUCTOR = c("phyloseq")
+for(package in requiredPackages_BIOCONDUCTOR){
+  if(!require(package,character.only = TRUE)) BiocManager::install(package)
+  library(package,character.only = TRUE)
+}
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
+#						   #
+# Function to standardize alpha diversity analysis #
+#						   #
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
 alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group) {
-    color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
+    
+    # ~~~~~~~~~~~~~~~ #
+    # Alpha diversity #
+    # ~~~~~~~~~~~~~~~ #
+
+    ## Calcul of diversity indexes (Observed, Chao1, Shannon, InvSimpson, Pielou) ####
+
     alpha_rich = estimate_richness(PHYLOSEQ,measures=c("Observed","Chao1","Shannon","InvSimpson"))
+    
+    if(!require("microbiome",character.only = TRUE)) BiocManager::install("microbiome")
     library("microbiome")
     evenness = evenness(PHYLOSEQ,"pielou")
     detach("package:microbiome", unload=TRUE)
+    
     alpha_rich$Pielou = evenness$pielou
     df = data.frame(alpha_rich,sample_data(PHYLOSEQ))
     df2 = gather(df,key="Measure",value="Value",Observed,Chao1,Shannon,InvSimpson,Pielou)
     df2$Measure = factor(df2$Measure,levels=c("Observed","Chao1","InvSimpson","Shannon","Pielou"))
     
-    #### @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ####
-    ## ** Beginning of the script : Analysis of the alpha diversity **         ####
-    
-    #### /1\ Alpha diversity ####
-    
-    ## ___ Process of the analysis ####
+    ## Alpha diversity plots ####
+    color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
+
     plot_alpha_global=ggplot(df2, aes_string(x=group,y="Value")) +
       facet_wrap(~Measure, scale="free") +
       geom_boxplot() +
@@ -73,7 +85,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     ggsave(filename=paste(alpha_div_plots,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
     ggsave(filename=paste(alpha_div_plots,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
 
-    ## ___ Statistical significance of indexes  ####
+    ## Statistical significance of indexes  ####
     anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich)
     index = c("Observed","Chao1","Shannon","InvSimpson","Pielou")
     anova_data$Depth = sample_sums(PHYLOSEQ)
@@ -102,25 +114,28 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     }
     sink()
 
+    # ~~~~~~~~~~~~~~~~~~~ #
+    # Taxonomic diversity #
+    # ~~~~~~~~~~~~~~~~~~~ #
 
-    #### /2\ Taxonomic diversity ####
+    ## Variable definition ####
     taxaSet1 = unlist(strsplit(kingdom, " "))
     color_bar = color_vector[1:nbtax]
     
-    ## ___ Barplot representation ####
-    ## ______ at the phylum level ####
+    ## Barplot representation ####
+    #### at the phylum level ####
     composition(PHYLOSEQ, "Kingdom", taxaSet1, "Phylum", nbtax, fill="Phylum", group, color_bar, barplot_phylum) 
 
-    ## ______ at the class level ####
+    #### at the class level ####
     composition(PHYLOSEQ, "Kingdom", taxaSet1, "Class", nbtax, fill="Class", group, color_bar, barplot_class)
 
-    ## ______ at the order level ####
+    #### at the order level ####
     composition(PHYLOSEQ, "Kingdom", taxaSet1, "Order", nbtax, fill="Order", group, color_bar, barplot_order)
 
-    ## ______ at the family level ####
+    #### at the family level ####
     composition(PHYLOSEQ, "Kingdom", taxaSet1, "Family", nbtax, fill="Family", group, color_bar, barplot_family)
 
-    ## ______ at the genus level ####
+    #### at the genus level ####
     composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", nbtax, fill="Genus", group, color_bar, barplot_genus)
 }
 
@@ -137,13 +152,13 @@ main <- function() {
     barplot_order = args[8]
     barplot_family = args[9]
     barplot_genus = args[10]
-    #get group variable an replace "-" by "_"
+    # Get group variable an replace "-" by "_"
     group = str_replace(args[11], "-", "_")
     index_significance_tests = args[12]
     workflow_dir = args[13]
-    #get plot_composition function
+    # Get plot_composition function
     if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/barplot_graph_functions.R")))
-    #Run alpha diversity calculations
+    # Run alpha diversity analyses
     alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group)
 }
 if (!interactive()) {

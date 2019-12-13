@@ -12,15 +12,17 @@
 ##         SeBiMER, Ifremer                                                  ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-12-11                                                 ####
+## Modified on: 2019-12-13                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ##                                                                           ##
-## Notes: This part of the script performs the beta diversity based on the   ##
-##        rarefied abundance table                                           ##   
+## Notes: This part of the script performs the beta diversity (NMDS, PCoa &  ##
+##        Hierachical Clustering) on the rarefied ASV table based on four    ##
+##        distance matrices (Jaccard, Bray-Curtis, UniFrac & Weighted        ##
+##        UniFrac)                                                           ##   
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 

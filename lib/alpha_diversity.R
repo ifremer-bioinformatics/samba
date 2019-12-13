@@ -13,7 +13,7 @@
 ##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-10-23                                                 ####
+## Modified on: 2019-12-13                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr & laure.quintric@ifremer.fr               ####
@@ -35,9 +35,10 @@ library("svglite")
 library("tidyr")
 library("gridExtra")
 library("egg")
+library("microbiome")
+library("reshape2")
 
-alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, threshold, distance, group){
-    
+alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group) {
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     alpha_rich = estimate_richness(PHYLOSEQ,measures=c("Observed","Chao1","Shannon","InvSimpson"))
     library("microbiome")
@@ -69,8 +70,8 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     plot2_alpha = plot_alpha_global %+% subset(df2 , Measure == "Shannon" | Measure == "Pielou")
     
     final_alpha_plot = arrangeGrob(grobs=lapply(list(plot1_alpha,plot2_alpha),set_panel_size,width=unit(10,"cm"),height=unit(10,"cm")))
-    ggsave(filename=alpha_div_plots,final_alpha_plot, width=14, height=14)
-
+    ggsave(filename=paste(alpha_div_plots,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
+    ggsave(filename=paste(alpha_div_plots,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
 
     ## ___ Statistical significance of indexes  ####
     anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich)
@@ -103,99 +104,47 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
 
 
     #### /2\ Taxonomic diversity ####
+    taxaSet1 = unlist(strsplit(kingdom, " "))
+    color_bar = color_vector[1:nbtax]
     
     ## ___ Barplot representation ####
     ## ______ at the phylum level ####
-    Relabund_phylum = PHYLOSEQ %>%
-      tax_glom(taxrank="Phylum") %>%
-      transform_sample_counts(function(x){x/sum(x)*100}) %>%
-      psmelt() %>%
-      arrange(Phylum)
-    
-    color_phylum = color_vector[1:length(levels(Relabund_phylum$Phylum))]
-    
-    ggplot(Relabund_phylum,aes(x=Sample,y=Abundance,fill=Phylum)) +
-      geom_bar(stat = "identity",position="fill") +
-      facet_wrap(group, nrow=1, scale="free") +
-      theme_classic() +
-      scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) +
-      theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) +
-      theme(axis.title.x=element_text(vjust=-1,color="black",size=11)) +
-      theme(axis.text.y=element_text(hjust=0.8,color="black",size=10)) +
-      theme(axis.title.y=element_text(size=11)) +
-      theme(legend.text=element_text(size=12)) +
-      theme(legend.title=element_text(size=13,face="bold")) +
-      xlab("Samples") +
-      scale_fill_manual(values=color_phylum)
-    ggsave(filename=barplot_relabund_phylum,width=20,height=12)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Phylum", nbtax, fill="Phylum", group, color_bar, barplot_phylum) 
 
+    ## ______ at the class level ####
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Class", nbtax, fill="Class", group, color_bar, barplot_class)
+
+    ## ______ at the order level ####
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Order", nbtax, fill="Order", group, color_bar, barplot_order)
 
     ## ______ at the family level ####
-    Relabund_family = PHYLOSEQ %>%
-      tax_glom(taxrank="Family") %>%
-      transform_sample_counts(function(x){x/sum(x)*100}) %>%
-      psmelt() %>%
-      filter(Abundance > threshold) %>%
-      arrange(Family)
-    
-    color_family = color_vector[1:length(levels(Relabund_family$Family))]
-    
-    ggplot(Relabund_family,aes(x=Sample,y=Abundance,fill=Family)) +
-      geom_bar(stat = "identity",position="fill") +
-      facet_wrap(group, nrow=1, scale="free") +
-      theme_classic() +
-      scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) +
-      theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) +
-      theme(axis.title.x=element_text(vjust=-1,color="black")) +
-      theme(axis.text.y=element_text(hjust=0.8,color="black",size=10)) +
-      theme(axis.title.y=element_text(size=11)) +
-      theme(legend.text=element_text(size=12)) +
-      theme(legend.title=element_text(size=13,face="bold")) +
-      xlab("Samples") +
-      scale_fill_manual(values=color_family)
-    ggsave(filename=barplot_relabund_family,width=20,height=12)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Family", nbtax, fill="Family", group, color_bar, barplot_family)
 
     ## ______ at the genus level ####
-    Relabund_genus = PHYLOSEQ %>%
-      tax_glom(taxrank="Genus") %>%
-      transform_sample_counts(function(x){x/sum(x)*100}) %>%
-      psmelt() %>%
-      filter(Abundance > threshold) %>%
-      arrange(Genus)
-    
-    color_genus = color_vector[1:length(levels(Relabund_genus$Genus))]
-    
-    ggplot(Relabund_genus, aes(x = Sample, y = Abundance, fill = Genus)) +
-      geom_bar(stat = "identity",position="fill") +
-      facet_wrap(group, nrow=1, scale="free") +
-      theme_classic() +
-      scale_y_continuous(labels=c("0","25","50","75","100"),expand=c(0,0)) +
-      theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) +
-      theme(axis.title.x=element_text(vjust=-1,color="black")) +
-      theme(axis.text.y=element_text(hjust=0.8,color="black",size=10)) +
-      theme(axis.title.y=element_text(size=11)) +
-      theme(legend.text=element_text(size=12)) +
-      theme(legend.title=element_text(size=13,face="bold")) +
-      xlab("Samples") +
-      scale_fill_manual(values=color_genus)
-    ggsave(filename=barplot_relabund_genus,width=20,height=12)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", nbtax, fill="Genus", group, color_bar, barplot_genus)
 }
 
 main <- function() {
     # Get arguments from RScript command line
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
-    threshold = args[2]
-    distance = args[3]
-    alpha_div_plots = args[4]
-    barplot_relabund_phylum = args[5]
-    barplot_relabund_family = args[6]
-    barplot_relabund_genus = args[7]
+    distance = args[2]
+    alpha_div_plots = args[3]
+    kingdom = args[4]
+    nbtax = args[5]
+    barplot_phylum = args[6]
+    barplot_class = args[7]
+    barplot_order = args[8]
+    barplot_family = args[9]
+    barplot_genus = args[10]
     #get group variable an replace "-" by "_"
-    group = str_replace(args[8], "-", "_")
-    index_significance_tests = args[9]
+    group = str_replace(args[11], "-", "_")
+    index_significance_tests = args[12]
+    workflow_dir = args[13]
+    #get plot_composition function
+    if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/barplot_graph_functions.R")))
     #Run alpha diversity calculations
-    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_relabund_phylum, barplot_relabund_family, barplot_relabund_genus, threshold, distance, group)
+    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group)
 }
 if (!interactive()) {
         main()

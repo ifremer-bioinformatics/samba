@@ -8,8 +8,8 @@
 ##                                                                           ##
 ##                                                                           ##
 ## Authors: Cyril NOEL and Laure QUINTRIC                                  ####
-##         Bioinformatics engineers                                          ##
-##         SeBiMER, Ifremer                                                  ##
+##          Bioinformatics engineers                                         ##
+##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
 ## Modified on: 2019-12-13                                                 ####

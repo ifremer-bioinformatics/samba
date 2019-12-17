@@ -117,5 +117,5 @@ Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tut
 
 ### Contact
 
-For any concerns/problems or suggestions, do not hesitate to contact us: [mailto](laure.quintric@ifremer.fr) or [mailto](cyril.noel@ifremer.fr)
+For any concerns/problems or suggestions, do not hesitate to contact us: [Laure Qunitric](mailto:laure.quintric@ifremer.fr) or [Cyril Noël](mailto:cyril.noel@ifremer.fr)
 

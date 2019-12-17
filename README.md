@@ -17,12 +17,12 @@ This workflow will process paired-end metabarcoding data.
     * Extract ASVs (Amplicon Sequence Variants) from samples using Dada2
     * Create ASVs counting table
 * Taxonomy assignment process
-    * Use Qiime2 to assign each ASV according to a reference database using RDP
+    * Use Qiime2 to assign each ASV according to a reference database using a Naive Bayesian classifier
 * Statistical analysis process
     * A step to prepare data for stats will create R Phyloseq object for downstream analysis
     * Alpha diversity boxplots and taxonomic graphs are created using R Phyloseq
-    * Beta diversity NMDS plots are generated according to several normalisation processes (no-normalisation, standard rarefaction, deseq2 normalisation, CSS normalisation)
-* Reporting
+    * Beta diversity NMDS, MDS-PCoA plots as well as hierarchical clustering are generated from four distance matrices according to several normalisation processes (no-normalisation, standard rarefaction, DESeq2 normalisation & CSS normalisation)
+* Reporting (being set up)
     * A report folder will provide the metabarcoding workflow results
     * A workflow execution synthesis will be generated using Nextflow native DAG, timeline, trace and html report
 
@@ -43,7 +43,7 @@ cd SAMBA-nextflow
 This workflow uses dependancies, please be sure to have the following dependencies installed beforehand:
 - Nextflow v19.07.0 -> conda install -c bioconda nextflow=19.07.0
 - Qiime2 v2019.04 -> https://docs.qiime2.org/2019.7/install/native/#install-miniconda
-- A R conda environment with the following R packages: dplyr, stringr, phyloseq, ggplot2, RColorBrewer, svglite, tidyr, gridExtra, egg, vegan, DESeq2, metagenomeSeq
+- A R conda environment (all necessary R packages will be installed automatically during the workflow)
 
 It will be necessary to modify according to your installations, the paths for the conda activation of your environments in the corresponding files located in config/conda_envs
 
@@ -55,7 +55,7 @@ cd SAMBA-nextflow
 ./RunSAMBA_training_dataset.sh 
 ```
 
-This will create a 'output.test' folder at the root of the tool or in your $TMP if it exists
+At the end of the worklow, a 'output.test' folder will be created either in your $TMP (if it exists), or in your $SCRATCH (if it exists), or either at the root of the tool
 
 ## How to use with your own data
 
@@ -63,9 +63,11 @@ This will create a 'output.test' folder at the root of the tool or in your $TMP 
 
 Create a folder containing:
 
-* dna-sequence-raw : a folder with all your R1 and R2 fastq.gz files [required]
+* dna-sequence-raw : a folder with all your R1 and R2 fastq.gz files [required] 
+For Ifremer users, this folder is normally already created in the DATAREF folder of your project
 
 * q2\_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
+For Ifremer users, the paths to your files can point directly to DATAREF
 
 Mandatory columns are listed below :
 
@@ -112,3 +114,8 @@ Note : This workflow is design to run on a PBS pro cluster (See resources.config
 
 References databases (SILVA 132) are available on our [FTP](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.07/)
 Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils/), [associated publication](https://msystems.asm.org/content/2/3/e00195-16)
+
+### Contact
+
+For any concerns/problems or suggestions, do not hesitate to contact us: [mailto](mailto:laure.quintric@ifremer.fr) or [mailto](mailto:cyril.noel@ifremer.fr)
+

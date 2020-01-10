@@ -12,7 +12,7 @@
 ##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
 ## Creation Date: 2019-12-13                                               ####
-## Modified on: 2019-12-13                                                 ####
+## Modified on: 2020-01-10                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, december-2019                                    ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
@@ -26,31 +26,20 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## return data frame for relative abundance plots in ggplot2
-## Return relative abundance of top NumberOfTaxa OTUs at the taxaRank2 level
+## Return relative abundance of top nbtax at the taxaRank2 level
 ## within taxaSet1 at taxaRank1 level
-ggformat <- function(physeq, taxaRank1 = "Phylum", taxaSet1 = "Proteobacteria",
-                     taxaRank2 = "Family", numberOfTaxa = 9) {
-    ## Args:
-    ## - physeq: phyloseq class object
-    ## - taxaRank1: taxonomic level in which to do the first subsetting
-    ## - taxaSet1: subset of level taxaRank1 to use
-    ## - taxaRank2: taxonomic level used to agglomerate
-    ## - numberOfTaxa: number of (top) taxa to keep at level taxaRank2
-    ##
-    ## Returns:
-    ## - data frame with taxonomic, sample and otu counts informations melted together
-    ## Enforce orientation and transform count to relative abundances
-    stopifnot(!is.null(sample_data(physeq, FALSE)),
-              !is.null(tax_table(physeq, FALSE)))
-    otutab <- otu_table(physeq)
+ggformat <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, nbtax) {
+    stopifnot(!is.null(sample_data(PHYLOSEQ, FALSE)),
+              !is.null(tax_table(PHYLOSEQ, FALSE)))
+    otutab <- otu_table(PHYLOSEQ)
     if ( !taxa_are_rows(otutab) ) {
     otutab = t(otutab)
     }
     otutab <- as(otutab, "matrix")
     otutab <- apply(otutab, 2, function(x) x / sum(x))
     ## Subset to OTUs belonging to taxaSet1 to fasten process
-    stopifnot(all(c(taxaRank1, taxaRank2) %in% colnames(tax_table(physeq))))
-    otutab <- otutab[tax_table(physeq)[ , taxaRank1] %in% taxaSet1, , drop = FALSE]
+    stopifnot(all(c(taxaRank1, taxaRank2) %in% colnames(tax_table(PHYLOSEQ))))
+    otutab <- otutab[tax_table(PHYLOSEQ)[ , taxaRank1] %in% taxaSet1, , drop = FALSE]
     if (nrow(otutab) == 0) {
         stop(paste("No otu belongs to", paste(taxaSet1, collapse = ","), "\n",
                    "at taxonomic level", taxaRank1))
@@ -59,7 +48,7 @@ ggformat <- function(physeq, taxaRank1 = "Phylum", taxaSet1 = "Proteobacteria",
     colnames(mdf)[3] <- "Abundance"
     ## mdf <- mdf[mdf$Abundance > 0, ] ## Remove absent taxa
     ## Add taxonomic information and replace NA and unclassified Unknown
-    tax <- as(tax_table(physeq), "matrix")
+    tax <- as(tax_table(PHYLOSEQ), "matrix")
     tax[is.na(tax)] <- "Unknown"
     tax[tax %in% c("", "unclassified", "Unclassified")] <- "Unknown"
     tax <- data.frame(OTU = rownames(tax), tax)
@@ -67,10 +56,10 @@ ggformat <- function(physeq, taxaRank1 = "Phylum", taxaSet1 = "Proteobacteria",
     ## Aggregate by taxaRank2
     mdf <- aggregate(as.formula(paste("Abundance ~ Sample +", taxaRank2)), data = mdf, FUN = sum)
     topTaxa <- aggregate(as.formula(paste("Abundance ~ ", taxaRank2)), data = mdf, FUN = sum)
-    ## Keep only numberOfTaxa top taxa and aggregate the rest as "Other"
+    ## Keep only nbtax top taxa and aggregate the rest as "Other"
     topTax <- as.character(topTaxa[ order(topTaxa[ , "Abundance"], decreasing = TRUE), taxaRank2])
     topTax <- topTax[topTax != "Unknown"]
-    topTax <- topTax[1:min(length(topTax), numberOfTaxa)]
+    topTax <- topTax[1:min(length(topTax), nbtax)]
     ## Change to character
     mdf[ , taxaRank2] <- as.character(mdf[ , taxaRank2])
     ii <- (mdf[ , taxaRank2] %in% c(topTax, "Unknown"))
@@ -78,8 +67,8 @@ ggformat <- function(physeq, taxaRank1 = "Phylum", taxaSet1 = "Proteobacteria",
     mdf <- aggregate(as.formula(paste("Abundance ~ Sample +", taxaRank2)), data = mdf, FUN = sum)
     mdf[, taxaRank2] <- factor(mdf[, taxaRank2], levels = c(sort(topTax), "Unknown", "Other"))
     ## Add sample data.frame
-    sdf <- as(sample_data(physeq), "data.frame")
-    sdf$Sample <- sample_names(physeq)
+    sdf <- as(sample_data(PHYLOSEQ), "data.frame")
+    sdf$Sample <- sample_names(PHYLOSEQ)
     mdf <- merge(mdf, sdf, by.x = "Sample")
     ## Sort the entries by abundance to produce nice stacked bars in ggplot
     mdf <- mdf[ order(mdf[ , taxaRank2], mdf$Abundance, decreasing = TRUE), ]

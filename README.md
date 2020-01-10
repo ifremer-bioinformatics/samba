@@ -40,12 +40,9 @@ git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
 cd SAMBA-nextflow
 ```
 
-This workflow uses dependancies, please be sure to have the following dependencies installed beforehand:
+This workflow uses conda to resolve process dependencies, please be sure to have the following dependencies installed beforehand:
+- Conda binary in your PATH or a conda init file in your environment -> https://docs.anaconda.com/anaconda/user-guide/faq/
 - Nextflow v19.07.0 -> conda install -c bioconda nextflow=19.07.0
-- Qiime2 v2019.04 -> https://docs.qiime2.org/2019.7/install/native/#install-miniconda
-- A R conda environment (all necessary R packages will be installed automatically during the workflow)
-
-It will be necessary to modify according to your installations, the paths for the conda activation of your environments in the corresponding files located in config/conda_envs
 
 ### To test the workflow
 ```

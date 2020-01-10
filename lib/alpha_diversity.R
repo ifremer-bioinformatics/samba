@@ -25,16 +25,9 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-## Install (if necessary) and load up the needed packages ####
-requiredPackages_CRAN = c("dplyr","stringr","ggplot2","svglite","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager")
-for(package in requiredPackages_CRAN){
-  if(!require(package,character.only = TRUE)) install.packages(package)
-  library(package,character.only = TRUE)
-}
-
-requiredPackages_BIOCONDUCTOR = c("phyloseq")
-for(package in requiredPackages_BIOCONDUCTOR){
-  if(!require(package,character.only = TRUE)) BiocManager::install(package)
+## Load up the needed packages ####
+requiredPackages = c("dplyr","stringr","ggplot2","svglite","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager","phyloseq", "microbiome")
+for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
@@ -54,8 +47,6 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
 
     alpha_rich = estimate_richness(PHYLOSEQ,measures=c("Observed","Chao1","Shannon","InvSimpson"))
     
-    if(!require("microbiome",character.only = TRUE)) BiocManager::install("microbiome")
-    library("microbiome")
     evenness = evenness(PHYLOSEQ,"pielou")
     detach("package:microbiome", unload=TRUE)
     

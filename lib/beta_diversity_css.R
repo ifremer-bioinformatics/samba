@@ -27,16 +27,9 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-## Install (if necessary) and load up the needed packages ####
-requiredPackages_CRAN = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager")
-for(package in requiredPackages_CRAN){
-  if(!require(package,character.only = TRUE)) install.packages(package)
-  library(package,character.only = TRUE)
-}
-
-requiredPackages_BIOCONDUCTOR = c("phyloseq","metagenomeSeq")
-for(package in requiredPackages_BIOCONDUCTOR){
-  if(!require(package,character.only = TRUE)) BiocManager::install(package)
+## Load up the needed packages ####
+requiredPackages = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager","phyloseq","metagenomeSeq")
+for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 

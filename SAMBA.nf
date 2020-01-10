@@ -15,7 +15,7 @@ Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manife
 Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata4stats ; metadata4integrity }
 
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
-if(!params.stats_only){
+if(!params.stats_only) {
     /* Prepare inputs */
 
     process prepare_inputs {
@@ -71,8 +71,9 @@ if(!params.stats_only){
     /* Import metabarcode data */
     
     process q2_import {
-    
-        beforeScript "${params.qiime_env}"
+
+        conda "${params.qiime_env}" 
+
         publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
@@ -100,7 +101,8 @@ if(!params.stats_only){
     /* Trim metabarcode data with cutadapt */
     process q2_cutadapt {
     
-        beforeScript "${params.qiime_env}"
+        conda "${params.qiime_env}" 
+
         publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
@@ -127,7 +129,8 @@ if(!params.stats_only){
     /* Run dada2 */
     process q2_dada2 {
     
-        beforeScript "${params.qiime_env}"
+        conda "${params.qiime_env}" 
+
         publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
@@ -162,7 +165,8 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
 
     process q2_taxonomy {
     
-        beforeScript "${params.qiime_env}"
+        conda "${params.qiime_env}" 
+
         publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
         publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -197,7 +201,9 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
     /* Run phylogeny construction */
 
     process q2_phylogeny {
-        beforeScript "${params.qiime_env}"
+        
+        conda "${params.qiime_env}" 
+
         publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
         publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
         publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
@@ -242,7 +248,7 @@ if(params.stats_only){
 
 process prepare_data_for_stats {
 
-    beforeScript "${params.r_stats_env}"
+    conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
@@ -275,7 +281,7 @@ phyloseq_rds.into { phyloseq_rds_alpha ; phyloseq_rds_beta ; phyloseq_rds_beta_r
 
 process stats_alpha {
 
-    beforeScript "${params.r_stats_env}"
+    conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
@@ -308,7 +314,7 @@ process stats_alpha {
 
 process stats_beta {
 
-    beforeScript "${params.r_stats_env}"
+    conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
@@ -340,7 +346,8 @@ process stats_beta {
 
 process stats_beta_rarefied {
 
-    beforeScript "${params.r_stats_env}"
+    conda "${params.r_stats_env}"
+
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -371,7 +378,8 @@ process stats_beta_rarefied {
 
 process stats_beta_deseq2 {
 
-    beforeScript "${params.r_stats_env}"
+    conda "${params.r_stats_env}"
+
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -402,7 +410,8 @@ process stats_beta_deseq2 {
 
 process stats_beta_css {
 
-    beforeScript "${params.r_stats_env}"
+    conda "${params.r_stats_env}"
+
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_css -> "cmd/${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'

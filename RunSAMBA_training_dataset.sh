@@ -11,7 +11,7 @@ then
   if [ ! -z $SCRATCH ] 
   then 
     sed -i 's|/PATH-TO/$projectName|$SCRATCH/SAMBA_results_of_${projectName}|g' config/params.config
-    sed -i 's|/PATH-TO|$BASEDIR|g' $BASEDIR/training_dataset/q2_manifest
+    sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
     #nextflow temp directory
     export NXF_TEMP=$SCRATCH
     export tax_db_dir=$SCRATCH/tax.databases.test
@@ -19,14 +19,14 @@ then
   elif [  ! -z $TMP  ] 
   then
     sed -i 's|/PATH-TO/$projectName|$TMP/SAMBA_results_of_${projectName}|g' config/params.config
-    sed -i 's|/PATH-TO|$BASEDIR|g' $BASEDIR/training_dataset/q2_manifest 
+    sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest 
     #nextflow temp directory
     export NXF_TEMP=$TMP
     export tax_db_dir=$TMP/tax.databases.test
     sed -i 's|/PATH-TO/database.qza|$TMP/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g' config/params.config
   else
     sed -i 's|/PATH-TO/$projectName|${baseDir}/SAMBA_results_of_${projectName}|g' config/params.config
-    sed -i 's|/PATH-TO|$BASEDIR|g' $BASEDIR/training_dataset/q2_manifest 
+    sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest 
     #nextflow temp directory
     export NXF_TEMP=$BASEDIR
     export tax_db_dir=$BASEDIR/tax.databases.test

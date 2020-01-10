@@ -12,7 +12,7 @@
 ##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-12-13                                                 ####
+## Modified on: 2020-01-10                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
@@ -22,7 +22,7 @@
 ## Notes: This part of the script performs the beta diversity (NMDS, PCoa &  ##
 ##        Hierachical Clustering) on DESeq2 normalized ASV table based on    ##
 ##        four distance matrices (Jaccard, Bray-Curtis, UniFrac & Weighted   ##
-##        UniFrac) 	 						     ##   
+##        UniFrac) 	 						                                 ##   
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -64,7 +64,7 @@ write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t
 #										#
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
 
-betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc) { 
+betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc) { 
   
     #~~~~~~~~~~~~~~~~~~~~~~#
     # DESeq2 normalization #
@@ -85,14 +85,36 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, criteria,
     color_vector = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
     color_samples = color_vector[1:length(levels(metadata[,criteria]))]
     
+    ## Statistic about variance explained ####
+    ### using user-specified variable #### 
     group_deseq2 = get_variable(PHYLOSEQ_deseq2, criteria)
     PHYLOSEQ_deseq2_dist = phyloseq::distance(PHYLOSEQ_deseq2, distance)
-    anosim_result_deseq2 = anosim(PHYLOSEQ_deseq2_dist,group_deseq2, permutations = 999)
+    adonis_result_deseq2 = adonis(PHYLOSEQ_deseq2_dist ~ group_deseq2, permutations = 9999)
+
+    ### using all available variables ####
+    all_var = c()
+    for (var in sample_variables(PHYLOSEQ_deseq2) ) {
+      l = length(levels(as.factor(get_variable(PHYLOSEQ_deseq2,var))))
+      if(l > 1 && l < nsamples(PHYLOSEQ_deseq2)){
+        all_var <- cbind(all_var,var)
+      }
+    }
+
+    variables = paste(collapse =" + ", all_var )
     
+    sink(file = variance_significance_tests_deseq2 , type = "output")
+      f  = paste("phyloseq::distance(PHYLOSEQ_deseq2, distance)"," ~ ", variables)
+      cat(sep = "", "###############################################################\n",
+                "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
+      adonis_all_deseq2=adonis(as.formula(f), data=metadata, perm = 9999)
+      print(adonis_all_deseq2)
+      cat("\n\n")
+    sink()
+
     ## Ordination plots ####
-    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, anosim result, ordination plot name, distance, width of graph, heigth of graph, graph title
-    plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, anosim_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
-    plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, anosim_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
+    ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
+    plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
+    plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
 
     ## Hierarchical clustering ####    
     hc = hclust(PHYLOSEQ_deseq2_dist, method = method_hc)
@@ -121,10 +143,11 @@ main_jaccard <- function(){
     pcoa_deseq2 = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    variance_significance_tests_deseq2=args[10]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
 if (!interactive()) {
@@ -143,10 +166,11 @@ main_bray <- function(){
     pcoa_deseq2 = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    variance_significance_tests_deseq2=args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
 if (!interactive()) {
@@ -164,10 +188,11 @@ main_unifrac <- function(){
     pcoa_deseq2 = args[7] 
     method_hc = args[8]
     plot_hc = args[9]
+    variance_significance_tests_deseq2=args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2,  pcoa_deseq2, method_hc, plot_hc)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
 if (!interactive()) {
@@ -185,10 +210,11 @@ main_wunifrac <- function(){
     pcoa_deseq2 = args[7]
     method_hc = args[8]
     plot_hc = args[9]
+    variance_significance_tests_deseq2=args[13]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc)
 }
 
 if (!interactive()) {

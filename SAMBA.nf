@@ -356,7 +356,7 @@ process stats_beta_rarefied {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_${params.stats.beta_div_criteria} PCoA_rarefied_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_rarefied_${params.stats.beta_div_criteria} > stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_${params.stats.beta_div_criteria} PCoA_rarefied_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_rarefied_${params.stats.beta_div_criteria} variance_significance_tests_rarefied_jaccard.txt variance_significance_tests_rarefied_bray.txt variance_significance_tests_rarefied_unifrac.txt variance_significance_tests_rarefied_wunifrac.txt > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
 }

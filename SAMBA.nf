@@ -390,7 +390,7 @@ process stats_beta_deseq2 {
     params.stats_beta_enable
 
     script:
-    """i
+    """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_deseq2_${params.stats.beta_div_criteria} PCoA_deseq2_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_deseq2_${params.stats.beta_div_criteria} variance_significance_tests_DESeq2_jaccard.txt variance_significance_tests_DESeq2_bray.txt variance_significance_tests_DESeq2_unifrac.txt variance_significance_tests_DESeq2_wunifrac.txt > stats_beta_diversity_deseq2.log 2>&1
     cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """

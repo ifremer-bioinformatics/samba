@@ -6,7 +6,6 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 . $BASEDIR/config/conda_envs/nextflow_env.sh
 
 if [ "$1" != "-resume" ]
-  
   #set test directories
   if [ ! -z $SCRATCH ] 
   then 
@@ -42,7 +41,6 @@ if [ "$1" != "-resume" ]
     mkdir -p $tax_db_dir
     wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.10/SILVA_v132/DATABASE_silva_v132_99_16S.qza -O $tax_db_dir/DATABASE_silva_v132_99_16S.qza
   fi
-
 fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)

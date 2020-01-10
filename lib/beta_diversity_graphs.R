@@ -12,7 +12,7 @@
 ##         SeBiMER, Ifremer                                                  ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2019-12-13                                                 ####
+## Modified on: 2020-01-10                                                 ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
@@ -20,11 +20,11 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ##                                                                           ##
 ## Notes: This part of the script contains all functions used for make       ##
-##        beta diversity plots                                               ##   
+##        beta diversity plots                                               ##
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
-plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, anosim_result, nmds, distance, width, height, graph_title) {
+plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result, nmds, distance, width, height, graph_title) {
     ## Sample ordination - NMDS ####
     plot_ordination(PHYLOSEQ,ord_nmds,type="samples",color=criteria, title=graph_title) +
       theme_classic() +
@@ -38,13 +38,13 @@ plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, anosim_result
       scale_color_manual(values=color_samples) +
       stat_ellipse(geom="polygon",alpha=0.1,type="t",aes_string(fill=criteria)) +
       labs(caption = paste("Stress:",round(ord_nmds$stress,4),
-                           "\nANOSIM statistic R:",round(anosim_result$statistic,4),
-                     paste("\nAnosim based on ", criteria,": p-value"),anosim_result$signif,sep=" "))
+                           "\nAdonis statistic R:",round(adonis_result$aov.tab$R2[1]*100,2),
+                     paste("\nAdonis based on ", criteria,": p-value"),adonis_result$aov.tab$`Pr(>F)`[1],sep=" "))
     ggsave(filename=paste(nmds,"_",distance,".svg",sep=""), device="svg", width = width, height = height)
     ggsave(filename=paste(nmds,"_",distance,".png",sep=""), device="png", width = width, height = height)
 }
 
-plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, anosim_result, pcoa, distance, width, height, graph_title) {
+plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, width, height, graph_title) {
     ## Sample ordination - MDS-PCoA ####
     plot_ordination(PHYLOSEQ,ord_pcoa,type="samples",color=criteria, title=graph_title) +
       theme_classic() +
@@ -57,8 +57,8 @@ plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, anosim_result
       scale_fill_manual(values=alpha(color_samples,0.4)) +
       scale_color_manual(values=color_samples) +
       stat_ellipse(geom="polygon",alpha=0.1,type="t",aes_string(fill=criteria)) +
-      labs(caption = paste("\nANOSIM statistic R:",round(anosim_result$statistic,4),
-                     paste("\nAnosim based on ", criteria,": p-value"),anosim_result$signif,sep=" "))
+      labs(caption = paste("\nAdonis statistic R:",round(adonis_result$aov.tab$R2[1]*100,2),
+                     paste("\nAdonis based on ", criteria,": p-value"),adonis_result$aov.tab$`Pr(>F)`[1],sep=" "))
     ggsave(filename=paste(pcoa,"_",distance,".svg",sep=""), device="svg", width = width, height = height)
     ggsave(filename=paste(pcoa,"_",distance,".png",sep=""), device="png", width = width, height = height)
 }
@@ -69,11 +69,11 @@ plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance
     ## Plot dendrogram ####
     svglite(paste(plot_hc,"_",distance,".svg",sep=""), width = width, height = height)
     plot = dendro %>% set("labels_colors", color) %>% plot(main = paste("Hierarchical clustering with the", method_hc, "method", "based on", distance, "distance", sep=" "))
-    legend("topright", legend = levels(group), fill = cols, cex = 1.3, horiz=TRUE, border="white",box.lty=0)
+    legend("topright", legend = levels(group), fill = cols, cex = 0.8, horiz=FALSE, border="white",box.lty=0)
     dev.off()
     png(filename=paste(plot_hc,"_",distance,".png",sep=""), res=150, width = 2000, height = 1200)
     plot = dendro %>% set("labels_colors", color) %>% plot(main = paste("Hierarchical clustering with the", method_hc, "method", "based on", distance, "distance", sep=" "))
-    legend("topright", legend = levels(group), fill = cols, cex = 1.3, horiz=TRUE, border="white", box.lty=0)
+    legend("topright", legend = levels(group), fill = cols, cex = 0.8, horiz=FALSE, border="white", box.lty=0)
     dev.off()
 
 }

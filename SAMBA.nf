@@ -20,6 +20,7 @@ if(!params.stats_only) {
     
     process data_integrity {
         publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
 
     input :
         file manifest from manifest4integrity

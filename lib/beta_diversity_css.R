@@ -58,7 +58,7 @@ write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.
 #										#
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc) {
+betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie) {
 
     #~~~~~~~~~~~~~~~~~~~#
     # CSS normalization #
@@ -95,7 +95,7 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
 
     variables = paste(collapse =" + ", all_var )
     
-    sink(file = variance_significance_tests_css , type = "output")
+    sink(file = paste(variance_significance_tests_css,distance,".txt","") , type = "output")
       f  = paste("distance(PHYLOSEQ_css,distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
                 "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
@@ -103,6 +103,15 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
       print(adonis_all_css)
       cat("\n\n")
     sink()
+
+    ### Explained variance graphs ####
+    ExpVar_perc = adonis_all_css$aov.tab$R2[-length(adonis_all_css$aov.tab$R2)]*100
+    ExpVar_name = rownames(adonis_all_css$aov.tab)[-length(rownames(adonis_all_css$aov.tab))]
+    ExpVar_piedata = data.frame(ExpVar_name,ExpVar_perc)
+    ExpVar_piedata = ExpVar_piedata[order(ExpVar_piedata$ExpVar_perc),]
+    ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
+
+    plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
 
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
@@ -138,10 +147,11 @@ main_jaccard <- function(){
     method_hc = args[8]
     plot_hc = args[9]
     variance_significance_tests_css=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -159,11 +169,12 @@ main_bray <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
-    variance_significance_tests_css=args[11]
+    variance_significance_tests_css=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -181,11 +192,12 @@ main_unifrac <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
-    variance_significance_tests_css=args[12]
+    variance_significance_tests_css=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -203,11 +215,12 @@ main_wunifrac <- function(){
     pcoa_css = args[7]
     method_hc = args[8]
     plot_hc = args[9]
-    variance_significance_tests_css=args[13]
+    variance_significance_tests_css=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {

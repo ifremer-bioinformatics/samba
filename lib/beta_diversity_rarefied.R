@@ -52,7 +52,7 @@ write.table(rarefied_table,final_rarefied_ASV_table_with_taxonomy,sep="\t",col.n
 #										#
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc) {
+betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie) {
    
     #~~~~~~~~~~~~~~~#
     # Rarefied data #
@@ -89,7 +89,7 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, varia
 
     variables = paste(collapse =" + ", all_var )
     
-    sink(file = variance_significance_tests_rarefied , type = "output")
+    sink(file = paste(variance_significance_tests_rarefied,distance,".txt",sep="") , type = "output")
       f  = paste("distance(PHYLOSEQ_rarefied,distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
                 "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
@@ -98,6 +98,15 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, varia
       cat("\n\n")
     sink()
     
+    ### Explained variance graphs ####
+    ExpVar_perc = adonis_all_rarefied$aov.tab$R2[-length(adonis_all_rarefied$aov.tab$R2)]*100
+    ExpVar_name = rownames(adonis_all_rarefied$aov.tab)[-length(rownames(adonis_all_rarefied$aov.tab))]
+    ExpVar_piedata = data.frame(ExpVar_name,ExpVar_perc)
+    ExpVar_piedata = ExpVar_piedata[order(ExpVar_piedata$ExpVar_perc),]
+    ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
+
+    plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
+
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_rarefied, ord_rarefied_nmds, criteria, color_samples, adonis_result_rarefied, nmds_rarefied, distance, 12, 10, paste("NMDS on rarefied data","based on",distance,"distance",sep=" "))
@@ -132,10 +141,11 @@ main_jaccard <- function(){
     method_hc = args[8]
     plot_hc = args[9]
     variance_significance_tests_rarefied=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -153,11 +163,12 @@ main_bray <- function(){
     pcoa_rarefied = args[7]
     method_hc = args[8]
     plot_hc = args[9]
-    variance_significance_tests_rarefied=args[11]
+    variance_significance_tests_rarefied=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -175,11 +186,12 @@ main_unifrac <- function(){
     pcoa_rarefied = args[7]
     method_hc = args[8]
     plot_hc = args[9]
-    variance_significance_tests_rarefied=args[12]
+    variance_significance_tests_rarefied=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -197,11 +209,12 @@ main_wunifrac <- function(){
     pcoa_rarefied = args[7]
     method_hc = args[8]
     plot_hc = args[9]
-    variance_significance_tests_rarefied=args[13]
+    variance_significance_tests_rarefied=args[10]
+    plot_pie = args[11]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc)
+    betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {

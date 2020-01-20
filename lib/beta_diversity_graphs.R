@@ -77,3 +77,26 @@ plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance
     dev.off()
 
 }
+
+plot.pie <- function(ExpVar_perc, labels, distance, plot_pie, width, height) {
+    svglite(paste(plot_pie,distance,".svg",sep=""), width = width, height = height)
+    pie(ExpVar_perc,
+      labels=labels,
+      clockwise=TRUE,
+      radius=1,
+      col=brewer.pal(length(ExpVar_perc),"Set1"),
+      border="white",
+      cex=1,
+      main=paste("Percentage of variance explained by each variable for",distance,"matrix",sep=" "))
+    dev.off()
+    png(filename=paste(plot_pie,distance,".png",sep=""), res=150, width = 2000, height = 1200)
+    pie(ExpVar_perc,
+      labels=labels,
+      clockwise=TRUE,
+      radius=1,
+      col=brewer.pal(length(ExpVar_perc),"Set1"),
+      border="white",
+      cex=1,
+      main=paste("Percentage of variance explained by each variable for",distance,"matrix",sep=" "))
+    dev.off()
+}

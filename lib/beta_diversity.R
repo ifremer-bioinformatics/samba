@@ -22,7 +22,7 @@
 ## Notes: This part of the script performs the beta diversity (NMDS, PCoa &  ##
 ##        Hierachical Clustering) on the non-normalized ASV table based on   ##
 ##        four distance matrices (Jaccard, Bray-Curtis, UniFrac & Weighted   ##
-##        UniFrac) 		                            					     ##
+##        UniFrac)                    					     ##
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -39,7 +39,7 @@ for(package in requiredPackages){
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
  
-betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc){
+betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie){
     
     #~~~~~~~~~~~~~~~~~~~~~#
     # Non-normalized data #
@@ -76,7 +76,7 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_te
 
     variables = paste(collapse =" + ", all_var )
     
-    sink(file = variance_significance_tests , type = "output")
+    sink(file = paste(variance_significance_tests,distance,".txt",sep="") , type = "output")
       f  = paste("distance(PHYLOSEQ,distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
                 "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
@@ -85,6 +85,15 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_te
       cat("\n\n")
     sink()
     
+    ### Explained variance graphs ####
+    ExpVar_perc = adonis_all$aov.tab$R2[-length(adonis_all$aov.tab$R2)]*100
+    ExpVar_name = rownames(adonis_all$aov.tab)[-length(rownames(adonis_all$aov.tab))]
+    ExpVar_piedata = data.frame(ExpVar_name,ExpVar_perc)
+    ExpVar_piedata = ExpVar_piedata[order(ExpVar_piedata$ExpVar_perc),]
+    ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
+
+    plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
+
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph
     plot.nmds(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result, nmds, distance, 12, 10, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
@@ -121,10 +130,11 @@ main_jaccard  <- function(){
     method_hc = args[7]
     plot_hc = args[8]
     variance_significance_tests=args[9]
+    plot_pie = args[10]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc)
+    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -145,11 +155,12 @@ main_bray  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
-    variance_significance_tests=args[10]
+    variance_significance_tests=args[9]
+    plot_pie = args[10]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc)
+    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -169,11 +180,12 @@ main_unifrac  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
-    variance_significance_tests=args[11]
+    variance_significance_tests=args[9]
+    plot_pie = args[10]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc)
+    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -193,11 +205,12 @@ main_wunifrac  <- function(){
     pcoa = args[6]
     method_hc = args[7]
     plot_hc = args[8]
-    variance_significance_tests=args[12]
+    variance_significance_tests=args[9]
+    plot_pie = args[10]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc)
+    betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {

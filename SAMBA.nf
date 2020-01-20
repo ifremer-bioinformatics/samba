@@ -300,7 +300,8 @@ process stats_beta {
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'variance_significance_tests_*.txt'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'variance_significance_tests_*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'pie_ExpVar_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
@@ -312,8 +313,8 @@ process stats_beta {
         file 'NMDS_*' into NMDS
         file 'PCoA_*' into PCoA
         file 'hclustering_*' into hclustering
-        file 'variance_significance_tests_*.txt' into variance_significance_tests
-
+        file 'variance_significance_tests_*' into variance_significance_tests
+        file 'pie_ExpVar_*' into pie_ExpVar
 
     //Run only if process is activated in params.config file
     when :
@@ -322,7 +323,7 @@ process stats_beta {
  
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_${params.stats.beta_div_criteria} PCoA_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_${params.stats.beta_div_criteria} variance_significance_tests_jaccard.txt variance_significance_tests_bray.txt variance_significance_tests_unifrac.txt variance_significance_tests_wunifrac.txt> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_${params.stats.beta_div_criteria} PCoA_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_${params.stats.beta_div_criteria} variance_significance_tests_ pie_ExpVar_ > stats_beta_diversity.log 2>&1
     cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
     """
 }
@@ -335,7 +336,8 @@ process stats_beta_rarefied {
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : 'variance_significance_tests_rarefied_*.txt'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : 'variance_significance_tests_rarefied_*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'pie_ExpVar_rarefied_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
@@ -348,8 +350,8 @@ process stats_beta_rarefied {
         file 'NMDS_rarefied_*' into NMDS_rarefied
         file 'PCoA_rarefied_*' into PCoA_rarefied
         file 'hclustering_rarefied_*' into hclustering_rarefied
-        file 'variance_significance_tests_rarefied_*.txt' into variance_significance_tests_rarefied
-
+        file 'variance_significance_tests_rarefied_*' into variance_significance_tests_rarefied
+        file 'pie_ExpVar_rarefied_*' into pie_ExpVar_rarefied
 
     //Run only if process is activated in params.config file
     when :
@@ -357,7 +359,7 @@ process stats_beta_rarefied {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_${params.stats.beta_div_criteria} PCoA_rarefied_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_rarefied_${params.stats.beta_div_criteria} variance_significance_tests_rarefied_jaccard.txt variance_significance_tests_rarefied_bray.txt variance_significance_tests_rarefied_unifrac.txt variance_significance_tests_rarefied_wunifrac.txt > stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_${params.stats.beta_div_criteria} PCoA_rarefied_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_rarefied_${params.stats.beta_div_criteria} variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
 }
@@ -370,7 +372,8 @@ process stats_beta_deseq2 {
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2", mode: 'copy',pattern : 'variance_significance_tests_DESeq2_*.txt'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2", mode: 'copy',pattern : 'variance_significance_tests_DESeq2_*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2", mode: 'copy',pattern : 'pie_ExpVar_DESeq2_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
@@ -383,8 +386,8 @@ process stats_beta_deseq2 {
         file 'NMDS_deseq2_*' into NMDS_deseq2
         file 'PCoA_deseq2_*' into PCoA_deseq2
         file 'hclustering_deseq2_*' into hclustering_deseq2
-        file 'variance_significance_tests_DESeq2_*.txt' into variance_significance_tests_DESeq2
-
+        file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
+        file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
         
     //Run only if process is activated in params.config file
     when :
@@ -392,7 +395,7 @@ process stats_beta_deseq2 {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_deseq2_${params.stats.beta_div_criteria} PCoA_deseq2_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_deseq2_${params.stats.beta_div_criteria} variance_significance_tests_DESeq2_jaccard.txt variance_significance_tests_DESeq2_bray.txt variance_significance_tests_DESeq2_unifrac.txt variance_significance_tests_DESeq2_wunifrac.txt > stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_deseq2_${params.stats.beta_div_criteria} PCoA_deseq2_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_deseq2_${params.stats.beta_div_criteria} variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ > stats_beta_diversity_deseq2.log 2>&1
     cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """
 }
@@ -405,7 +408,8 @@ process stats_beta_css {
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS", mode: 'copy', pattern : 'variance_significance_tests_CSS_*.txt'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS", mode: 'copy', pattern : 'variance_significance_tests_CSS_*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS", mode: 'copy', pattern : 'pie_ExpVar_CSS_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
 
     input :
@@ -418,7 +422,8 @@ process stats_beta_css {
         file 'NMDS_css_*' into NMDS_css
         file 'PCoA_css_*' into PCoA_css
         file 'hclustering_css_*' into hclustering_css
-        file 'variance_significance_tests_CSS_*.txt' into variance_significance_tests_CSS
+        file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
+        file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS 
 
 
     //Run only if process is activated in params.config file
@@ -427,7 +432,7 @@ process stats_beta_css {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_css_${params.stats.beta_div_criteria} PCoA_css_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_css_${params.stats.beta_div_criteria} variance_significance_tests_CSS_jaccard.txt variance_significance_tests_CSS_bray.txt variance_significance_tests_CSS_unifrac.txt variance_significance_tests_CSS_wunifrac.txt > stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_css_${params.stats.beta_div_criteria} PCoA_css_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_css_${params.stats.beta_div_criteria} variance_significance_tests_CSS_ pie_ExpVar_CSS_ > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 }

@@ -114,4 +114,4 @@ Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tut
 
 ### Contact
 
-For any concerns/problems or suggestions, do not hesitate to contact us Laure Quintric or Cyril Noël
+For any concerns/problems or suggestions, do not hesitate to [contact us](samba-sebimer@ifremer.fr)

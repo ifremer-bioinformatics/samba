@@ -7,15 +7,27 @@
 ##                                                                           ##
 ##                                                                           ##
 ##                                                                           ##
-## Authors: Cyril NOEL and Laure QUINTRIC                                  ####
+## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
 ##          Bioinformatics engineers                                         ##
 ##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
 ## Creation Date: 2019-08-29                                               ####
-## Modified on: 2020-01-10                                                 ####
+## Modified on: 2020-01-31                                                 ####
+##                                                                           ##
+## Emails: samba-sebimer@ifremer.fr                                        ####
 ##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
-## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
+## This program is free software: you can redistribute it and/or modify it   ##
+## under the terms of the GNU Affero General Public License as published by  ##
+## the Free Software Foundation, either version 3 of the License, or         ##
+## (at your option) any later version.                                       ## 
+##									     ##
+## License at https://www.gnu.org/licenses/agpl-3.0.txt 		     ##
+## 									     ##
+## This program is distributed in the hope that it will be useful, but       ##
+## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
+## See the GNU Affero General Public License for more details.               ##
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ##                                                                           ##

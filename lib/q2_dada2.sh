@@ -1,7 +1,39 @@
 #!/usr/bin/env bash
-## Command run by nextflow process :
-### ${baseDir}/lib/q2_dada2_2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
-# store arguments in a special array 
+###############################################################################
+##                                                                           ##
+## Script name: q2_dada2.sh                                                ####
+##                                                                           ##
+## Purpose of script: All Dada2 processes                                    ##
+##                                                                           ##
+##                                                                           ##
+##                                                                           ##
+## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
+##          Bioinformatics engineers                                         ##
+##          SeBiMER, Ifremer                                                 ##
+##                                                                           ##
+## Creation Date: 2019-08-29                                               ####
+## Modified on: 2020-01-31                                                 ####
+##                                                                           ##
+## Email: samba-sebimer@ifremer.fr                                         ####
+## 									     ##
+## Copyright (c) SeBiMER, august-2019                                      ####
+## This program is free software: you can redistribute it and/or modify it   ##
+## under the terms of the GNU Affero General Public License as published by  ##
+## the Free Software Foundation, either version 3 of the License, or         ##
+## (at your option) any later version.                                       ## 
+##									     ##
+## License at https://www.gnu.org/licenses/agpl-3.0.txt 		     ##
+## 									     ##
+## This program is distributed in the hope that it will be useful, but       ##
+## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
+## See the GNU Affero General Public License for more details.               ##
+##                                                                           ##
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+## Command run by nextflow :
+## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+
+# Arguments 
 args=("$@") 
 
 trimmed_data=${args[0]}

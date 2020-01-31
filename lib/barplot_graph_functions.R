@@ -7,15 +7,16 @@
 ##                                                                           ##
 ##                                                                           ##
 ##                                                                           ##
-## Authors: Cyril NOEL and Laure QUINTRIC                                  ####
+## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
 ##          Bioinformatics engineers                                         ##
 ##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
 ## Creation Date: 2019-12-13                                               ####
-## Modified on: 2020-01-10                                                 ####
+## Modified on: 2020-01-31                                                 ####
 ##                                                                           ##
+## Emails: samba-sebimer@ifremer.fr                                        ####
+##									     ##
 ## Copyright (c) SeBiMER, december-2019                                    ####
-## Emails: cyril.noel@ifremer.fr and laure.quintric@ifremer.fr             ####
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ##                                                                           ##

@@ -99,5 +99,5 @@ if [ $(tail -n 1 tmp_output | awk '{print $15}') -ge ${primer_filter} ] ; then t
 # Results saving and remove all temporary files
 if [[ -e barcodes_R1.ok && -e barcodes_R2.ok && -e sequencer_R1.ok && -e sequencer_R2.ok && -e primer_R1.ok && -e primer_R2.ok ]] ; then touch ${verif_ok} ; else touch ${verif_bad} && echo '@@@ --- All verifications are not satisfied --- @@@' ; fi
 mv tmp_output ${summary}
-sed -i '1 i\SampleID	Barcode	Reads_count	Count_in_R1	Count_in_R2	Sequencer_R1	Sequencer_R2	PrimerF_in_R1	PrimerF_in_R2	Perc_correct_barcode_R1	Perc_correct_barcode_R2	Perc_uniq_sequencer_R1	Perc_uniq_sequencer_R2	Perc_primerF_R1	Perc_primerF_R2' ${summary}
+sed -i '1 i\SampleID	Barcode	Reads_count	Count_in_R1	Count_in_R2	Sequencer_R1	Sequencer_R2	PrimerF_in_R1	PrimerR_in_R2	Perc_correct_barcode_R1	Perc_correct_barcode_R2	Perc_uniq_sequencer_R1	Perc_uniq_sequencer_R2	Perc_primerF_R1	Perc_primerR_R2' ${summary}
 rm tmp*

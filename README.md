@@ -26,6 +26,8 @@ This workflow will process paired-end metabarcoding data.
     * A report folder will provide the metabarcoding workflow results
     * A workflow execution synthesis will be generated using Nextflow native DAG, timeline, trace and html report
 
+![SAMBA Workflow](./SAMBA_schemaEN.png)
+
 ## How to install
 
 ### How to get this worflow

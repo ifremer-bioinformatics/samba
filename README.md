@@ -3,7 +3,8 @@
 
 [![Version](https://img.shields.io/badge/version-beta-red.svg)]()
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.07.0-blue.svg)](https://www.nextflow.io/)
-[![Install](https://img.shields.io/badge/install-SeBiMER_gitlab-brightgreen.svg)](https://gitlab.ifremer.fr/bioinfo/MAEVA)
+[![Install](https://img.shields.io/badge/install-SeBiMER_gitlab-brightgreen.svg)](https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow)
+[![R](https://img.shields.io/badge/r_version-%E2%89%A53.6.1-blue.svg)](https://www.r-project.org/)
 
 ![SAMBA Workflow](./SAMBA_schemaEN.png)
 

@@ -324,7 +324,7 @@ process stats_beta {
  
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_${params.stats.beta_div_criteria} PCoA_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_${params.stats.beta_div_criteria} variance_significance_tests_ pie_ExpVar_ > stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.stats.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ > stats_beta_diversity.log 2>&1
     cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
     """
 }
@@ -360,7 +360,7 @@ process stats_beta_rarefied {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_${params.stats.beta_div_criteria} PCoA_rarefied_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_rarefied_${params.stats.beta_div_criteria} variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ > stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.stats.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ > stats_beta_diversity_rarefied.log 2>&1
     cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
 }
@@ -383,10 +383,10 @@ process stats_beta_deseq2 {
 
     output :
         file 'completecmd' into complete_cmd_beta_deseq2
-        file 'Final_deseq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        file 'NMDS_deseq2_*' into NMDS_deseq2
-        file 'PCoA_deseq2_*' into PCoA_deseq2
-        file 'hclustering_deseq2_*' into hclustering_deseq2
+        file 'Final_DESeq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
+        file 'NMDS_DESeq2_*' into NMDS_deseq2
+        file 'PCoA_DESeq2_*' into PCoA_deseq2
+        file 'hclustering_DESeq2_*' into hclustering_deseq2
         file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
         file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
         
@@ -396,7 +396,7 @@ process stats_beta_deseq2 {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_deseq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_deseq2_${params.stats.beta_div_criteria} PCoA_deseq2_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_deseq2_${params.stats.beta_div_criteria} variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ > stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.stats.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ > stats_beta_diversity_deseq2.log 2>&1
     cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """
 }
@@ -419,10 +419,10 @@ process stats_beta_css {
 
     output :
         file 'completecmd' into complete_cmd_beta_css
-        file 'Final_css_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        file 'NMDS_css_*' into NMDS_css
-        file 'PCoA_css_*' into PCoA_css
-        file 'hclustering_css_*' into hclustering_css
+        file 'Final_CSS_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
+        file 'NMDS_CSS_*' into NMDS_css
+        file 'PCoA_CSS_*' into PCoA_css
+        file 'hclustering_CSS_*' into hclustering_css
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
         file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS 
 
@@ -433,7 +433,7 @@ process stats_beta_css {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_css_${params.stats.beta_div_criteria} PCoA_css_${params.stats.beta_div_criteria} ${params.stats.hc_method} hclustering_css_${params.stats.beta_div_criteria} variance_significance_tests_CSS_ pie_ExpVar_CSS_ > stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 }

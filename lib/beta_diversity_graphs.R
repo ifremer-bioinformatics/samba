@@ -52,8 +52,8 @@ plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result
       labs(caption = paste("Stress:",round(ord_nmds$stress,4),
                            "\nAdonis statistic R:",round(adonis_result$aov.tab$R2[1]*100,2),
                      paste("\nAdonis based on ", criteria,": p-value"),adonis_result$aov.tab$`Pr(>F)`[1],sep=" "))
-    ggsave(filename=paste(nmds,"_",distance,".svg",sep=""), device="svg", width = width, height = height)
-    ggsave(filename=paste(nmds,"_",distance,".png",sep=""), device="png", width = width, height = height)
+    ggsave(filename=paste(nmds,distance,".svg",sep=""), device="svg", width = width, height = height)
+    ggsave(filename=paste(nmds,distance,".png",sep=""), device="png", width = width, height = height)
 }
 
 plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, width, height, graph_title) {
@@ -71,8 +71,8 @@ plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result
       stat_ellipse(geom="polygon",alpha=0.1,type="t",aes_string(fill=criteria)) +
       labs(caption = paste("\nAdonis statistic R:",round(adonis_result$aov.tab$R2[1]*100,2),
                      paste("\nAdonis based on ", criteria,": p-value"),adonis_result$aov.tab$`Pr(>F)`[1],sep=" "))
-    ggsave(filename=paste(pcoa,"_",distance,".svg",sep=""), device="svg", width = width, height = height)
-    ggsave(filename=paste(pcoa,"_",distance,".png",sep=""), device="png", width = width, height = height)
+    ggsave(filename=paste(pcoa,distance,".svg",sep=""), device="svg", width = width, height = height)
+    ggsave(filename=paste(pcoa,distance,".png",sep=""), device="png", width = width, height = height)
 }
 
 plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance, width, height) {

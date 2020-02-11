@@ -456,9 +456,9 @@ process report {
     when :
     params.report_enable
 
-    shell:
+    script:
     """
-    cat ${reportHTML} > Report.html
-    cat ${reportMD} > Report.md
+    cp ${reportHTML} Report_${params.projectName}.html
+    cp ${reportMD} Report_${params.projectName}.md
     """
 }

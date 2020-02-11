@@ -14,16 +14,16 @@
 ## Creation Date: 2019-08-29                                               ####
 ## Modified on: 2020-01-31                                                 ####
 ##                                                                           ##
-## Emails: samba-sebimer@ifremer.fr					   ####
-##									     ##
+## Emails: samba-sebimer@ifremer.fr                                        ####
+##                                                                           ##
 ## Copyright (c) SeBiMER, august-2019                                      ####
 ## This program is free software: you can redistribute it and/or modify it   ##
 ## under the terms of the GNU Affero General Public License as published by  ##
 ## the Free Software Foundation, either version 3 of the License, or         ##
 ## (at your option) any later version.                                       ## 
-##									     ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt 		     ##
-## 									     ##
+##                                                                           ##
+## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
+##                                                                           ##
 ## This program is distributed in the hope that it will be useful, but       ##
 ## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
@@ -71,10 +71,10 @@ DESeq2_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_deseq2)),as.dat
 write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",")
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
-#										#
+#                                                                               #
 # Function to standardize ordination analysis and plot for each distance matrix #
-#										#
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+#                                                                               #
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
 betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie) { 
   
@@ -117,7 +117,7 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_
     sink(file = paste(variance_significance_tests_deseq2,distance,".txt",sep="") , type = "output")
       f  = paste("phyloseq::distance(PHYLOSEQ_deseq2, distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
-                "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
+                "#Perform Adonis test on multiple variables: ",variables," using the ",distance," distance matrix")
       adonis_all_deseq2=adonis(as.formula(f), data=metadata, perm = 9999)
       print(adonis_all_deseq2)
       cat("\n\n")

@@ -266,14 +266,14 @@ process stats_alpha {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots", mode: 'copy', pattern : 'barplot_*'
     
     input :
         file phyloseq_rds from phyloseq_rds_alpha
 
     output :
-        file 'alpha_div_plots_*' into alpha_div_plots
+        file 'alpha_div_plots*' into alpha_div_plots
         file 'index_significance_tests.txt' into index_significance_tests
         file 'barplot_phylum_*' into barplot_phylum
         file 'barplot_class_*' into barplot_class

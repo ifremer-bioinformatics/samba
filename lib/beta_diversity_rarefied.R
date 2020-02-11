@@ -21,9 +21,9 @@
 ## under the terms of the GNU Affero General Public License as published by  ##
 ## the Free Software Foundation, either version 3 of the License, or         ##
 ## (at your option) any later version.                                       ## 
-##									     ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt 		     ##
-## 									     ##
+##                                                                           ##
+## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
+##                                                                           ##
 ## This program is distributed in the hope that it will be useful, but       ##
 ## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
@@ -59,9 +59,9 @@ rarefied_table = cbind(as.data.frame(otu_table(PHYLOSEQ_rarefied)),as.data.frame
 write.table(rarefied_table,final_rarefied_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".",quote=F)
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
-#										#
+#                                                                               #
 # Function to standardize ordination analysis and plot for each distance matrix #
-#										#
+#                                                                               #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
 betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie) {
@@ -104,7 +104,7 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, varia
     sink(file = paste(variance_significance_tests_rarefied,distance,".txt",sep="") , type = "output")
       f  = paste("distance(PHYLOSEQ_rarefied,distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
-                "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
+                "#Perform Adonis test on multiple variables: ",variables," using the ",distance," distance matrix")
       adonis_all_rarefied=adonis(as.formula(f), data=metadata, perm = 9999)
       print(adonis_all_rarefied)
       cat("\n\n")

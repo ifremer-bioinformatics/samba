@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim3F} ${params.dada2.trim3R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
 
 # Arguments 
 args=("$@") 
@@ -45,8 +45,8 @@ tableqzv=${args[5]}
 statsqza=${args[6]}
 statsqzv=${args[7]}
 dada2_output=${args[8]}
-trim3F=${args[9]}
-trim3R=${args[10]}
+trim5F=${args[9]}
+trim5R=${args[10]}
 trunclenF=${args[11]}
 trunclenR=${args[12]}
 maxee_f=${args[13]}
@@ -60,8 +60,8 @@ logcmd=${args[18]}
 cmd="qiime dada2 denoise-paired \
     --verbose \
     --i-demultiplexed-seqs $trimmed_data \
-    --p-trim-left-f $trim3F \
-    --p-trim-left-r $trim3R \
+    --p-trim-left-f $trim5F \
+    --p-trim-left-r $trim5R \
     --p-trunc-len-f $trunclenF \
     --p-trunc-len-r $trunclenR \
     --p-max-ee-f $maxee_f \

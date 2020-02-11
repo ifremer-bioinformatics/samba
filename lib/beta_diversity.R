@@ -21,9 +21,9 @@
 ## under the terms of the GNU Affero General Public License as published by  ##
 ## the Free Software Foundation, either version 3 of the License, or         ##
 ## (at your option) any later version.                                       ## 
-##									                                         ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt 		             ##
-## 									                                         ##
+##                                                                           ##
+## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
+##                                                                           ##
 ## This program is distributed in the hope that it will be useful, but       ##
 ## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
@@ -34,7 +34,7 @@
 ## Notes: This part of the script performs the beta diversity (NMDS, PCoa &  ##
 ##        Hierachical Clustering) on the non-normalized ASV table based on   ##
 ##        four distance matrices (Jaccard, Bray-Curtis, UniFrac & Weighted   ##
-##        UniFrac)                    					                     ##
+##        UniFrac)                                                           ##
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -45,9 +45,9 @@ for(package in requiredPackages){
 }
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
-#										                                        #
+#                                                                               #
 # Function to standardize ordination analysis and plot for each distance matrix #
-#										                                        #
+#                                                                               #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
  

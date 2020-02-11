@@ -445,7 +445,7 @@ Channel.fromPath(params.reportMD, checkIfExists:true).set { reportMD }
 
 process report {
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report.*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report_*'
 
     input :
         file reportHTML from reportHTML
@@ -453,7 +453,7 @@ process report {
         file 'end_analysis.ok' from end_ok
 
     output :
-        file 'Report.*' into Reports
+        file 'Report_*' into Reports
 
     //Run only if process is activated in params.config file
     when :

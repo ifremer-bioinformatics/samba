@@ -107,7 +107,7 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
 
     variables = paste(collapse =" + ", all_var )
     
-    sink(file = paste(variance_significance_tests_css,distance,".txt","") , type = "output")
+    sink(file = paste(variance_significance_tests_css,distance,".txt",sep="") , type = "output")
       f  = paste("distance(PHYLOSEQ_css,distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
                 "#Perform Adonis test on multiple variables: ",variables," using the ",distance," distance matrix")

@@ -275,11 +275,11 @@ process stats_alpha {
     output :
         file 'alpha_div_plots*' into alpha_div_plots
         file 'index_significance_tests.txt' into index_significance_tests
-        file 'barplot_phylum_*' into barplot_phylum
-        file 'barplot_class_*' into barplot_class
-        file 'barplot_order_*' into barplot_order
-        file 'barplot_family_*' into barplot_family
-        file 'barplot_genus_*' into barplot_genus
+        file 'barplot_phylum*' into barplot_phylum
+        file 'barplot_class*' into barplot_class
+        file 'barplot_order*' into barplot_order
+        file 'barplot_family*' into barplot_family
+        file 'barplot_genus*' into barplot_genus
         file 'completecmd' into complete_cmd_alpha
 
     //Run only if process is activated in params.config file

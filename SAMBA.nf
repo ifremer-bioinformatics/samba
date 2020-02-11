@@ -437,3 +437,28 @@ process stats_beta_css {
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     """
 }
+
+Channel.fromPath(params.reportHTML, checkIfExists:true).set { reportHTML }
+Channel.fromPath(params.reportMD, checkIfExists:true).set { reportMD }
+
+process report {
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report.*'
+
+    input :
+        file reportHTML from reportHTML
+        file reportMD from reportMD
+
+    output :
+        file 'Report.*' into Reports
+
+    //Run only if process is activated in params.config file
+    when :
+    params.report_enable
+
+    shell:
+    """
+    cat ${reportHTML} > Report.html
+    cat ${reportMD} > Report.md
+    """
+}

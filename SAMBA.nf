@@ -424,7 +424,8 @@ process stats_beta_css {
         file 'PCoA_CSS_*' into PCoA_css
         file 'hclustering_CSS_*' into hclustering_css
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
-        file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS 
+        file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
+        file 'end_analysis.ok' into end_ok
 
 
     //Run only if process is activated in params.config file
@@ -435,6 +436,7 @@ process stats_beta_css {
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_css_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ > stats_beta_diversity_css.log 2>&1
     cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
+    touch end_analysis.ok
     """
 }
 
@@ -448,6 +450,7 @@ process report {
     input :
         file reportHTML from reportHTML
         file reportMD from reportMD
+        file 'end_analysis.ok' from end_ok
 
     output :
         file 'Report.*' into Reports

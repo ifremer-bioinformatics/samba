@@ -21,9 +21,9 @@
 ## under the terms of the GNU Affero General Public License as published by  ##
 ## the Free Software Foundation, either version 3 of the License, or         ##
 ## (at your option) any later version.                                       ## 
-##									     ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt 		     ##
-## 									     ##
+##                                                                           ##
+## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
+##                                                                           ##
 ## This program is distributed in the hope that it will be useful, but       ##
 ## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
@@ -34,7 +34,7 @@
 ## Notes: This part of the script performs the beta diversity (NMDS, PCoa &  ##
 ##        Hierachical Clustering) on CSS normalized ASV table based on       ##
 ##        four distance matrices (Jaccard, Bray-Curtis, UniFrac & Weighted   ##
-##        UniFrac) 							     ##   
+##        UniFrac)                                                           ##   
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
@@ -65,9 +65,9 @@ CSS_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_css)),as.data.fram
 write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",")
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
-#										#
+#                                                                               #
 # Function to standardize ordination analysis and plot for each distance matrix #
-#										#
+#                                                                               #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
 betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie) {
@@ -110,7 +110,7 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
     sink(file = paste(variance_significance_tests_css,distance,".txt","") , type = "output")
       f  = paste("distance(PHYLOSEQ_css,distance)"," ~ ", variables)
       cat(sep = "", "###############################################################\n",
-                "#Perform Adonis test on multiple variables: ",variables," using the",distance,"distance matrix")
+                "#Perform Adonis test on multiple variables: ",variables," using the ",distance," distance matrix")
       adonis_all_css=adonis(as.formula(f), data=metadata, perm = 9999)
       print(adonis_all_css)
       cat("\n\n")

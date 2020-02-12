@@ -465,15 +465,15 @@ biom convert \
 
 ###### IV.2.d.i rarefied data
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/variance_significance_tests_rarefied_bray.png" width="1000"</p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/variance_significance_tests_rarefied_wunifrac.png" width="1000"</p><br>
+<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/pie_ExpVar_rarefied_bray.png" width="1000"</p><br>
+<p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/pie_ExpVar_rarefied_wunifrac.png" width="1000"</p><br>
 
 ###### IV.2.d.ii DESeq2 normalization
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/variance_significance_tests_DESeq2_bray.png" width="1000"</p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/variance_significance_tests_DESeq2_wunifrac.png" width="1000"</p><br>
+<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/pie_ExpVar_DESeq2_bray.png" width="1000"</p><br>
+<p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/pie_ExpVar_DESeq2_wunifrac.png" width="1000"</p><br>
 
 ###### IV.2.d.iii CSS normalization
 
-<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/variance_significance_tests_CSS_bray.png" width="1000"</p><br>
-<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/variance_significance_tests_CSS_wunifrac.png" width="1000"</p><br>
+<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/pie_ExpVar_CSS_bray.png" width="1000"</p><br>
+<p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/pie_ExpVar_CSS_wunifrac.png" width="1000"</p><br>

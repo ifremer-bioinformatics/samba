@@ -79,11 +79,11 @@ plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance
     ## Sort GROUP color palette according to dend ####
     color = col_group[order.dendrogram(dendro)]
     ## Plot dendrogram ####
-    svglite(paste(plot_hc,"_",distance,".svg",sep=""), width = width, height = height)
+    svglite(paste(plot_hc,distance,".svg",sep=""), width = width, height = height)
     plot = dendro %>% set("labels_colors", color) %>% plot(main = paste("Hierarchical clustering with the", method_hc, "method", "based on", distance, "distance", sep=" "))
     legend("topright", legend = levels(group), fill = cols, cex = 0.8, horiz=FALSE, border="white",box.lty=0)
     dev.off()
-    png(filename=paste(plot_hc,"_",distance,".png",sep=""), res=150, width = 2000, height = 1200)
+    png(filename=paste(plot_hc,distance,".png",sep=""), res=150, width = 2000, height = 1200)
     plot = dendro %>% set("labels_colors", color) %>% plot(main = paste("Hierarchical clustering with the", method_hc, "method", "based on", distance, "distance", sep=" "))
     legend("topright", legend = levels(group), fill = cols, cex = 0.8, horiz=FALSE, border="white", box.lty=0)
     dev.off()

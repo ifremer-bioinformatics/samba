@@ -61,7 +61,6 @@ For nextflow, update the following files config/conda_envs/nextflow_env.sh and c
 SAMBA is written to be executed on a grid cluster with PBS Professionnal scheduler. If your scheduler is different, change the executor name in the file config/resources.config.
 
 ### To test the workflow
-#### Ifremer users
 ```bash
 # Enter in your local copy
 cd SAMBA-nextflow

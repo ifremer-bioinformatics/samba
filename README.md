@@ -67,7 +67,7 @@ cd SAMBA-nextflow
 #Run the workflow
 ./RunSAMBA_training_dataset.sh 
 ```
-At the end of the worklow, a 'output.test' folder will be created either in your $TMP (if it exists), or in your $SCRATCH (if it exists), or either at the root of the tool
+At the end of the workflow, an output folder will be created either in your $TMP (if it exists), or in your $SCRATCH (if it exists), or either at the root of the tool
 
 ## How to use with your own data
 

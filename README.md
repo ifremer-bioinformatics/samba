@@ -38,16 +38,16 @@ This workflow will process paired-end metabarcoding data.
 ### How to get this worflow
 #### For Ifremer users
 ```
-#connect to datarmor
+# connect to datarmor
 ssh datarmor
-#get a local copy of the workflow in the directory SAMBA-nextflow
+# get a local copy of the workflow in the directory SAMBA-nextflow
 git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
 cd SAMBA-nextflow
 ```
 
 ### For other users
 ```
-#get a local copy of the workflow in the directory SAMBA-nextflow
+# get a local copy of the workflow in the directory SAMBA-nextflow
 git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
 cd SAMBA-nextflow
 ```
@@ -62,9 +62,9 @@ SAMBA is written to be executed on a grid cluster with PBS Professionnal schedul
 ### To test the workflow
 #### Ifremer users
 ```
-#Enter in your local copy
+# Enter in your local copy
 cd SAMBA-nextflow
-#Run the workflow
+# Run the workflow
 ./RunSAMBA_training_dataset.sh 
 ```
 At the end of the workflow, an output folder will be created either in your $TMP (if it exists), or in your $SCRATCH (if it exists), or either at the root of the tool

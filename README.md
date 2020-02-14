@@ -44,6 +44,8 @@ ssh datarmor
 # get a local copy of the workflow in the directory SAMBA-nextflow
 git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
 cd SAMBA-nextflow
+# get stable SAMBA version 1.0.0
+git checkout v1.0.0
 ```
 
 ### For other users
@@ -51,6 +53,8 @@ cd SAMBA-nextflow
 # get a local copy of the workflow in the directory SAMBA-nextflow
 git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
 cd SAMBA-nextflow
+# get stable SAMBA version 1.0.0
+git checkout v1.0.0
 ```
 This workflow uses conda to resolve process dependencies, please be sure to have the following dependencies installed beforehand:
 - Conda >=4.8.1 binary in your PATH or a conda init file in your environment -> https://docs.anaconda.com/anaconda/user-guide/faq/

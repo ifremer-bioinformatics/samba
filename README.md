@@ -36,29 +36,37 @@ This workflow will process paired-end metabarcoding data.
 ## How to install
 
 ### How to get this worflow
+#### For Ifremer users
 ```
-#connect to datarmor (for Ifremer users)
+#connect to datarmor
 ssh datarmor
-#move to the directory in which you want to get the workflow
-cd /TO/YOUR_WORKING_DIRECTORY
-## For all users :
 #get a local copy of the workflow in the directory SAMBA-nextflow
 git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
 cd SAMBA-nextflow
 ```
 
+### For other users
+```
+#get a local copy of the workflow in the directory SAMBA-nextflow
+git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
+cd SAMBA-nextflow
+```
 This workflow uses conda to resolve process dependencies, please be sure to have the following dependencies installed beforehand:
-- Conda binary in your PATH or a conda init file in your environment -> https://docs.anaconda.com/anaconda/user-guide/faq/
-- Nextflow v19.07.0 -> conda install -c bioconda nextflow=19.07.0
+- Conda >=4.8.1 binary in your PATH or a conda init file in your environment -> https://docs.anaconda.com/anaconda/user-guide/faq/
+- Nextflow >=20.01.0 -> conda install -c bioconda nextflow=20.01.0
+
+For nextflow, update the following files config/conda_envs/nextflow_env.sh and config/conda_envs/delenv.sh to fit your environment's paths
+
+SAMBA is written to be executed on a grid cluster with PBS Professionnal scheduler. If your scheduler is different, change the executor name in the file config/resources.config.
 
 ### To test the workflow
+#### Ifremer users
 ```
 #Enter in your local copy
 cd SAMBA-nextflow
 #Run the workflow
 ./RunSAMBA_training_dataset.sh 
 ```
-
 At the end of the worklow, a 'output.test' folder will be created either in your $TMP (if it exists), or in your $SCRATCH (if it exists), or either at the root of the tool
 
 ## How to use with your own data

@@ -7,22 +7,10 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 if [ "$1" != "-resume" ]
 then
-  #nextflow temp directory
-  if [ ! -z $TMP ] 
-  then 
-    sed -i 's|/PATH-TO/$projectName|$TMP/SAMBA_results_of_${projectName}|g' config/params.config
-    #nextflow temp directory
-    export NXF_TEMP=$TMP
-  elif [ ! -z $SCRATCH ] 
-  then
-    sed -i 's|/PATH-TO/$projectName|$SCRATCH/SAMBA_results_of_${projectName}|g' config/params.config
-    #nextflow temp directory
-    export NXF_TEMP=$SCRATCH
-  else
     sed -i 's|/PATH-TO/$projectName|${baseDir}/SAMBA_results_of_${projectName}|g' config/params.config
     #nextflow temp directory
-    export NXF_TEMP=$BASEDIR
-  fi
+    export NXF_TEMP=$BASEDIR/.nfx_temp
+    mkdir -p $NXF_TEMP
 fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)

@@ -7,7 +7,6 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 if [ "$1" != "-resume" ]
 then
-    sed -i 's|/PATH-TO/$projectName|${baseDir}/SAMBA_results_of_${projectName}|g' config/params.config
     #nextflow temp directory
     export NXF_TEMP=$BASEDIR/.nfx_temp
     mkdir -p $NXF_TEMP

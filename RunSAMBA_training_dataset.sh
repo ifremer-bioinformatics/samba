@@ -7,13 +7,12 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 if [ "$1" != "-resume" ]
 then
-    sed -i 's|/PATH-TO/$projectName|${baseDir}/SAMBA_results_of_${projectName}|g' config/params.config
     sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest 
     #nextflow temp directory
     export NXF_TEMP=$BASEDIR/.nxf_temp
     mkdir -p $NXF_TEMP
     export tax_db_dir=$BASEDIR/tax.databases.test
-    sed -i 's|/PATH-TO/database.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g' config/params.config
+    sed -i "s|/PATH-TO/database.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
     #download taxonomic database
     DB=$tax_db_dir/DATABASE_silva_v132_99_16S.qza
   if [ -f "$DB" ]

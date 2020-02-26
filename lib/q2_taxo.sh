@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-##  q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
+##  q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dbotu3_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
 
 # Arguments 
 args=("$@")
@@ -49,7 +49,7 @@ taxoqza=${args[9]}
 taxoqzv=${args[10]}
 taxo_output=${args[11]}
 asv_taxo_tsv=${args[12]}
-dada2_summary=${args[13]}
+dbotu3_summary=${args[13]}
 final_asv_taxo_biom=${args[14]}
 final_asv_taxo_tsv=${args[15]}
 database=${args[16]}
@@ -117,7 +117,7 @@ eval $cmd
 
 #Add taxonomy to count table (biom format)
 cmd="biom add-metadata \
-    -i $dada2_summary/feature-table.biom \
+    -i $dbotu3_summary/feature-table.biom \
     --observation-metadata-fp $asv_taxo_tsv \
     -o $final_asv_taxo_biom \
     --sc-separated taxonomy"

@@ -1,5 +1,6 @@
 *log*
 .nextflow
 tax.databases.test
-output.test
 .nxf_temp
+SAMBA_results_of_*
+tmp_SAMBA

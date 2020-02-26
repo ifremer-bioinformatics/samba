@@ -12,7 +12,7 @@ println "Manifest file : $params.inmanifest"
 println "Metadata file : $params.inmetadata"
 
 Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
-Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata4stats ; metadata4integrity }
+Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity }
 
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
 if(!params.stats_only) {
@@ -139,7 +139,40 @@ if(!params.stats_only) {
         """
     }
 
-data_repseqs.into { repseqs_taxo ; repseqs_phylo }
+    /* Run dbotu3 */
+    process q2_dbotu3 {
+
+        conda "${params.qiime_env}"
+
+        publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
+
+        input :
+            file table from data_table
+            file seqs from data_repseqs
+            file metadata_dbotu3 from metadata_dbotu3
+
+        output :
+            file 'dbotu3_details.txt' into dbotu3_details
+            file 'dbotu3_seqs.qza' into dbotu3_seqs
+            file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
+            file 'dbotu3_table.qza' into dbotu3_table
+            file 'dbotu3_table.qzv' into dbotu3_table_visu
+            file 'dbotu3_output' into dbotu3_summary
+            file 'completecmd' into complete_cmd_dbotu3
+
+        //Run only if process is activated in params.config file
+        when :
+        params.dbotu3_enable
+
+        script :
+        """
+        ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd > q2_dbotu3.log 2>&1
+        """
+    }
+
+dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
 
     /* Run taxonomy assignment */
 
@@ -156,7 +189,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
     
         input :
             file repseqs_taxo from repseqs_taxo
-            file dada2_summary from dada2_summary
+            file dbotu3_summary from dbotu3_summary
     
         output :
             file 'taxonomy.qza' into data_taxonomy
@@ -175,7 +208,7 @@ data_repseqs.into { repseqs_taxo ; repseqs_phylo }
     
         script :
         """
-        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dada2_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
+        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dbotu3_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
         """ 
     }
 

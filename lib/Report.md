@@ -270,7 +270,6 @@ qiime tools export \
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./dada2_output"><div style="display:inline-block;color:blue;"">dada2_output</div></a></center></b></div>
 
 
-
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>The dynamics of the different step of filtering can be visualized in this <a href="./dada2_output/index.html"><div style="display:inline-block;color:blue;">html file</div></a> and are also available in a <a href="./dada2_output/metadata.tsv"><div style="display:inline-block;color:blue;">tabulated file</div></a></li>
@@ -350,7 +349,6 @@ qiime tools export \
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./dbotu3_output"><div style="display:inline-block;color:blue;"">dbotu3_output</div></a></center></b></div>
 
 
-
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>Overview of the results available <a href="./dbotu3_output/index.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
@@ -408,7 +406,6 @@ sed -i '1 i\#OTUID\ttaxonomy\tconfidence' ASV_taxonomy.tsv
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./taxo_output"><div style="display:inline-block;color:blue;"">taxo_output</div></a></center></b></div>
 
 
-
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>The result of the taxonomic affiliation is available in <a href="./taxo_output/index.html"><div style="display:inline-block;color:blue;">html</div></a> and <a href="./taxo_output/ASV_taxonomy.tsv"><div style="display:inline-block;color:blue;">tabulated</div></a> formats</li>
@@ -460,7 +457,11 @@ biom convert \
 #### <i>IV.1.a diversity indices</i>
 
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots.png" width="1000"</p><br>
-#### <i>IV.1.b taxonomic diversity</i>
+#### <i>IV.1.b rarefaction curve</i>
+
+<p align="center"> <img src="./R/FIGURES/alpha_diversity/rarefaction_curve.png" width="1000"</p><br>
+
+#### <i>IV.1.c taxonomic diversity</i>
 
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/diversity_barplots/barplot_phylum.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/diversity_barplots/barplot_class.png" width="1000"</p><br>

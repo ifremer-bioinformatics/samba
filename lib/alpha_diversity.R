@@ -38,7 +38,7 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## Load up the needed packages ####
-requiredPackages = c("dplyr","stringr","ggplot2","svglite","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager","phyloseq", "microbiome")
+requiredPackages = c("dplyr","stringr","ggplot2","svglite","vegan","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager","phyloseq", "microbiome")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -49,7 +49,7 @@ for(package in requiredPackages){
 #						   #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group) {
+alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group, plot_rarefaction) {
     
     # ~~~~~~~~~~~~~~~ #
     # Alpha diversity #
@@ -87,6 +87,42 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     final_alpha_plot = arrangeGrob(grobs=lapply(list(plot1_alpha,plot2_alpha),set_panel_size,width=unit(10,"cm"),height=unit(10,"cm")))
     ggsave(filename=paste(alpha_div_plots,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
     ggsave(filename=paste(alpha_div_plots,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
+
+    ## Rarefaction curve ####
+    rarec <- function (x, step = 1, sample, xlab = "Sample Size", ylab = "Species", 
+                   label = TRUE, cols = c(rep('red', nrow(x) / 2), rep('blue', nrow(x) / 2)), ...) {
+      tot <- rowSums(x)
+      S <- specnumber(x)
+      nr <- nrow(x)
+      out <- lapply(seq_len(nr), function(i) {
+        n <- seq(1, tot[i], by = step)
+        if (n[length(n)] != tot[i]) 
+          n <- c(n, tot[i])
+        drop(rarefy(x[i, ], n))
+      })
+      Nmax <- sapply(out, function(x) max(attr(x, "Subsample")))
+      Smax <- sapply(out, max)
+      plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = xlab, ylab = ylab, 
+           type = "n", ...)
+      rare <- min(rowSums(x))
+      abline(v = rare, lwd = 2, lty=2, col="red")
+      for (ln in seq_len(length(out))) {
+        N <- attr(out[[ln]], "Subsample")
+        lines(N, out[[ln]], col = "black", ...)
+      }
+      if (label) {
+        ordilabel(cbind(tot, S), labels = rownames(x), ...)
+      }
+      invisible(out)
+    }
+
+    svglite(paste(plot_rarefaction,".svg",sep=""), width = 14, height = 10)
+    rarec(t(otu_table(PHYLOSEQ)),step=20, cex = 0.6)
+    dev.off()
+
+    png(filename=paste(plot_rarefaction,".png",sep=""), res=150, width = 2000, height = 1200)
+    rarec(t(otu_table(PHYLOSEQ)),step=20, cex = 0.6)
+    dev.off()
 
     ## Statistical significance of indexes  ####
     anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich)
@@ -165,10 +201,11 @@ main <- function() {
     group = str_replace(args[11], "-", "_")
     index_significance_tests = args[12]
     workflow_dir = args[13]
+    plot_rarefaction = args[14]
     # Get plot_composition function
     if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/barplot_graph_functions.R")))
     # Run alpha diversity analyses
-    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group)
+    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group, plot_rarefaction)
 }
 if (!interactive()) {
         main()

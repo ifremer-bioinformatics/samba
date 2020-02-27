@@ -283,7 +283,85 @@ qiime tools export \
 
 
 
-### III.5.  Taxonomic assignation
+### III.5.  ASV clustering
+
+<div style="text-align: justify"><span style="color:black">
+   The following step of the workflow is to cluster ASV according to sequence similarity and 
+   abundance profil. This allow to takes into account the overestimation of diversity 
+   produced by DADA2. It also reduces possible PCR errors. To performed this step, 
+   the <b>dbOtu3 algorithm</b> was used through QIIME 2 using the following commands :
+</span></div><br>
+
+<ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS USED</b></span>
+   <li>genet_crit</li>
+   <li>abund_crit</li>
+   <li>pval_crit</li>
+</ul>
+
+
+
+```bash
+### dbOTU3 process ###
+qiime dbotu-q2 call-otus \
+--verbose \
+--i-table table.qza \
+--i-sequences rep_seqs.qza \
+--p-gen-crit $genet_crit \
+--p-abund-crit $abund_crit \
+--p-pval-crit $pval_crit \
+--o-representative-sequences dbotu3_seqsqza \
+--o-dbotu-table dbotu3_tableqza > dbotu3_details
+
+### ASV table ###
+
+# Construction of the count table
+qiime tools export \
+--input-path dbotu3_tableqza \
+--output-path dbotu3_output  
+
+# Summarize statistics from the table file
+qiime feature-table summarize \
+--verbose \
+--i-table dbotu3_tableqza \
+--o-visualization dbotu3_tableqzv \
+--m-sample-metadata-file q2_metadata
+
+# Export of the table ASV statistics
+qiime tools export \
+--input-path dbotu3_tableqzv \
+--output-path dbotu3_output
+
+### Reference sequences ###
+
+# Obtaining ASV reference sequences
+qiime feature-table tabulate-seqs \
+--verbose \
+--i-data dbotu3_seqsqza \
+--o-visualization dbotu3_seqsqzv
+
+# Export of ASV reference sequences
+qiime tools export \
+--input-path dbotu3_seqsqzv \
+--output-path dbotu3_output
+```
+
+
+
+<div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./dbotu3_output"><div style="display:inline-block;color:blue;"">dbotu3_output</div></a></center></b></div>
+
+
+
+<div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
+<ul style = "margin: 0 ; padding: 1 ;text-align: justify">
+   <li>Overview of the results available <a href="./dbotu3_output/index.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
+   <li>Feature details are available <a href="./dbotu3_output/feature-frequency-detail.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
+   <li>Details about the samples can be found by going to <a href="./dbotu3_output/sample-frequency-detail.html"><div style="display:inline-block;color:blue;">this interactive html page</div></a></li>
+           <li>Finally, you can retrieved the reference sequences of your ASVs in <a href="./dbotu3_output/sequences.fasta"><div style="display:inline-block;color:blue;">this fasta</div></a></li>
+</ul>
+
+
+
+### III.6.  Taxonomic assignation
 
 <div style="text-align: justify">
    The taxonomic assignation performed during the fourth step of the workflow allowed to 
@@ -338,7 +416,7 @@ sed -i '1 i\#OTUID\ttaxonomy\tconfidence' ASV_taxonomy.tsv
 
 
 
-### III.6.  Final outputs
+### III.7.  Final outputs
 
 <div style="text-align: justify"><span style="color:black">
    This is the last step of the bioinformatic process where the goal is to merge the ASV abundance table with the taxonomy file. This is performed using the following commands :
@@ -382,7 +460,6 @@ biom convert \
 #### <i>IV.1.a diversity indices</i>
 
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots.png" width="1000"</p><br>
-
 #### <i>IV.1.b taxonomic diversity</i>
 
 <p align="center"> <img src="./R/FIGURES/alpha_diversity/diversity_barplots/barplot_phylum.png" width="1000"</p><br>
@@ -416,63 +493,52 @@ biom convert \
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.a.ii DESeq2 normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.a.iii CSS normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_wunifrac.png" width="1000"</p><br>
-
 #### <i>IV.2.b PCoA</i> 
 
 ###### IV.2.b.i rarefied data
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.b.ii DESeq2 normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.b.iii CSS normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_wunifrac.png" width="1000"</p><br>
-
 #### <i>IV.2.c Hierarchical clustering</i> 
 
 ###### IV.2.c.i rarefied data
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.c.ii DESeq2 normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.c.iii CSS normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_wunifrac.png" width="1000"</p><br>
-
 #### <i>IV.2.d Explained variance</i> 
 
 ###### IV.2.d.i rarefied data
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/pie_ExpVar_rarefied_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_rarefied/pie_ExpVar_rarefied_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.d.ii DESeq2 normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/pie_ExpVar_DESeq2_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_DESeq2/pie_ExpVar_DESeq2_wunifrac.png" width="1000"</p><br>
-
 ###### IV.2.d.iii CSS normalization
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/pie_ExpVar_CSS_bray.png" width="1000"</p><br>

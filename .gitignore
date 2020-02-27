@@ -4,3 +4,4 @@ tax.databases.test
 .nxf_temp
 SAMBA_results_of_*
 tmp_SAMBA
+training_dataset/

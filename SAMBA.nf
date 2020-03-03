@@ -14,6 +14,10 @@ println "Metadata file : $params.inmetadata"
 Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
 Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity }
 
+//Copy params.config file to output directory for each run
+paramsfile = file('config/params.config')
+paramsfile.copyTo("$params.outdir/config/params.config")
+
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
 if(!params.stats_only) {
     /* Check data integrity */

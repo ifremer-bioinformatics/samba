@@ -145,7 +145,7 @@ if(!params.stats_only) {
     
 data_repseqs.into { data_repseqs_dbotu3 ; data_repseqs_taxo }
 
-if(params. params.dbotu3_enable){
+if(params.dbotu3_enable){
 
     /* Run dbotu3 */
     process q2_dbotu3 {

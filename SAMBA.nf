@@ -143,9 +143,10 @@ if(!params.stats_only) {
         """
     }
     
-data_repseqs.into { data_repseqs_dbotu3 ; data_repseqs_taxo }
+    data_repseqs.into { dada2_seqs_dbotu3 ; seqs_taxo ; seqs_phylo }
+    dada2_summary.set { summary }
 
-if(params.dbotu3_enable){
+    if(params.dbotu3_enable){
 
     /* Run dbotu3 */
     process q2_dbotu3 {
@@ -158,7 +159,7 @@ if(params.dbotu3_enable){
 
         input :
             file table from data_table
-            file seqs from data_repseqs_dbotu3
+            file seqs from dada2_seqs_dbotu3
             file metadata_dbotu3 from metadata_dbotu3
 
         output :
@@ -176,8 +177,9 @@ if(params.dbotu3_enable){
         """
     }
 
-dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
-}
+    dbotu3_seqs.into { seqs_taxo ; seqs_phylo }
+    dbotu3_summary.set { summary }
+    }
 
     /* Run taxonomy assignment */
 
@@ -193,14 +195,9 @@ dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
     
         input :
-            if(params.dbotu3_enable) {
-                file repseqs_taxo from repseqs_taxo
-                file summary from dbotu3_summary
-            } else {
-                file repseqs_taxo from data_repseqs_taxo
-                file summary from dada2_summary
-            }
-            
+            file repseqs_taxo from seqs_taxo
+            file summary from summary
+
         output :
             file 'taxonomy.qza' into data_taxonomy
             file 'taxonomy.qzv' into visu_taxonomy
@@ -235,7 +232,7 @@ dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
 
         input :
-            file repseqs_phylo from repseqs_phylo
+            file repseqs_phylo from seqs_phylo
 
         output :
             file 'aligned_repseq.qza' into aligned_repseq

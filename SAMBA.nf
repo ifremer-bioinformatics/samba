@@ -142,6 +142,10 @@ if(!params.stats_only) {
         ${baseDir}/lib/q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
         """
     }
+    
+data_repseqs.into { data_repseqs_dbotu3 ; data_repseqs_taxo }
+
+if(params. params.dbotu3_enable){
 
     /* Run dbotu3 */
     process q2_dbotu3 {
@@ -154,7 +158,7 @@ if(!params.stats_only) {
 
         input :
             file table from data_table
-            file seqs from data_repseqs
+            file seqs from data_repseqs_dbotu3
             file metadata_dbotu3 from metadata_dbotu3
 
         output :
@@ -166,10 +170,6 @@ if(!params.stats_only) {
             file 'dbotu3_output' into dbotu3_summary
             file 'completecmd' into complete_cmd_dbotu3
 
-        //Run only if process is activated in params.config file
-        when :
-        params.dbotu3_enable
-
         script :
         """
         ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd > q2_dbotu3.log 2>&1
@@ -177,6 +177,7 @@ if(!params.stats_only) {
     }
 
 dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
+}
 
     /* Run taxonomy assignment */
 
@@ -192,9 +193,14 @@ dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
     
         input :
-            file repseqs_taxo from repseqs_taxo
-            file dbotu3_summary from dbotu3_summary
-    
+            if(params.dbotu3_enable) {
+                file repseqs_taxo from repseqs_taxo
+                file summary from dbotu3_summary
+            } else {
+                file repseqs_taxo from data_repseqs_taxo
+                file summary from dada2_summary
+            }
+            
         output :
             file 'taxonomy.qza' into data_taxonomy
             file 'taxonomy.qzv' into visu_taxonomy
@@ -212,7 +218,7 @@ dbotu3_seqs.into { repseqs_taxo ; repseqs_phylo }
     
         script :
         """
-        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${dbotu3_summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
+        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd > q2_taxo.log 2>&1
         """ 
     }
 

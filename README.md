@@ -1,7 +1,7 @@
 # SAMBA
 ## Standardized and Automated MetaBarcoding Analysis workflow using Nextflow
 
-[![SAMBA Version](https://img.shields.io/badge/version-1.0.0-red.svg)]()
+[![SAMBA Version](https://img.shields.io/badge/version-1.0.1-red.svg)]()
 [![Install](https://img.shields.io/badge/install-SeBiMER_gitlab-brightgreen.svg)](https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A520.01.0-blue.svg)](https://www.nextflow.io/)
 [![Conda](https://img.shields.io/badge/conda-%E2%89%A54.8.1-blue.svg)](https://docs.conda.io/en/latest/)

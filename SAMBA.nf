@@ -219,40 +219,144 @@ if(!params.stats_only) {
         """ 
     }
 
-    /* Run phylogeny construction */
+    biom_tsv.set { tsv }
 
-    process q2_phylogeny {
-        
-        conda "${params.qiime_env}" 
+    if(params.microDecon_enable) {
 
-        publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
-        publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
-        publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
+        /* Run sample decontamination using MicroDecon */
+    
+        process microDecon_step1 {
+    
+            beforeScript "${params.test_R_env}"
+    
+            publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
+            publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'abundance_removed.txt'
+            publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'ASV_removed.txt'
+            publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
+            publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'abundance_removed.txt'
+            publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'ASV_removed.txt'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_microDecon -> "cmd/${task.process}_complete.sh" }
+    
+            input :
+                file microDecon_table from biom_tsv
+    
+            output :
+                file 'decontaminated_ASV_table.tsv' into decontam_table
+                file 'abundance_removed.txt' into abund_removed
+                file 'ASV_removed.txt' into ASV_removed
+                file 'completecmd' into complete_cmd_microDecon
+    
+            shell :
+            """ 
+            sed '1d' ${microDecon_table} > microDecon_table
+            sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
+            ${baseDir}/lib/microDecon.R microDecon_table ${params.microDecon.control_list} ${params.microDecon.nb_controls} ${params.microDecon.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt > microDecon.log 2>&1
+            cp ${baseDir}/lib/microDecon.R completecmd >> microDecon.log 2>&1
+            """
+        }
 
-        input :
-            file repseqs_phylo from seqs_phylo
-
-        output :
-            file 'aligned_repseq.qza' into aligned_repseq
-            file 'masked-aligned_repseq.qza' into masked_aligned
-            file 'tree.qza' into tree
-            file 'tree.log' into tree_bestmodel_log
-            file 'tree_export_dir' into tree_export_dir
-            file 'tree_export.log' into tree_export_log
-            file 'tree.nwk' into newick
-            file 'completecmd' into complete_cmd_phylogeny
-
-        //Run only if process is activated in params.config file
-        when :
-        params.phylogeny_enable
-
-        script :
-        """
-        ${baseDir}/lib/q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log tree_export_dir tree_export.log completecmd > q2_phylogeny.log 2>&1
-        cp tree_export_dir/tree.nwk tree.nwk >> q2_phylogeny.log 2>&1
-        """
+decontam_table.into { decontam_table_step2 ; tsv }
+    
+        /* Extract non-contaminated ASV ID */
+    
+        process microDecon_step2 {
+    
+            conda "${params.seqtk_env}"
+    
+            publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_ID.txt'
+            publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
+            publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
+    
+            input :
+                file decontam_table from decontam_table_step2
+                file dada2_summary from dada2_summary
+    
+            output :
+                file 'decontaminated_ASV_ID.txt' into decontam_ASV_ID
+                file 'decontaminated_ASV.fasta' into decontam_ASV_fasta
+    
+            shell :
+            """
+            cut -d \$'\t' -f1 ${decontam_table} | sed '1d' > decontaminated_ASV_ID.txt
+            seqtk subseq ${dada2_summary}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
+            """
+        }
+    
+        /* Run phylogeny from decontaminated ASV sequences */
+    
+        process microDecon_step3 {
+    
+            conda "${params.qiime_env}"
+            
+            publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
+            publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
+            publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
+    
+    
+            input :
+                file decontam_ASV_fasta from decontam_ASV_fasta
+    
+            output :
+                file 'decontam_seqs.qza' into decontam_seqs_qza
+                file 'aligned_repseq.qza' into aligned_repseq
+                file 'masked-aligned_repseq.qza' into masked_aligned
+                file 'tree.qza' into tree
+                file 'tree.log' into tree_bestmodel_log
+                file 'rooted_tree.qza' into rooted_tree
+                file 'tree_export_dir' into tree_export_dir
+                file 'tree_export.log' into tree_export_log
+                file 'tree.nwk' into newick
+                file 'completecmd' into complete_cmd_phylogeny
+    
+            shell :
+            """
+            qiime tools import --input-path ${decontam_ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
+            ${baseDir}/lib/q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd > q2_phylogeny.log 2>&1
+            cp tree_export_dir/tree.nwk tree.nwk >> q2_phylogeny.log 2>&1
+            
+            """
+        } 
+    }    
+    else {
+    
+        /* Run phylogeny construction */
+    
+        process q2_phylogeny {
+    
+            conda "${params.qiime_env}"
+    
+            publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
+            publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
+            publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
+    
+            input :
+                file repseqs_phylo from seqs_phylo
+    
+            output :
+                file 'aligned_repseq.qza' into aligned_repseq
+                file 'masked-aligned_repseq.qza' into masked_aligned
+                file 'tree.qza' into tree
+                file 'tree.log' into tree_bestmodel_log
+                file 'rooted_tree.qza' into rooted_tree
+                file 'tree_export_dir' into tree_export_dir
+                file 'tree_export.log' into tree_export_log
+                file 'tree.nwk' into newick
+                file 'completecmd' into complete_cmd_phylogeny
+    
+            //Run only if process is activated in params.config file
+            when :
+            params.phylogeny_enable
+    
+            script :
+            """
+            ${baseDir}/lib/q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd > q2_phylogeny.log 2>&1
+            cp tree_export_dir/tree.nwk tree.nwk >> q2_phylogeny.log 2>&1
+            """
+        }
     }
 }
 
@@ -262,7 +366,7 @@ if(params.stats_only){
     
     //Set biom_tsv path in params.conf
     Channel.fromPath(params.newick, checkIfExists:true).set { newick }
-    Channel.fromPath(params.inasv_table, checkIfExists:true).set { biom_tsv }
+    Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
     println "Input ASV table used for statistics steps : $params.inasv_table"
 }
 
@@ -277,7 +381,7 @@ process prepare_data_for_stats {
     
     input :
         file metadata from metadata4stats
-        file biom_tsv from biom_tsv
+        file biom_tsv from tsv
         file newick from newick
 
     output :
@@ -291,8 +395,8 @@ process prepare_data_for_stats {
 
     script :
     """
-    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv completecmd > stats_prepare_data.log 2&>1
-    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${newick} >> stats_prepare_data.log 2&>1 
+    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv completecmd ${params.microDecon_enable} > stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick} >> stats_prepare_data.log 2&>1 
     """
 }
 

@@ -44,11 +44,17 @@ library("dplyr")
 library("stringr")
 library("phyloseq")
 
-create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, tree) {
+create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, control, tree) {
     #Input data
     rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
-    metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
-
+    METADATA = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
+    
+    if (microDecon == "true") {    
+    control_list =  unlist(strsplit(control,","))
+    METADATA = METADATA[!rownames(METADATA) %in% control_list, ]
+    write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
+    }
+    
     #Reformatting of the input data
     abund = rawASVtable[,1:length(rawASVtable)-1]
     row.names(abund) = abund$ASV_ID
@@ -62,9 +68,9 @@ create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, tree) {
     ## Construction of the phyloseq object ####
     ABUND = otu_table(abund,taxa_are_rows=TRUE)
     TAX = tax_table(tax)
-    METADATA = sample_data(metadata)
+    METADATA_phyloseq = sample_data(METADATA)
     TREE = read_tree(tree)
-    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA, TREE)
+    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA_phyloseq, TREE)
     saveRDS(PHYLOSEQ, file=phyloseq_rds)
 }
 
@@ -74,8 +80,10 @@ main <- function() {
     phyloseq_rds = args[1]
     biom_tsv = args[2]
     metadata = args[3]
-    tree = args[4]
-    create_phyloseq_obj(phyloseq_rds, biom_tsv, metadata, tree)
+    microDecon = args[4]
+    control = args[[5]]
+    tree = args[6]
+    create_phyloseq_obj(phyloseq_rds, biom_tsv, metadata, microDecon, control, tree)
 }
 
 if (!interactive()) {

@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by snakemake :
-### q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log tree_export_dir tree_export.log completecmd > q2_phylogeny.log 2>&1
+### q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd > q2_phylogeny.log 2>&1
 
 # Arguments
 args=("$@")
@@ -40,9 +40,10 @@ aligned=${args[1]}
 masked=${args[2]}
 tree=${args[3]}
 tree_log=${args[4]}
-export=${args[5]}
-tree_export=${args[6]}
-logcmd=${args[7]}
+rooted_tree=${args[5]}
+export=${args[6]}
+tree_export=${args[7]}
+logcmd=${args[8]}
 
 # Alignment of representative sequences
 cmd="qiime alignment mafft --i-sequences $repseq --o-alignment $aligned"
@@ -59,8 +60,14 @@ cmd="qiime phylogeny fasttree --i-alignment $masked --o-tree $tree >& $tree_log 
 echo $cmd >> $logcmd
 eval $cmd
 
-# tree export
-cmd="qiime tools export --input-path $tree --output-path $export >& $tree_export 2>&1"
+# Root tree
+cmd="qiime phylogeny midpoint-root --i-tree $tree --o-rooted-tree $rooted_tree"
 echo $cmd >> $logcmd
 eval $cmd
+
+# tree export
+cmd="qiime tools export --input-path $rooted_tree --output-path $export >& $tree_export 2>&1"
+echo $cmd >> $logcmd
+eval $cmd
+
 

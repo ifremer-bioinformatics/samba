@@ -406,13 +406,13 @@ if(!params.stats_only) {
         output :
             file 'q2-picrust2_output/ec_metagenome.qza' into EC_predictions
             file 'q2-picrust2_output/ec_metagenome.qzv' into EC_predictions_visu
-            file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions.tsv' into EC_predictions_tsv
+            file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions*.tsv' into EC_predictions_tsv
             file 'q2-picrust2_output/ko_metagenome.qza' into KO_predictions
             file 'q2-picrust2_output/ko_metagenome.qzv' into KO_predictions_visu
-            file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions.tsv' into KO_predictions_tsv
+            file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions*.tsv' into KO_predictions_tsv
             file 'q2-picrust2_output/pathway_abundance.qza' into pathway_predictions
             file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
-            file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions.tsv' into pathway_predictions_tsv
+            file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
             file 'complete_picrust2_cmd' into complete_picrust2_cmd
 
         //Run only if process is activated in params.config file

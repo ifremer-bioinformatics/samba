@@ -143,6 +143,7 @@ if(!params.stats_only) {
         """
     }
     
+    data_table.set { table_picrust2 }
     data_repseqs.into { dada2_seqs_dbotu3 ; seqs_taxo ; seqs_phylo }
     dada2_summary.set { summary }
 
@@ -177,7 +178,8 @@ if(!params.stats_only) {
         """
     }
 
-    dbotu3_seqs.into { seqs_taxo ; seqs_phylo }
+    dbotu3_table.set { table_picrust2 }
+    dbotu3_seqs.into { seqs_taxo ; seqs_phylo ; seqs_picrust2 }
     dbotu3_summary.set { summary }
     }
 
@@ -252,14 +254,37 @@ if(!params.stats_only) {
             sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
             ${baseDir}/lib/microDecon.R microDecon_table ${params.microDecon.control_list} ${params.microDecon.nb_controls} ${params.microDecon.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt > microDecon.log 2>&1
             cp ${baseDir}/lib/microDecon.R completecmd >> microDecon.log 2>&1
+            
             """
         }
 
-decontam_table.into { decontam_table_step2 ; tsv }
+        decontam_table.into { decontam_table_step2 ; decontam_table_step3 ; tsv }
+
+        process microDecon_step2 {
+
+            conda "${params.qiime_env}"
+
+            publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
+            publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
+
+            input :
+                file table4microDecon from decontam_table_step2
+
+            output :
+                file 'decontaminated_ASV_table.qza' into decontam_table_qza
+
+            shell :
+            """
+            biom convert -i ${table4microDecon} -o decontaminated_ASV_table.biom --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy
+            qiime tools import --input-path decontaminated_ASV_table.biom --type 'FeatureTable[Frequency]' --input-format BIOMV210Format --output-path decontaminated_ASV_table.qza
+            """
+        }
+
+        decontam_table_qza.set { table_picrust2 }
     
         /* Extract non-contaminated ASV ID */
     
-        process microDecon_step2 {
+        process microDecon_step3 {
     
             conda "${params.seqtk_env}"
     
@@ -268,7 +293,7 @@ decontam_table.into { decontam_table_step2 ; tsv }
             publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
     
             input :
-                file decontam_table from decontam_table_step2
+                file decontam_table from decontam_table_step3
                 file dada2_summary from dada2_summary
     
             output :
@@ -281,10 +306,12 @@ decontam_table.into { decontam_table_step2 ; tsv }
             seqtk subseq ${dada2_summary}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
             """
         }
+
+        decontam_ASV_fasta.set { seqs_phylo }
     
         /* Run phylogeny from decontaminated ASV sequences */
     
-        process microDecon_step3 {
+        process microDecon_step4 {
     
             conda "${params.qiime_env}"
             
@@ -296,7 +323,7 @@ decontam_table.into { decontam_table_step2 ; tsv }
     
     
             input :
-                file decontam_ASV_fasta from decontam_ASV_fasta
+                file decontam_ASV_fasta from seqs_phylo
     
             output :
                 file 'decontam_seqs.qza' into decontam_seqs_qza
@@ -317,7 +344,8 @@ decontam_table.into { decontam_table_step2 ; tsv }
             cp tree_export_dir/tree.nwk tree.nwk >> q2_phylogeny.log 2>&1
             
             """
-        } 
+        }
+    decontam_seqs_qza.set { seqs_picrust2 } 
     }    
     else {
     
@@ -357,6 +385,44 @@ decontam_table.into { decontam_table_step2 ; tsv }
             cp tree_export_dir/tree.nwk tree.nwk >> q2_phylogeny.log 2>&1
             """
         }
+    }
+
+    /* Run functional predictions */
+
+    process q2_picrust2 {
+
+        conda "${params.qiime_env}"
+
+        publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
+        publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
+        publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*'
+        publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_cmd', saveAs : { complete_picrust2_cmd -> "cmd/${task.process}_complete.sh" }
+
+        input :
+            file seqs_picrust2 from seqs_picrust2
+            file table_picrust2 from table_picrust2
+
+        output :
+            file 'q2-picrust2_output/ec_metagenome.qza' into EC_predictions
+            file 'q2-picrust2_output/ec_metagenome.qzv' into EC_predictions_visu
+            file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions.tsv' into EC_predictions_tsv
+            file 'q2-picrust2_output/ko_metagenome.qza' into KO_predictions
+            file 'q2-picrust2_output/ko_metagenome.qzv' into KO_predictions_visu
+            file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions.tsv' into KO_predictions_tsv
+            file 'q2-picrust2_output/pathway_abundance.qza' into pathway_predictions
+            file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
+            file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions.tsv' into pathway_predictions_tsv
+            file 'complete_picrust2_cmd' into complete_picrust2_cmd
+
+        //Run only if process is activated in params.config file
+        when :
+        params.picrust2_enable
+
+        script :
+        """
+        ${baseDir}/lib/q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.picrust2.method} ${params.picrust2.nsti} complete_picrust2_cmd > q2_picrust2.log 2>&1
+        """
     }
 }
 

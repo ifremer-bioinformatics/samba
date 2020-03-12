@@ -443,15 +443,16 @@ if(!params.stats_only) {
 
     process q2_picrust2_stats {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
 
     input :
-        file 'ec_metagenome_predictions_with-descriptions.tsv' from EC_predictions_tsv
-        file 'ko_metagenome_predictions_with-descriptions.tsv' from KO_predictions_tsv
-        file 'pathway_abundance_predictions_with-descriptions.tsv' from pathway_predictions_tsv
+        file ec_metagenome from EC_predictions_tsv
+        file ko_metagenome from KO_predictions_tsv
+        file metacyc_predictions_ from pathway_predictions_tsv
         file metadata4picrust2 from metadata4picrust2
     output :
         file '*functional_predictions_NMDS*' into functional_pred_NMDS
@@ -463,7 +464,8 @@ if(!params.stats_only) {
 
     script :
     """
-    ${baseDir}/lib/q2_picrust2.sh ${'ec_metagenome_predictions_with-descriptions.tsv'} ${'ko_metagenome_predictions_with-descriptions.tsv'} ${'pathway_abundance_predictions_with-descriptions.tsv'} ${metadata4picrust2} ${params.stats.beta_div_criteria} functional_predictions_NMDS complete_picrust2_stats_cmd > picrust2_stats.log 2>&1
+    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.stats.beta_div_criteria} functional_predictions_NMDS ${params.microDecon_enable} ${params.microDecon.control_list} > picrust2_stats.log 2>&1
+    cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd >> picrust2_stats.log 2>&1
     """
     }
 }

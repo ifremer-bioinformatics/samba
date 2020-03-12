@@ -49,6 +49,14 @@ R2_files=${args[10]}
 barcode_filter=${args[11]}
 primer_filter=${args[12]}
 
+# Verify if metadata file contains NA values
+grep -P "NA\t|\tNA" ${metadata}
+[ $? -eq 0 ] && { 
+   echo "NA values found in $metadata, please remove them before running SAMBA"; 
+   touch ${verif_bad} && echo "@@@ --- All verifications are not satisfied --- @@@"; 
+   exit 0; 
+}
+
 # Creation of temporary files
 #get sample id list from manifest file
 COL=`head -n1 ${manifest} | tr "\t" "\n" | grep -n ${sampleid} | cut -d ":" -f1`

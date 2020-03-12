@@ -33,7 +33,7 @@ if(!params.stats_only) {
     output :
         file 'verifications.ok' optional true into ckeck_ok
         file 'verifications.bad' optional true into check_bad
-        file 'data_integrity.csv' into data_integrity_csv
+        file 'data_integrity.csv' optional true into data_integrity_csv
     
     //Run only if process is activated in params.config file
     when :
@@ -43,9 +43,13 @@ if(!params.stats_only) {
     """
     ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
     if test -f "verifications.bad"; then
-        echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
-        mkdir -p ${params.outdir}/${params.data_integrity_dirname}
-        cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
+        if test -f "data_integrity.csv"; then
+            echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
+            mkdir -p ${params.outdir}/${params.data_integrity_dirname}
+            cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
+        else
+            echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
+        fi
         exit 1
      fi
 

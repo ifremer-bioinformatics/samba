@@ -37,7 +37,7 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## Load up the needed packages ####
-requiredPackages = c("dplyr","ggplot2","RColorBrewer","svglite","vegan")
+requiredPackages = c("dplyr","ggplot2","RColorBrewer","svglite","vegan","stringr")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -48,7 +48,7 @@ for(package in requiredPackages){
 #                                                                               #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-functional_predictions <- function(pred,metadata,criteria,pred_plot,name) {
+functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDecon,control) {
   
   # Format functional predictions tables ####
   pred = read.table(pred,h=T,sep="\t",check.names=F,quote="")
@@ -60,6 +60,11 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name) {
   
   # Load metatada
   metadata = read.table(metadata, h=T, sep="\t", check.names=F)
+  if (microDecon == "true") {
+     control_list =  unlist(strsplit(control,","))
+     metadata = metadata[!metadata[,1] %in% control_list, ]
+     print(metadata)
+  }
   
   # Perform normalization
   min_depth = min(colSums(pred))
@@ -104,7 +109,9 @@ main_ec <- function(){
   criteria = args[5]
   pred_plot = args[6]
   name = "EC_"
-  functional_predictions(pred_ec,metadata,criteria,pred_plot,name)
+  microDecon = args[7]
+  control = args[8]
+  functional_predictions(pred_ec,metadata,criteria,pred_plot,name,microDecon,control)
 }
 
 if (!interactive()) {
@@ -118,8 +125,10 @@ main_ko <- function(){
   metadata = args[4]
   criteria = args[5]
   pred_plot = args[6]
-  name = "_KO"
-  functional_predictions(pred_ko,metadata,criteria,pred_plot,name)
+  name = "KO_"
+  microDecon = args[7]
+  control = args[8]
+  functional_predictions(pred_ko,metadata,criteria,pred_plot,name,microDecon,control)
 }
 
 if (!interactive()) {
@@ -133,8 +142,10 @@ main_metacyc <- function(){
   metadata = args[4]
   criteria = args[5]
   pred_plot = args[6]
-  name = "_MetaCyc"
-  functional_predictions(pred_path,metadata,criteria,pred_plot,name)
+  name = "MetaCyc_"
+  microDecon = args[7]
+  control = args[8]
+  functional_predictions(pred_path,metadata,criteria,pred_plot,name,microDecon,control)
 }
 
 if (!interactive()) {

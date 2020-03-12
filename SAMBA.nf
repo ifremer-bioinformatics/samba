@@ -60,6 +60,7 @@ if(!params.stats_only) {
     
     process q2_import {
 
+        beforeScript "${params.load_conda}"
         conda "${params.qiime_env}" 
 
         publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
@@ -89,6 +90,7 @@ if(!params.stats_only) {
     /* Trim metabarcode data with cutadapt */
     process q2_cutadapt {
     
+        beforeScript "${params.load_conda}"
         conda "${params.qiime_env}" 
 
         publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
@@ -117,6 +119,7 @@ if(!params.stats_only) {
     /* Run dada2 */
     process q2_dada2 {
     
+        beforeScript "${params.load_conda}"
         conda "${params.qiime_env}" 
 
         publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
@@ -156,6 +159,7 @@ if(!params.stats_only) {
     /* Run dbotu3 */
     process q2_dbotu3 {
 
+        beforeScript "${params.load_conda}"
         conda "${params.qiime_env}"
 
         publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
@@ -191,6 +195,7 @@ if(!params.stats_only) {
 
     process q2_taxonomy {
     
+        beforeScript "${params.load_conda}"
         conda "${params.qiime_env}" 
 
         publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
@@ -266,6 +271,7 @@ if(!params.stats_only) {
 
         process microDecon_step2 {
 
+            beforeScript "${params.load_conda}"
             conda "${params.qiime_env}"
 
             publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
@@ -290,6 +296,7 @@ if(!params.stats_only) {
     
         process microDecon_step3 {
     
+            beforeScript "${params.load_conda}"
             conda "${params.seqtk_env}"
     
             publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_ID.txt'
@@ -317,6 +324,7 @@ if(!params.stats_only) {
     
         process microDecon_step4 {
     
+            beforeScript "${params.load_conda}"
             conda "${params.qiime_env}"
             
             publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
@@ -357,6 +365,7 @@ if(!params.stats_only) {
     
         process q2_phylogeny {
     
+            beforeScript "${params.load_conda}"
             conda "${params.qiime_env}"
     
             publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
@@ -395,6 +404,7 @@ if(!params.stats_only) {
 
     process q2_picrust2 {
 
+        beforeScript "${params.load_conda}"
         conda "${params.qiime_env}"
 
         publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
@@ -443,6 +453,7 @@ if(params.stats_only){
 
 process prepare_data_for_stats {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
@@ -476,6 +487,7 @@ phyloseq_rds.into { phyloseq_rds_alpha ; phyloseq_rds_beta ; phyloseq_rds_beta_r
 
 process stats_alpha {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
@@ -511,6 +523,7 @@ process stats_alpha {
 
 process stats_beta {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
@@ -547,6 +560,7 @@ process stats_beta {
 
 process stats_beta_rarefied {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "${task.process}.R" }
@@ -583,6 +597,7 @@ process stats_beta_rarefied {
 
 process stats_beta_deseq2 {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "${task.process}.R" }
@@ -619,6 +634,7 @@ process stats_beta_deseq2 {
 
 process stats_beta_css {
 
+    beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_css -> "cmd/${task.process}.R" }

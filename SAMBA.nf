@@ -12,7 +12,7 @@ println "Manifest file : $params.inmanifest"
 println "Metadata file : $params.inmetadata"
 
 Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
-Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity }
+Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
 
 //Copy params.config file to output directory for each run
 paramsfile = file('config/params.config')
@@ -402,7 +402,7 @@ if(!params.stats_only) {
 
     /* Run functional predictions */
 
-    process q2_picrust2 {
+    process q2_picrust2_analysis {
 
         beforeScript "${params.load_conda}"
         conda "${params.qiime_env}"
@@ -437,6 +437,34 @@ if(!params.stats_only) {
         """
         ${baseDir}/lib/q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.picrust2.method} ${params.picrust2.nsti} complete_picrust2_cmd > q2_picrust2.log 2>&1
         """
+    }
+    
+    /* Statistical analysis of functional predictions  */
+
+    process q2_picrust2_stats {
+
+    conda "${params.r_stats_env}"
+
+    publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
+
+    input :
+        file 'ec_metagenome_predictions_with-descriptions.tsv' from EC_predictions_tsv
+        file 'ko_metagenome_predictions_with-descriptions.tsv' from KO_predictions_tsv
+        file 'pathway_abundance_predictions_with-descriptions.tsv' from pathway_predictions_tsv
+        file metadata4picrust2 from metadata4picrust2
+    output :
+        file '*functional_predictions_NMDS*' into functional_pred_NMDS
+        file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
+
+    //Run only if process is activated in params.config file
+    when :
+    params.picrust2_enable
+
+    script :
+    """
+    ${baseDir}/lib/q2_picrust2.sh ${'ec_metagenome_predictions_with-descriptions.tsv'} ${'ko_metagenome_predictions_with-descriptions.tsv'} ${'pathway_abundance_predictions_with-descriptions.tsv'} ${metadata4picrust2} ${params.stats.beta_div_criteria} functional_predictions_NMDS complete_picrust2_stats_cmd > picrust2_stats.log 2>&1
+    """
     }
 }
 

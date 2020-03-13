@@ -75,7 +75,6 @@ COL=`head -n1 ${metadata} | tr "\t" "\n" | grep -n ${barcode} | cut -d ":" -f1`
 cut -f$COL ${metadata} | sed '1d' > tmp_barcodes
 
 for i in $(cat tmp_R1) ; do echo $(zcat ${i}|wc -l)/4|bc >> tmp_reads ; done
-#for i in $(cat tmp_R1) ; do zcat ${i} | head -n 1 | cut -d ':' -f1 >> tmp_sequencer ; done
 for i in $(cat tmp_R1) ; do zcat ${i} > reads; head -n 1 reads | cut -d ':' -f1 >> tmp_sequencer; rm reads;  done
 
 # Count and summary

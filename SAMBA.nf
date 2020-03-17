@@ -10,6 +10,7 @@ println "Workflow output/publish directory : $params.outdir"
 println "Workflow configuration file : $workflow.configFiles"
 println "Manifest file : $params.inmanifest"
 println "Metadata file : $params.inmetadata"
+println "Data type : $params.data_type"
 
 Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
 Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
@@ -112,7 +113,7 @@ if(!params.stats_only) {
     
         script :
         """
-        ${baseDir}/lib/q2_cutadapt.sh ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd > q2_cutadapt.log 2>&1
+        ${baseDir}/lib/q2_cutadapt.sh ${params.data_type} ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd > q2_cutadapt.log 2>&1
         """
     }
 

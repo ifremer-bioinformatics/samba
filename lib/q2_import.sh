@@ -35,19 +35,21 @@
 
 # Arguments 
 args=("$@")
+data_type=${args[0]}
+manifest=${args[1]}
+dataqza=${args[2]}
+dataqzv=${args[3]}
+import_output=${args[4]}
+logcmd=${args[5]}
 
-manifest=${args[0]}
-dataqza=${args[1]}
-dataqzv=${args[2]}
-import_output=${args[3]}
-logcmd=${args[4]}
-
-#Import all samples paired-end files listed in manifest to qiime data structure
-cmd="qiime tools import --input-path $manifest --output-path $dataqza --type 'SampleData[PairedEndSequencesWithQuality]' --input-format PairedEndFastqManifestPhred33V2"
+#Import all samples files listed in manifest to qiime data structure
+[ ${data_type} == "paired" ] && cmdoptions="--type 'SampleData[PairedEndSequencesWithQuality]' --input-format PairedEndFastqManifestPhred33V2" || cmdoptions="--type 'SampleData[SequencesWithQuality]' --input-format SingleEndFastqManifestPhred33V2"
+cmd="qiime tools import --input-path $manifest --output-path $dataqza $cmdoptions"
 echo $cmd > $logcmd
 eval $cmd
 
 #Summarize counts per sample for all samples
+
 cmd="qiime demux summarize --verbose --i-data $dataqza --o-visualization $dataqzv"
 echo $cmd >> $logcmd
 eval $cmd

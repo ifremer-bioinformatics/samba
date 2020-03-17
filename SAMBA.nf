@@ -83,7 +83,7 @@ if(!params.stats_only) {
     
         script :
         """
-        ${baseDir}/lib/q2_import.sh ${q2_manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
+        ${baseDir}/lib/q2_import.sh ${params.data_type} ${q2_manifest} data.qza data.qzv import_output completecmd > q2_import.log 2>&1
         """
     }
     

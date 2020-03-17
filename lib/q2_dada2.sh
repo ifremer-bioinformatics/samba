@@ -36,36 +36,32 @@
 # Arguments 
 args=("$@") 
 
-trimmed_data=${args[0]}
-metadata=${args[1]}
-rep_seqsqza=${args[2]}
-rep_seqsqzv=${args[3]}
-tableqza=${args[4]}
-tableqzv=${args[5]}
-statsqza=${args[6]}
-statsqzv=${args[7]}
-dada2_output=${args[8]}
-trim5F=${args[9]}
-trim5R=${args[10]}
-trunclenF=${args[11]}
-trunclenR=${args[12]}
-maxee_f=${args[13]}
-maxee_r=${args[14]}
-minqual=${args[15]}
-chimeras=${args[16]}
-cpus=${args[17]}
-logcmd=${args[18]}
+data_type=${args[0]}
+trimmed_data=${args[1]}
+metadata=${args[2]}
+rep_seqsqza=${args[3]}
+rep_seqsqzv=${args[4]}
+tableqza=${args[5]}
+tableqzv=${args[6]}
+statsqza=${args[7]}
+statsqzv=${args[8]}
+dada2_output=${args[9]}
+trim5F=${args[10]}
+trim5R=${args[11]}
+trunclenF=${args[12]}
+trunclenR=${args[13]}
+maxee_f=${args[14]}
+maxee_r=${args[15]}
+minqual=${args[16]}
+chimeras=${args[17]}
+cpus=${args[18]}
+logcmd=${args[19]}
 
 #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
-cmd="qiime dada2 denoise-paired \
+[ ${data_type} == "paired" ] && cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trim5F --p-trim-left-r $trim5R --p-trunc-len-f $trunclenF --p-trunc-len-r $trunclenR --p-max-ee-f $maxee_f --p-max-ee-r $maxee_r" || cmdoptions="qiime dada2 denoise-single --p-trim-left $trim5F --p-trunc-len $trunclenF --p-max-ee $maxee_f"
+cmd="$cmdoptions \
     --verbose \
     --i-demultiplexed-seqs $trimmed_data \
-    --p-trim-left-f $trim5F \
-    --p-trim-left-r $trim5R \
-    --p-trunc-len-f $trunclenF \
-    --p-trunc-len-r $trunclenR \
-    --p-max-ee-f $maxee_f \
-    --p-max-ee-r $maxee_r \
     --p-trunc-q $minqual \
     --p-chimera-method $chimeras \
     --p-n-threads $cpus \

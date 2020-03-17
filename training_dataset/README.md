@@ -6,7 +6,8 @@ In this directory, you can find :
 - a directory named **dna-sequence-raw** containing:
      - forward (R1) and reverse (R2) fastq files from 46 samples
 - a **q2_manifest** file required by QIIME 2 and containing:
-     - 3 columns representing for each sample -> the name of the sample, the path to the R1 file and the path to the R2 file
+     - [default paired-end mode] 3 columns representing for each sample -> the name of the sample, the path to the R1 file and the path to the R2 file
+     - [single-end mode : **q2_manifest.single** has to be renamed **q2_manifest**] 2 columns representing for each sample -> the name of the sample, the path to the R1 file
 - a **q2_metadata** file required by QIIME 2 and for statistical analyses. It contains:
      - a first column named *sampleid* -> name of the sample (must be identical to the sampleid in the q2_manifest)
      - a second column named *barcode* -> barcode of each sample

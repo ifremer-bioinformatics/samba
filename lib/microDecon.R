@@ -64,7 +64,7 @@ TABLE_control = TABLE %>% select("ASV_ID",c(control_list), everything())
 head(TABLE_control)
 
 # microDecon
-result = decon(TABLE_control, numb.blanks=as.numeric(blanks), numb.ind=as.numeric(samples), taxa=TRUE, runs=2)
+result = decon(TABLE_control, numb.blanks=as.numeric(blanks), numb.ind=as.numeric(samples), taxa=TRUE, runs=2, thresh=1)
 
 # Output reformat
 decontaminated_table = result$decon.table[-2]

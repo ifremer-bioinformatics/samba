@@ -20,7 +20,7 @@ then
     echo "$DB exist"
   else
     mkdir -p $tax_db_dir
-    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.10/SILVA_v132/DATABASE_silva_v132_99_16S.qza -O $tax_db_dir/DATABASE_silva_v132_99_16S.qza
+    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2020.02/SILVA_v132/DATABASE_silva_132_99_16S.qza -O $tax_db_dir/DATABASE_silva_v132_99_16S.qza
   fi
 else
   echo "Resume of the previous analysis"

@@ -161,7 +161,7 @@ if(!params.stats_only) {
     process q2_dbotu3 {
 
         beforeScript "${params.load_conda}"
-        conda "${params.qiime_env}"
+        conda "${params.dbotu_env}"
 
         publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -407,7 +407,7 @@ if(!params.stats_only) {
     process q2_picrust2_analysis {
 
         beforeScript "${params.load_conda}"
-        conda "${params.qiime_env}"
+        conda "${params.picrust_env}"
 
         publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
         publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'

@@ -79,6 +79,6 @@ echo $cmd >> $logcmd
 eval $cmd
 
 # Export dbotu3 details to outdir
-cmd="mv $dbotu3_details $dbotu3_output/"
+cmd="cp $dbotu3_details $dbotu3_output/"
 echo $cmd >> $logcmd
 eval $cmd

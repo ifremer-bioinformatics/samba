@@ -77,3 +77,8 @@ eval $cmd
 cmd="qiime tools export --input-path $dbotu3_tableqza --output-path $dbotu3_output"
 echo $cmd >> $logcmd
 eval $cmd
+
+# Export dbotu3 details to outdir
+cmd="mv $dbotu3_details $dbotu3_output/"
+echo $cmd >> $logcmd
+eval $cmd

@@ -490,7 +490,6 @@ process prepare_data_for_stats {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_prepare_stats -> "cmd/${task.process}_complete.sh" }
     
     input :
         file metadata from metadata4stats
@@ -501,14 +500,13 @@ process prepare_data_for_stats {
         file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
         file 'metadata_stats.tsv' into metadata_stats
         file 'phyloseq.rds' into phyloseq_rds
-        file 'completecmd' into complete_cmd_prepare_stats
  
     when :
     params.prepare_data_for_stats_enable
 
     script :
     """
-    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv completecmd ${params.microDecon_enable} > stats_prepare_data.log 2&>1
+    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} > stats_prepare_data.log 2&>1
     Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick} >> stats_prepare_data.log 2&>1 
     """
 }

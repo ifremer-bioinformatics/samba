@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-## prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats q2_metadata complete_cmd_prepare_stats ${params.microDecon_enable} > prepare_data_for_stats.log 2&>1
+## prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats q2_metadata ${params.microDecon_enable} > prepare_data_for_stats.log 2&>1
 
 # Arguments 
 args=("$@")
@@ -40,8 +40,7 @@ metadata=${args[0]}
 biom_tsv=${args[1]}
 asv_table=${args[2]}
 metadata_stats=${args[3]}
-logcmd=${args[4]}
-microDecon=${args[5]}
+microDecon=${args[4]}
 
 if [ $microDecon = "false" ]
 then
@@ -53,7 +52,6 @@ then
    sed -i 's/#OTU ID/ASV_ID/g' $asv_table; 
    sed -i 's/D_0__//g' $asv_table;
    sed -i 's/ D_.__//g' $asv_table"
-   echo $cmd > $logcmd
    eval $cmd
 else
    cmd="cp $metadata $metadata_stats; 
@@ -62,6 +60,5 @@ else
    cp $biom_tsv $asv_table; 
    sed -i 's/D_0__//g' $asv_table;
    sed -i 's/ D_.__//g' $asv_table"
-   echo $cmd > $logcmd
    eval $cmd
 fi

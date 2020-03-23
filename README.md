@@ -9,31 +9,6 @@
 
 ![SAMBA Workflow](./SAMBA_schemaEN.png)
 
-This workflow will process paired-end metabarcoding data. 
-
-* Data integrity process 
-    * Checking pourcentage of correct barcode in R1 and R2 files 
-    * Checking number of forward and reverse reads by sample
-    * Checking number of forward and reverse primers by sample
-    * Checking if the same sequencer identifier is present over the data
-* Data import process
-    * Import data and create objects for Qiime2 analysis
-    * Evaluate data quality
-* Trimming process
-    * Use Qiime2 cutadapt to remove primers from data
-* Sample inference process using Dada2
-    * Extract ASVs (Amplicon Sequence Variants) from samples using Dada2
-    * Create ASVs counting table
-* Taxonomy assignment process
-    * Use Qiime2 to assign each ASV according to a reference database using a Naive Bayesian classifier
-* Statistical analysis process
-    * A step to prepare data for stats will create R Phyloseq object for downstream analysis
-    * Alpha diversity boxplots and taxonomic graphs are created using R Phyloseq
-    * Beta diversity NMDS, MDS-PCoA plots as well as hierarchical clustering are generated from four distance matrices according to several normalisation processes (no-normalisation, standard rarefaction, DESeq2 normalisation & CSS normalisation)
-* Reporting (being set up)
-    * A report folder will provide the metabarcoding workflow results
-    * A workflow execution synthesis will be generated using Nextflow native DAG, timeline, trace and html report
-
 ## How to install
 
 ### How to get this worflow

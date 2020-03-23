@@ -520,7 +520,6 @@ process stats_alpha {
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots", mode: 'copy', pattern : 'barplot_*'
@@ -537,7 +536,6 @@ process stats_alpha {
         file 'barplot_order*' into barplot_order
         file 'barplot_family*' into barplot_family
         file 'barplot_genus*' into barplot_genus
-        file 'completecmd' into complete_cmd_alpha
         file 'rarefaction_curve*' into rarefaction_curve
 
     //Run only if process is activated in params.config file
@@ -547,7 +545,6 @@ process stats_alpha {
     script :
     """
     Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.distance} alpha_div_plots ${params.stats.kingdom} ${params.stats.nbtax} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.stats.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve > stats_alpha_diversity.log 2>&1
-    cp ${baseDir}/lib/alpha_diversity.R completecmd >> stats_alpha_diversity.log 2>&1
     """
 }
 
@@ -556,7 +553,6 @@ process stats_beta {
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
@@ -569,7 +565,6 @@ process stats_beta {
         file metadata from metadata_beta
  
     output :
-        file 'completecmd' into complete_cmd_beta
         file 'NMDS_*' into NMDS
         file 'PCoA_*' into PCoA
         file 'hclustering_*' into hclustering
@@ -584,7 +579,6 @@ process stats_beta {
     script:
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.stats.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ > stats_beta_diversity.log 2>&1
-    cp ${baseDir}/lib/beta_diversity.R completecmd >> stats_beta_diversity.log 2>&1
     """
 }
 
@@ -593,7 +587,6 @@ process stats_beta_rarefied {
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_rarefied -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
@@ -606,7 +599,6 @@ process stats_beta_rarefied {
         file metadata from metadata_beta_rarefied
      
     output :
-        file 'completecmd' into complete_cmd_beta_rarefied
         file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
         file 'NMDS_rarefied_*' into NMDS_rarefied
         file 'PCoA_rarefied_*' into PCoA_rarefied
@@ -621,7 +613,6 @@ process stats_beta_rarefied {
     script:
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.stats.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ > stats_beta_diversity_rarefied.log 2>&1
-    cp ${baseDir}/lib/beta_diversity_rarefied.R completecmd >> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -630,7 +621,6 @@ process stats_beta_deseq2 {
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}/R/SCRIPT", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_deseq2 -> "${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
@@ -643,7 +633,6 @@ process stats_beta_deseq2 {
         file metadata from metadata_beta_deseq2
 
     output :
-        file 'completecmd' into complete_cmd_beta_deseq2
         file 'Final_DESeq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
         file 'NMDS_DESeq2_*' into NMDS_deseq2
         file 'PCoA_DESeq2_*' into PCoA_deseq2
@@ -658,7 +647,6 @@ process stats_beta_deseq2 {
     script:
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.stats.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ > stats_beta_diversity_deseq2.log 2>&1
-    cp ${baseDir}/lib/beta_diversity_deseq2.R completecmd >> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -667,7 +655,6 @@ process stats_beta_css {
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_beta_css -> "cmd/${task.process}.R" }
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
@@ -680,7 +667,6 @@ process stats_beta_css {
         file metadata from metadata_beta_css
 
     output :
-        file 'completecmd' into complete_cmd_beta_css
         file 'Final_CSS_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
         file 'NMDS_CSS_*' into NMDS_css
         file 'PCoA_CSS_*' into PCoA_css
@@ -697,7 +683,6 @@ process stats_beta_css {
     script:
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ > stats_beta_diversity_css.log 2>&1
-    cp ${baseDir}/lib/beta_diversity_css.R completecmd >> stats_beta_diversity_css.log 2>&1
     touch end_analysis.ok
     """
 }

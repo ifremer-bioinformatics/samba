@@ -239,7 +239,8 @@ if(!params.stats_only) {
     
         process microDecon_step1 {
     
-            beforeScript "${params.test_R_env}"
+            beforeScript "${params.load_conda}"
+            conda "${params.microdecon_env}"
     
             publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
             publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'abundance_removed.txt'

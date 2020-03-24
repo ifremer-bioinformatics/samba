@@ -1,0 +1,7 @@
+name: microdecon
+channels:
+  - bioconda
+  - sebimer
+dependencies:
+  - r-dplyr
+  - r-microdecon

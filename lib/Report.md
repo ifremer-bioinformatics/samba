@@ -499,7 +499,7 @@ biom convert \
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>The final ASV table can be viewed <a href="./Final_ASV_table_with_taxonomy.tsv"><div style="display:inline-block;color:blue;">here</div></a>. A biom file is available <a href="./Final_ASV_table_with_taxonomy.biom"><div style="display:inline-block;color:blue;">here</div></a> formats</li>
+   <li>The final ASV table can be viewed <a href="./ASV_table_with_taxonomy.tsv"><div style="display:inline-block;color:blue;">here</div></a>. A biom file is available <a href="./ASV_table_with_taxonomy.biom"><div style="display:inline-block;color:blue;">here</div></a> formats</li>
 </ul> 
 
 

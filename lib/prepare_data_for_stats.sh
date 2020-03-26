@@ -42,22 +42,20 @@ asv_table=${args[2]}
 metadata_stats=${args[3]}
 microDecon=${args[4]}
 
-if [ $microDecon = "false" ]
+cmd="cp $metadata $metadata_stats;
+     sed -i '1s/#//' $metadata_stats;
+     sed -i '1s/-/_/g' $metadata_stats;
+     cp $biom_tsv $asv_table;"
+eval $cmd
+
+if [ $microDecon = "true" ]
 then
-   cmd="cp $metadata $metadata_stats; 
-   sed -i '1s/#//' $metadata_stats;
-   sed -i '1s/-/_/g' $metadata_stats;
-   cp $biom_tsv $asv_table; 
-   sed -i '1d' $asv_table; 
-   sed -i 's/#OTU ID/ASV_ID/g' $asv_table; 
-   sed -i 's/D_0__//g' $asv_table;
+   cmd="sed -i 's/D_0__//g' $asv_table;
    sed -i 's/ D_.__//g' $asv_table"
    eval $cmd
 else
-   cmd="cp $metadata $metadata_stats; 
-   sed -i '1s/#//' $metadata_stats;
-   sed -i '1s/-/_/g' $metadata_stats;
-   cp $biom_tsv $asv_table; 
+   cmd="sed -i '1d' $asv_table; 
+   sed -i 's/#OTU ID/ASV_ID/g' $asv_table; 
    sed -i 's/D_0__//g' $asv_table;
    sed -i 's/ D_.__//g' $asv_table"
    eval $cmd

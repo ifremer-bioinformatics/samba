@@ -20,180 +20,214 @@ paramsfile = file('config/params.config')
 paramsfile.copyTo("$params.outdir/config/params.config")
 
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
-if(!params.stats_only) {
-    /* Check data integrity */
-    
-    process data_integrity {
-        publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
-
-    input :
-        file manifest from manifest4integrity
-        file metadata from metadata4integrity
-
-    output :
-        file 'verifications.ok' optional true into ckeck_ok
-        file 'verifications.bad' optional true into check_bad
-        file 'data_integrity.csv' optional true into data_integrity_csv
-    
-    //Run only if process is activated in params.config file
-    when :
-        params.data_integrity_enable
-
-    script :
-    """
-    ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} ${params.data_type} &> data_integrity.log 2>&1
-    if test -f "verifications.bad"; then
-        if test -f "data_integrity.csv"; then
-            echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
-            mkdir -p ${params.outdir}/${params.data_integrity_dirname}
-            cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
-        else
-            echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
-        fi
-        exit 1
-     fi
-
-    """
-   }
-
-    /* Import metabarcode data */
-    
-    process q2_import {
-
-        beforeScript "${params.load_conda}"
-        conda "${params.qiime_env}" 
-
-        publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
-    
-        input : 
-            file q2_manifest from manifest
-            file check_ok from ckeck_ok
-    
-        output : 
-            file 'data.qza' into imported_data
-            file 'data.qzv' into imported_visu
-            file 'import_output' into imported_summary
-            file 'completecmd' into complete_cmd_import
-
-        //Run only if process is activated in params.config file
-        when :
-        params.qiime_import_enable
-    
-        script :
-        """
-        ${baseDir}/lib/q2_import.sh ${params.data_type} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
-        """
-    }
-    
-    /* Trim metabarcode data with cutadapt */
-    process q2_cutadapt {
-    
-        beforeScript "${params.load_conda}"
-        conda "${params.qiime_env}" 
-
-        publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+if(params.stats_only == false) {
+	if(params.dada2.dada2merge == false) {
+        /* Check data integrity */
         
-        input : 
-            file imported_data from imported_data
+        process data_integrity {
+            publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
     
-        output :
-            file 'data_trimmed.qza' into trimmed_data
-            file 'data_trimmed.qzv' into trimmed_visu
-            file 'trimmed_output' into trimmed_summary
-            file 'completecmd' into complete_cmd_cutadapt
-    
-        //Run only if process is activated in params.config file
-        when :
-        params.cutadapt_enable
-    
-        script :
-        """
-        ${baseDir}/lib/q2_cutadapt.sh ${params.data_type} ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
-        """
-    }
-
-    /* Run dada2 */
-    process q2_dada2 {
-    
-        beforeScript "${params.load_conda}"
-        conda "${params.qiime_env}" 
-
-        publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
-    
-        input : 
-            file trimmed_data from trimmed_data
-            file metadata from metadata 
-    
-        output :
-            file 'rep_seqs.qza' into data_repseqs
-            file 'rep_seqs.qzv' into visu_repseps
-            file 'table.qza' into data_table
-            file 'table.qzv' into visu_table
-            file 'stats.qza' into stats_table
-            file 'stats.qzv' into visu_stats
-            file 'dada2_output' into dada2_summary
-            file 'completecmd' into complete_cmd_dada2
-    
-        //Run only if process is activated in params.config file
-        when :
-        params.dada2_enable
-    
-        script :
-        """
-        ${baseDir}/lib/q2_dada2.sh ${params.data_type} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
-        """
-    }
-    
-    data_table.set { table_picrust2 }
-    data_repseqs.into { dada2_seqs_dbotu3 ; seqs_taxo ; seqs_phylo }
-    dada2_summary.set { summary }
-
-    if(params.dbotu3_enable){
-
-    /* Run dbotu3 */
-    process q2_dbotu3 {
-
-        beforeScript "${params.load_conda}"
-        conda "${params.dbotu_env}"
-
-        publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
-
         input :
-            file table from data_table
-            file seqs from dada2_seqs_dbotu3
-            file metadata_dbotu3 from metadata_dbotu3
-
+            file manifest from manifest4integrity
+            file metadata from metadata4integrity
+    
         output :
-            file 'dbotu3_details.txt' into dbotu3_details
-            file 'dbotu3_seqs.qza' into dbotu3_seqs
-            file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
-            file 'dbotu3_table.qza' into dbotu3_table
-            file 'dbotu3_table.qzv' into dbotu3_table_visu
-            file 'dbotu3_output' into dbotu3_summary
-            file 'completecmd' into complete_cmd_dbotu3
-
+            file 'verifications.ok' optional true into ckeck_ok
+            file 'verifications.bad' optional true into check_bad
+            file 'data_integrity.csv' optional true into data_integrity_csv
+        
+        //Run only if process is activated in params.config file
+        when :
+            params.data_integrity_enable
+    
         script :
         """
-        ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+        ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} ${params.data_type} &> data_integrity.log 2>&1
+        if test -f "verifications.bad"; then
+            if test -f "data_integrity.csv"; then
+                echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
+                mkdir -p ${params.outdir}/${params.data_integrity_dirname}
+                cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
+            else
+                echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
+            fi
+            exit 1
+         fi
+    
         """
-    }
+       }
+    
+        /* Import metabarcode data */
+        
+        process q2_import {
+    
+            beforeScript "${params.load_conda}"
+            conda "${params.qiime_env}" 
+    
+            publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
+        
+            input : 
+                file q2_manifest from manifest
+                file check_ok from ckeck_ok
+        
+            output : 
+                file 'data.qza' into imported_data
+                file 'data.qzv' into imported_visu
+                file 'import_output' into imported_summary
+                file 'completecmd' into complete_cmd_import
+    
+            //Run only if process is activated in params.config file
+            when :
+            params.qiime_import_enable
+        
+            script :
+            """
+            ${baseDir}/lib/q2_import.sh ${params.data_type} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
+            """
+        }
+        
+        /* Trim metabarcode data with cutadapt */
+        process q2_cutadapt {
+        
+            beforeScript "${params.load_conda}"
+            conda "${params.qiime_env}" 
+    
+            publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+            
+            input : 
+                file imported_data from imported_data
+        
+            output :
+                file 'data_trimmed.qza' into trimmed_data
+                file 'data_trimmed.qzv' into trimmed_visu
+                file 'trimmed_output' into trimmed_summary
+                file 'completecmd' into complete_cmd_cutadapt
+        
+            //Run only if process is activated in params.config file
+            when :
+            params.cutadapt_enable
+        
+            script :
+            """
+            ${baseDir}/lib/q2_cutadapt.sh ${params.data_type} ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
+            """
+        }
+    
+        /* Run dada2 */
+        process q2_dada2 {
+        
+            beforeScript "${params.load_conda}"
+            conda "${params.qiime_env}" 
+    
+            publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
+        
+            input : 
+                file trimmed_data from trimmed_data
+                file metadata from metadata 
+        
+            output :
+                file 'rep_seqs.qza' into data_repseqs
+                file 'rep_seqs.qzv' into visu_repseps
+                file 'table.qza' into data_table
+                file 'table.qzv' into visu_table
+                file 'stats.qza' into stats_table
+                file 'stats.qzv' into visu_stats
+                file 'dada2_output' into dada2_summary
+                file 'completecmd' into complete_cmd_dada2
+        
+            //Run only if process is activated in params.config file
+            when :
+            params.dada2_enable
+        
+            script :
+            """
+            ${baseDir}/lib/q2_dada2.sh ${params.data_type} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+            """
+        }
+        
+        data_table.set { table_picrust2 }
+        data_repseqs.into { dada2_seqs_dbotu3 ; seqs_taxo ; seqs_phylo }
+        dada2_summary.set { summary }
+        
+        if(params.dbotu3_enable){
 
-    dbotu3_table.set { table_picrust2 }
-    dbotu3_seqs.into { seqs_taxo ; seqs_phylo ; seqs_picrust2 }
-    dbotu3_summary.set { summary }
-    }
+            /* Run dbotu3 */
+            process q2_dbotu3 {
+ 
+                beforeScript "${params.load_conda}"
+                conda "${params.dbotu_env}"
+
+                publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
+                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
+
+                input :
+                    file table from data_table
+                    file seqs from dada2_seqs_dbotu3
+                    file metadata_dbotu3 from metadata_dbotu3
+
+                output :
+                    file 'dbotu3_details.txt' into dbotu3_details
+                    file 'dbotu3_seqs.qza' into dbotu3_seqs
+                    file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
+                    file 'dbotu3_table.qza' into dbotu3_table
+                    file 'dbotu3_table.qzv' into dbotu3_table_visu
+                    file 'dbotu3_output' into dbotu3_summary
+                    file 'completecmd' into complete_cmd_dbotu3
+
+                script :
+                """
+                ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+                """
+            }
+
+            dbotu3_table.set { table_picrust2 }
+            dbotu3_seqs.into { seqs_taxo ; seqs_phylo ; seqs_picrust2 }
+            dbotu3_summary.set { summary }
+        }
+    } else {
+         
+        /* dada2 merge ASV/seqs */
+        process q2_dada2_merge {
+    
+            beforeScript "${params.load_conda}"
+            conda "${params.qiime_env}"
+            
+            publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
+    
+            input :
+                path table_dir from params.dada2.dada2merge_tabledir
+                path seq_dir from params.dada2.dada2merge_repseqdir
+    
+            output :
+                file 'merged_table.qza' into merged_table
+                file 'merged_seq.qza' into merged_seqs
+                file 'merge_output' into merge_summary
+                file 'completecmd' into complete_cmd_dada2merge
+    
+            when :
+            params.dada2.dada2merge
+    
+            script :
+            """
+            ${baseDir}/lib/q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza merge_output completecmd &> q2_merge.log 2>&1
+            """
+        }
+    
+        merged_table.into { data_table ; table_picrust2 }
+        merged_seqs.into { seqs_taxo ; seqs_phylo ; seqs_picrust2 }
+        merge_summary.set { summary }
+    }        
 
     /* Run taxonomy assignment */
-
     process q2_taxonomy {
     
         beforeScript "${params.load_conda}"
@@ -233,7 +267,7 @@ if(!params.stats_only) {
 
     biom_tsv.set { tsv }
 
-    if(params.microDecon_enable) {
+    if(params.microDecon_enable == true && params.dada2.dada2merge == false) {
 
         /* Run sample decontamination using MicroDecon */
     
@@ -361,8 +395,8 @@ if(!params.stats_only) {
             """
         }
     decontam_seqs_qza.set { seqs_picrust2 } 
-    }    
-    else {
+    
+    } else {
     
         /* Run phylogeny construction */
     
@@ -482,7 +516,6 @@ if(params.stats_only){
     Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
     println "Input ASV table used for statistics steps : $params.inasv_table"
 }
-
 
 process prepare_data_for_stats {
 

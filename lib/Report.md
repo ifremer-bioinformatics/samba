@@ -270,6 +270,7 @@ qiime tools export \
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./dada2_output"><div style="display:inline-block;color:blue;"">dada2_output</div></a></center></b></div>
 
 
+
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>The dynamics of the different step of filtering can be visualized in this <a href="./dada2_output/index.html"><div style="display:inline-block;color:blue;">html file</div></a> and are also available in a <a href="./dada2_output/metadata.tsv"><div style="display:inline-block;color:blue;">tabulated file</div></a></li>
@@ -279,6 +280,8 @@ qiime tools export \
    <li>Details about the samples can be found by going to <a href="./dada2_output/sample-frequency-detail.html"><div style="display:inline-block;color:blue;">this interactive html page</div></a></li>
            <li>Finally, you can retrieved the reference sequences of your ASVs in <a href="./dada2_output/sequences.fasta"><div style="display:inline-block;color:blue;">this fasta</div></a></li>
 </ul>
+
+
 
 
 
@@ -349,6 +352,7 @@ qiime tools export \
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./dbotu3_output"><div style="display:inline-block;color:blue;"">dbotu3_output</div></a></center></b></div>
 
 
+
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>Overview of the results available <a href="./dbotu3_output/index.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
@@ -356,6 +360,8 @@ qiime tools export \
    <li>Details about the samples can be found by going to <a href="./dbotu3_output/sample-frequency-detail.html"><div style="display:inline-block;color:blue;">this interactive html page</div></a></li>
            <li>Finally, you can retrieved the reference sequences of your ASVs in <a href="./dbotu3_output/sequences.fasta"><div style="display:inline-block;color:blue;">this fasta</div></a></li>
 </ul>
+
+
 
 
 
@@ -406,14 +412,70 @@ sed -i '1 i\#OTUID\ttaxonomy\tconfidence' ASV_taxonomy.tsv
 <div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./taxo_output"><div style="display:inline-block;color:blue;"">taxo_output</div></a></center></b></div>
 
 
+
+
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
    <li>The result of the taxonomic affiliation is available in <a href="./taxo_output/index.html"><div style="display:inline-block;color:blue;">html</div></a> and <a href="./taxo_output/ASV_taxonomy.tsv"><div style="display:inline-block;color:blue;">tabulated</div></a> formats</li>
 </ul> 
 
 
+### III.7.  Samples decontamination (microDecon) [optional]
 
-### III.7.  Final outputs
+<div style="text-align: justify">
+If you have sequenced control samples, this step allows you to decontaminate your samples from the sequences identified in these controls. This step is carried out using microDecon and a homemade R script
+</div><br>
+
+<ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS USED</b></span>
+   <li>control_list</li>
+   <li>nb_controls</li>
+   <li>nb_samples</li>   
+</ul>
+
+
+
+<div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./microDecon"><div style="display:inline-block;color:blue;"">microDecon</div></a></center></b></div>
+
+
+
+<div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
+<ul style = "margin: 0 ; padding: 1 ;text-align: justify">
+   <li>New ASV table: <a href="./microDecon/decontaminated_ASV_table.tsv"><div style="display:inline-block;color:blue;">decontaminated table</div></a></li>
+   <li>Representative sequence: <a href="./microDecon/decontaminated_ASV.fasta"><div style="display:inline-block;color:blue;">decontaminated ASV sequence</div></a></li>
+   <li>All ASVs listed <a href="./microDecon/ASV_removed.txt"><div style="display:inline-block;color:blue;">here</div></a> were removed because they were in the majority in the control samples</li>
+    <li>For all ASVs listed <a href="./microDecon/abundance_removed.txt"><div style="display:inline-block;color:blue;">here</div></a>, a proportion of sequences were removed in each sample. Note that this file also contains the ASVs unique to the controls which have therefore been removed.</li>
+</ul> 
+
+
+
+
+### III.8.  Functional predictions (PICRUSt2) [optional]
+
+<ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS USED</b></span>
+   <li>method</li>
+   <li>nsti</li>   
+</ul>
+
+
+
+<div style="background-color:rgba(135, 206, 250, 0.6)"><b><center>OUTPUT FOLDER: <a href="./picrust2_output"><div style="display:inline-block;color:blue;"">picrust2_output</div></a></center></b></div>
+
+
+
+<div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
+<ul style = "margin: 0 ; padding: 1 ;text-align: justify">
+    <li>EC predictions: <a href="./picrust2_output/q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions_with-descriptions.tsv"><div style="display:inline-block;color:blue;">EC metagenome predictions</div></a></li>
+    <li>KO predictions: <a href="./picrust2_output/q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions_with-descriptions.tsv"><div style="display:inline-block;color:blue;">KO metagenome predictions</div></a></li>
+    <li>METACYC predictions: <a href="./picrust2_output/q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions_with-descriptions.tsv"><div style="display:inline-block;color:blue;">METACYC abundance predictions</div></a></li>
+
+<p align="center"> <img src="./picrust2_output/EC_functional_predictions_NMDS.png" width="1000"</p><br>
+<p align="center"> <img src="./picrust2_output/KO_functional_predictions_NMDS.png" width="1000"</p><br>
+<p align="center"> <img src="./picrust2_output/MetaCyc_functional_predictions_NMDS.png" width="1000"</p>
+
+
+
+
+### III.9.  Final outputs
 
 <div style="text-align: justify"><span style="color:black">
    This is the last step of the bioinformatic process where the goal is to merge the ASV abundance table with the taxonomy file. This is performed using the following commands :
@@ -437,7 +499,7 @@ biom convert \
 
 <div style="background-color:yellow";><b><center>RESULTS</center></b></div><br>
 <ul style = "margin: 0 ; padding: 1 ;text-align: justify">
-   <li>The final ASV table can be viewed <a href="./Final_ASV_table_with_taxonomy.tsv"><div style="display:inline-block;color:blue;">here</div></a>. A biom file is available <a href="./Final_ASV_table_with_taxonomy.biom"><div style="display:inline-block;color:blue;">here</div></a> formats</li>
+   <li>The final ASV table can be viewed <a href="./ASV_table_with_taxonomy.tsv"><div style="display:inline-block;color:blue;">here</div></a>. A biom file is available <a href="./ASV_table_with_taxonomy.biom"><div style="display:inline-block;color:blue;">here</div></a> formats</li>
 </ul> 
 
 

@@ -63,11 +63,10 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
   if (microDecon == "true") {
      control_list =  unlist(strsplit(control,","))
      metadata = metadata[!metadata[,1] %in% control_list, ]
-     print(metadata)
   }
   
   # Perform normalization
-  min_depth = min(colSums(pred))
+  min_depth = min(rowSums(t_pred))
   t_pred_norm = as.data.frame(round(rrarefy(t_pred, min_depth)))
   
   # Calculate the distance matrix
@@ -80,16 +79,16 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
   # Build a data frame with NMDS coordinates and metadata
   pred_nmds1 = pred_nmds$points[,1]
   pred_nmds2 = pred_nmds$points[,2]
-  pred_nmds_data = data.frame(MDS1 = pred_nmds1, MDS2 = pred_nmds2, metadata = metadata[,criteria])
-  print(pred_nmds_data)
+  pred_nmds_data = data.frame(MDS1 = pred_nmds1, MDS2 = pred_nmds2, metadata = metadata[,criteria], samples = rownames(t_pred))
   
-  # ANOSIM statistic
+  # ADONIS statistic
   pred_adonis = adonis(pred_dist ~ metadata[,criteria])
   
   # Plot
   ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2, col=metadata)) + 
     theme_classic() +
     geom_point(shape=19, size=3) +
+    geom_text(data=pred_nmds_data,aes(x=MDS1,y=MDS2,label=samples),size=3,vjust=2) +
     stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=metadata),lty=2) +
     scale_color_brewer(palette="Set1") +
     theme(legend.title = element_blank()) +

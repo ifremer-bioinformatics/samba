@@ -8,19 +8,29 @@ println "Cmd line: $workflow.commandLine"
 println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
 println "Workflow configuration file : $workflow.configFiles"
-println "Manifest file : $params.inmanifest"
-println "Metadata file : $params.inmetadata"
 println "Data type : $params.data_type"
 
-Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
+if(params.dada2.dada2merge == false) {
+    Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
+    println "Manifest file : $params.inmanifest"
+}
 Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
+println "Metadata file : $params.inmetadata"
 
 //Copy params.config file to output directory for each run
 paramsfile = file('config/params.config')
 paramsfile.copyTo("$params.outdir/config/params.config")
 
+if(params.stats_only == true) {
+    //IF OTU TABLE ALREADY CREATED AND STAT ONLY STEPS NEEDED
+    
+    //Set biom_tsv path in params.conf
+    Channel.fromPath(params.newick, checkIfExists:true).set { newick }
+    Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
+    println "Input ASV table used for statistics steps : $params.inasv_table"
+
 // IF NOT STATS ONLY, PERFORM QIIME STEPS
-if(params.stats_only == false) {
+} else  {
 	if(params.dada2.dada2merge == false) {
         /* Check data integrity */
         
@@ -39,7 +49,7 @@ if(params.stats_only == false) {
         
         //Run only if process is activated in params.config file
         when :
-            params.data_integrity_enable
+            params.data_integrity_enable && params.stats_only == false
     
         script :
         """
@@ -81,7 +91,7 @@ if(params.stats_only == false) {
     
             //Run only if process is activated in params.config file
             when :
-            params.qiime_import_enable
+            params.qiime_import_enable && params.stats_only == false
         
             script :
             """
@@ -110,7 +120,7 @@ if(params.stats_only == false) {
         
             //Run only if process is activated in params.config file
             when :
-            params.cutadapt_enable
+            params.cutadapt_enable && params.stats_only == false
         
             script :
             """
@@ -144,7 +154,7 @@ if(params.stats_only == false) {
         
             //Run only if process is activated in params.config file
             when :
-            params.dada2_enable
+            params.dada2_enable && params.stats_only == false
         
             script :
             """
@@ -156,42 +166,42 @@ if(params.stats_only == false) {
         data_repseqs.into { dada2_seqs_dbotu3 ; seqs_taxo ; seqs_phylo }
         dada2_summary.set { summary }
         
-        if(params.dbotu3_enable){
-
-            /* Run dbotu3 */
-            process q2_dbotu3 {
+        /* Run dbotu3 */
+        process q2_dbotu3 {
  
-                beforeScript "${params.load_conda}"
-                conda "${params.dbotu_env}"
+            beforeScript "${params.load_conda}"
+            conda "${params.dbotu_env}"
 
-                publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
-                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
+            publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
 
-                input :
-                    file table from data_table
-                    file seqs from dada2_seqs_dbotu3
-                    file metadata_dbotu3 from metadata_dbotu3
+            input :
+                file table from data_table
+                file seqs from dada2_seqs_dbotu3
+                file metadata_dbotu3 from metadata_dbotu3
 
-                output :
-                    file 'dbotu3_details.txt' into dbotu3_details
-                    file 'dbotu3_seqs.qza' into dbotu3_seqs
-                    file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
-                    file 'dbotu3_table.qza' into dbotu3_table
-                    file 'dbotu3_table.qzv' into dbotu3_table_visu
-                    file 'dbotu3_output' into dbotu3_summary
-                    file 'completecmd' into complete_cmd_dbotu3
+            output :
+                file 'dbotu3_details.txt' into dbotu3_details
+                file 'dbotu3_seqs.qza' into dbotu3_seqs
+                file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
+                file 'dbotu3_table.qza' into dbotu3_table
+                file 'dbotu3_table.qzv' into dbotu3_table_visu
+                file 'dbotu3_output' into dbotu3_summary
+                file 'completecmd' into complete_cmd_dbotu3
 
-                script :
-                """
-                ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd &> q2_dbotu3.log 2>&1
-                """
-            }
-
-            dbotu3_table.set { table_picrust2 }
-            dbotu3_seqs.into { seqs_taxo ; seqs_phylo ; seqs_picrust2 }
-            dbotu3_summary.set { summary }
+            when :
+                params.dbotu3_enable && params.stats_only == false
+  
+            script :
+            """
+            ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+            """
         }
+
+        dbotu3_table.set { table_picrust2 }
+        dbotu3_seqs.into { seqs_taxo ; seqs_phylo ; seqs_picrust2 }
+        dbotu3_summary.set { summary }
     } else {
          
         /* dada2 merge ASV/seqs */
@@ -267,7 +277,7 @@ if(params.stats_only == false) {
 
     biom_tsv.set { tsv }
 
-    if(params.microDecon_enable == true && params.dada2.dada2merge == false) {
+    if(params.microDecon_enable == true) {
 
         /* Run sample decontamination using MicroDecon */
     
@@ -507,29 +517,20 @@ if(params.stats_only == false) {
     }
 }
 
-if(params.stats_only){
-    
-    //IF OTU TABLE ALREADY CREATED AND STAT ONLY STEPS NEEDED
-    
-    //Set biom_tsv path in params.conf
-    Channel.fromPath(params.newick, checkIfExists:true).set { newick }
-    Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
-    println "Input ASV table used for statistics steps : $params.inasv_table"
-}
 
 process prepare_data_for_stats {
-
+    
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
-
+    
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
-    
+     
     input :
         file metadata from metadata4stats
         file biom_tsv from tsv
         file newick from newick
-
+    
     output :
         file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
         file 'metadata_stats.tsv' into metadata_stats
@@ -537,23 +538,23 @@ process prepare_data_for_stats {
  
     when :
     params.prepare_data_for_stats_enable
-
+    
     script :
     """
     ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
     Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick} &>> stats_prepare_data.log 2&>1 
     """
 }
-
+    
 //Duplicate channels needed in several processes
 metadata_stats.into { metadata_beta ; metadata_beta_rarefied ; metadata_beta_deseq2 ; metadata_beta_css }
 phyloseq_rds.into { phyloseq_rds_alpha ; phyloseq_rds_beta ; phyloseq_rds_beta_rarefied ; phyloseq_rds_beta_deseq2 ; phyloseq_rds_beta_css }
 
 process stats_alpha {
-
+   
     beforeScript "${params.load_conda}"
     conda "${params.r_stats_env}"
-
+   
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots", mode: 'copy', pattern : 'barplot_*'
@@ -565,10 +566,10 @@ process stats_alpha {
     output :
         file 'alpha_div_plots*' into alpha_div_plots
         file 'index_significance_tests.txt' into index_significance_tests
-        file 'barplot_phylum*' into barplot_phylum
+        file 'barplot_phylum*'into barplot_phylum
         file 'barplot_class*' into barplot_class
         file 'barplot_order*' into barplot_order
-        file 'barplot_family*' into barplot_family
+        file 'barplot_family*'into barplot_family
         file 'barplot_genus*' into barplot_genus
         file 'rarefaction_curve*' into rarefaction_curve
 
@@ -576,7 +577,7 @@ process stats_alpha {
     when :
     params.stats_alpha_enable
     
-    script :
+    shell :
     """
     Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.distance} alpha_div_plots ${params.stats.kingdom} ${params.stats.nbtax} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.stats.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
     """
@@ -609,8 +610,7 @@ process stats_beta {
     when :
     params.stats_beta_enable
 
- 
-    script:
+    shell :
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.stats.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
     """
@@ -644,7 +644,7 @@ process stats_beta_rarefied {
     when :
     params.stats_beta_enable
 
-    script:
+    shell :
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.stats.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
     """
@@ -678,7 +678,7 @@ process stats_beta_deseq2 {
     when :
     params.stats_beta_enable
 
-    script:
+    shell :
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.stats.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
     """
@@ -714,7 +714,7 @@ process stats_beta_css {
     when :
     params.stats_beta_enable
 
-    script:
+    shell :
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
     touch end_analysis.ok
@@ -740,7 +740,7 @@ process report {
     when :
     params.report_enable
 
-    script:
+    shell :
     """
     cp ${reportHTML} Report_${params.projectName}.html
     cp ${reportMD} Report_${params.projectName}.md

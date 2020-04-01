@@ -70,8 +70,9 @@ create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, co
     TAX = tax_table(tax)
     METADATA_phyloseq = sample_data(METADATA)
     TREE = read_tree(tree)
-    TREE_ROOTED = phangorn::midpoint(TREE)
-    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA_phyloseq, TREE_ROOTED)
+    #TREE_ROOTED = phangorn::midpoint(TREE)
+    PHYLOSEQ = phyloseq(ABUND,TAX,METADATA_phyloseq, TREE)
+    #PHYLOSEQ = phyloseq(ABUND,TAX,METADATA_phyloseq, TREE_ROOTED)
     saveRDS(PHYLOSEQ, file=phyloseq_rds)
 }
 

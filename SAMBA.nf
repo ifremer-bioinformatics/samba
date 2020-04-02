@@ -548,7 +548,7 @@ process prepare_data_for_stats {
     
 //Duplicate channels needed in several processes
 metadata_stats.into { metadata_beta ; metadata_beta_rarefied ; metadata_beta_deseq2 ; metadata_beta_css }
-phyloseq_rds.into { phyloseq_rds_alpha ; phyloseq_rds_beta ; phyloseq_rds_beta_rarefied ; phyloseq_rds_beta_deseq2 ; phyloseq_rds_beta_css }
+phyloseq_rds.into { phyloseq_rds_alpha ; phyloseq_rds_beta ; phyloseq_rds_beta_rarefied ; phyloseq_rds_beta_deseq2 ; phyloseq_rds_beta_css ; phyloseq_rds_set }
 
 process stats_alpha {
    
@@ -707,7 +707,6 @@ process stats_beta_css {
         file 'hclustering_CSS_*' into hclustering_css
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
         file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
-        file 'end_analysis.ok' into end_ok
 
 
     //Run only if process is activated in params.config file
@@ -717,6 +716,30 @@ process stats_beta_css {
     shell :
     """
     Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    """
+}
+
+process stats_sets_analysis {
+
+    beforeScript "${params.load_conda}"
+    conda "${params.r_stats_env}"
+
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/", mode: 'copy', pattern : 'upset_plot*'
+
+    input :
+        file phyloseq_rds from phyloseq_rds_set
+
+    output :
+        file 'upset_plot*' into upset_plot
+        file 'end_analysis.ok' into end_ok
+
+    //Run only if process is activated in params.config file
+    when :
+    params.stats_sets_analysis_enable
+
+    shell :
+    """
+    Rscript --vanilla ${baseDir}/lib/sets_analysis.R ${phyloseq_rds} ${params.stats.sets_analysis_criteria} upset_plot &> stats_sets_analysis.log 2>&1
     touch end_analysis.ok
     """
 }

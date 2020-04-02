@@ -606,3 +606,13 @@ biom convert \
 
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/pie_ExpVar_CSS_bray.png" width="1000"</p><br>
 <p align="center"> <img src="./R/FIGURES/beta_diversity_CSS/pie_ExpVar_CSS_wunifrac.png" width="1000"</p><br>
+
+
+
+### <i>IV.3. Analysis of sample interactions (sets analysis)</i> 
+
+<div style="text-align: justify"><span style="color:black">
+    This analysis is similar to a venn diagram and allows you to visualize the number of ASVs in common between the groups of your variable of interest. We can also see the average abundance of these ASVs.
+
+<p align="center"> <img src="./R/FIGURES/upset_plot.png" width="1000"</p><br>
+

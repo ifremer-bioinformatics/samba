@@ -8,9 +8,7 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 if [ "$1" != "-resume" ]
 then
     mkdir -p $BASEDIR/training_dataset
-    mkdir -p $BASEDIR/training_dataset/dna-sequence-raw
-    wget -r --no-parent -nH -nd ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/ -P $BASEDIR/training_dataset
-    mv $BASEDIR/training_dataset/*.gz $BASEDIR/training_dataset/dna-sequence-raw
+    wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/ -P $BASEDIR/training_dataset
     sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
     sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest.single
     #nextflow temp directory

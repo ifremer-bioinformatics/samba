@@ -3,7 +3,7 @@
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 #activate nextflow environment
-. $BASEDIR/config/conda_envs/nextflow_env.sh
+. $BASEDIR/conf/conda_envs/nextflow_env.sh
 
 if [ "$1" != "-resume" ]
 then
@@ -18,7 +18,7 @@ then
     export NXF_TEMP=$BASEDIR/.nxf_temp
     mkdir -p $NXF_TEMP
     export tax_db_dir=$BASEDIR/tax.databases.test
-    sed -i "s|/PATH-TO/database.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" config/params.config
+    sed -i "s|/PATH-TO/database.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" conf/base.config
     #download taxonomic database
     DB=$tax_db_dir/DATABASE_silva_v132_99_16S.qza
   if [ -f "$DB" ]
@@ -33,7 +33,7 @@ else
 fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run SAMBA.nf $1
+nextflow -trace nextflow.executor run main.nf $1
 
 #deactivate nextflow environment
-. $BASEDIR/config/conda_envs/delenv.sh
+. $BASEDIR/conf/conda_envs/delenv.sh

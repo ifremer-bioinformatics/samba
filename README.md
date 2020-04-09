@@ -35,9 +35,9 @@ This workflow uses conda to resolve process dependencies, please be sure to have
 - Conda >=4.8.1 binary in your PATH or a conda init file in your environment -> https://docs.anaconda.com/anaconda/user-guide/faq/
 - Nextflow >=20.01.0 -> conda install -c bioconda nextflow=20.01.0
 
-For nextflow, update the following files config/conda_envs/nextflow_env.sh and config/conda_envs/delenv.sh to fit your environment's paths
+For nextflow, update the following files conf/conda_envs/nextflow_env.sh and conf/conda_envs/delenv.sh to fit your environment's paths
 
-SAMBA is written to be executed on a grid cluster with PBS Professionnal scheduler. If your scheduler is different, change the executor name in the file config/resources.config.
+SAMBA is written to be executed on a grid cluster with PBS Professionnal scheduler. If your scheduler is different, change the executor name in the file conf/resources.config.
 
 ### To test the workflow
 ```bash
@@ -83,10 +83,10 @@ sample3 | CTTCA | metadata2 | B
 ### Workflow parameters
 
 * nextflow.config : general configs for Nextflow (set TMPDIR, Workdir...). Check this file and adapt to your environment !
-* config/params.config : workflow workdir definition, processes (tasks) parameters and activation. Check this file and adapt to your data !
-* config/resources.config : scheduler resources to attribute to each process. Check this file and adapt to your scheduler !
-* config/report.config : nextflow automatic reports parameters 
-* SAMBA.nf : each step is described within its command line
+* conf/base.config : workflow workdir definition, processes (tasks) parameters and activation. Check this file and adapt to your data !
+* conf/resources.config : scheduler resources to attribute to each process. Check this file and adapt to your scheduler !
+* conf/report.config : nextflow automatic reports parameters 
+* main.nf : each step is described within its command line
 
 ### How to run
 Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory).

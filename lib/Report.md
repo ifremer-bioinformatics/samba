@@ -35,7 +35,7 @@
    by coming back to us for additional analyses.
    This workflow is based on the use of the <b>NextFlow</b> workflow managers. All 
    analysis parameters are fully configurable via the 
-   <font color="red">params.config file</font> available in the config folder of SAMBA.
+   <font color="red">base.config file</font> available in the config folder of SAMBA.
 </div>
 
 

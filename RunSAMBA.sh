@@ -3,7 +3,7 @@
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 #activate nextflow environment
-. $BASEDIR/config/conda_envs/nextflow_env.sh
+. $BASEDIR/conf/conda_envs/nextflow_env.sh
 
 if [ "$1" != "-resume" ]
 then
@@ -13,7 +13,7 @@ then
 fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run SAMBA.nf $1
+nextflow -trace nextflow.executor run main.nf $1
 
 #deactivate nextflow environment
-. $BASEDIR/config/conda_envs/delenv.sh
+. $BASEDIR/conf/conda_envs/delenv.sh

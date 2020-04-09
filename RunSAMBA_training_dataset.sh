@@ -7,10 +7,13 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 if [ "$1" != "-resume" ]
 then
-    mkdir -p $BASEDIR/training_dataset
-    wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/ -P $BASEDIR/training_dataset
-    sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
-    sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest.single
+    if [ ! -d "$BASEDIR/training_dataset" ]
+    then 
+        mkdir -p $BASEDIR/training_dataset
+        wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/ -P $BASEDIR/training_dataset
+        sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
+        sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest.single
+    fi
     #nextflow temp directory
     export NXF_TEMP=$BASEDIR/.nxf_temp
     mkdir -p $NXF_TEMP

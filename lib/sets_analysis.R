@@ -67,7 +67,7 @@ sets_abund = merge(PHYLOSEQ_melt_mean,sets,by.x="OTU",by.y="row.names")
 row.names(sets_abund)=sets_abund[,1]
 final_sets = sets_abund %>% select (-OTU)
 
-svglite(paste(args[3],".svg",sep=""), width = 12, height = 10)
+svg(paste(args[3],".svg",sep=""), width = 12, height = 10)
 upset(final_sets, nsets=ncol(final_sets), boxplot.summary = "Abundance",number.angles = 0, text.scale = c(1.6,1.3,1.6,1.3,1.3,1.3),point.size = 2, line.size = 1, mainbar.y.label = "Number of ASVs", sets.x.label = "Total ASV")
 dev.off()
 

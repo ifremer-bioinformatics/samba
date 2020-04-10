@@ -19,65 +19,13 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/samba --reads '*_R{1,2}.fastq.gz' -profile conda
+    nextflow run nf-core/samba --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' -profile conda
 
     Mandatory arguments:
-      --reads                            Path to input data (must be surrounded with quotes)
+      --input_metadata                   Path to input file with project samples metadata (csv format)
+      --input_manifest                   Path to input file with samples reads files paths (csv format)
       -profile                           Configuration profile to use. Can use multiple (comma separated)
-                                         Available: conda, docker, singularity, awsbatch, test and more.
-
-    References                          If not specified in the configuration file or you wish to overwrite any of the references.
-      --genome                           Name of iGenomes reference
-      --bwt2_index                       Path to Bowtie2 index
-      --fasta                            Path to Fasta reference
-      --chromosome_size                  Path to chromosome size file
-      --restriction_fragments            Path to restriction fragment file (bed)
-      --saveReference                    Save reference genome to output folder. Default: False
-      --saveAlignedIntermediates         Save intermediates alignment files. Default: False
-
-    Alignments
-      --bwt2_opts_end2end                Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
-      --bwt2_opts_trimmed                Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
-      --min_mapq                         Minimum mapping quality values to consider. Default: 10
-      --restriction_site                 Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
-      --ligation_site                    Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
-      --rm_singleton                     Remove singleton reads. Default: true
-      --rm_multi                         Remove multi-mapped reads. Default: true
-      --rm_dup                           Remove duplicates. Default: true
- 
-    Contacts calling
-      --min_restriction_fragment_size    Minimum size of restriction fragments to consider. Default: None
-      --max_restriction_framgnet_size    Maximum size of restriction fragmants to consider. Default: None
-      --min_insert_size                  Minimum insert size of mapped reads to consider. Default: None
-      --max_insert_size                  Maximum insert size of mapped reads to consider. Default: None
-      --saveInteractionBAM               Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
-
-      --dnase                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
-      --min_cis_dist                     Minimum intra-chromosomal distance to consider. Default: None
-
-    Contact maps
-      --bin_size                         Bin size for contact maps (comma separated). Default: '1000000,500000'
-      --ice_max_iter                     Maximum number of iteration for ICE normalization. Default: 100
-      --ice_filter_low_count_perc        Percentage of low counts columns/rows to filter before ICE normalization. Default: 0.02
-      --ice_filter_high_count_perc       Percentage of high counts columns/rows to filter before ICE normalization. Default: 0
-      --ice_eps                          Convergence criteria for ICE normalization. Default: 0.1
-
-
-    Workflow
-      --skipMaps                        Skip generation of contact maps. Useful for capture-C. Default: False
-      --skipIce                         Skip ICE normalization. Default: False
-      --skipCool                        Skip generation of cool files. Default: False
-      --skipMultiQC                     Skip MultiQC. Default: False
-
-    Other
-      --splitFastq                       Size of read chuncks to use to speed up the workflow. Default: None
-      --outdir                           The output directory where the results will be saved. Default: './results'
-      --email                            Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. Default: None
-      -name                              Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic. Default: None
-
-    AWSBatch
-      --awsqueue                         The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion                        The AWS Region for your AWS Batch job to run on
+                                         Available: conda, docker, singularity.
     """.stripIndent()
 }
 
@@ -103,11 +51,11 @@ println "Workflow configuration file : $workflow.configFiles"
 println "Data type : $params.data_type"
 
 if(params.dada2.dada2merge == false) {
-    Channel.fromPath(params.inmanifest, checkIfExists:true).into { manifest ; manifest4integrity }
-    println "Manifest file : $params.inmanifest"
+    Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
+    println "Manifest file : $params.input_manifest"
 }
-Channel.fromPath(params.inmetadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
-println "Metadata file : $params.inmetadata"
+Channel.fromPath(params.input_metadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
+println "Metadata file : $params.input_metadata"
 
 //Copy base.config file to output directory for each run
 paramsfile = file('conf/base.config')

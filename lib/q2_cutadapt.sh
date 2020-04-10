@@ -36,7 +36,7 @@
 # Arguments 
 args=("$@")
 
-data_type=${args[0]}
+single_end=${args[0]}
 cpus=${args[1]}
 imported_data=${args[2]}
 primerF=${args[3]}
@@ -49,8 +49,11 @@ trimmed_output=${args[9]}
 logcmd=${args[10]}
 
 #Run cutadapt
-[ ${data_type} == "paired" ] && cmdoptions="qiime cutadapt trim-paired --p-front-f $primerF --p-front-r $primerR" || cmdoptions="qiime cutadapt trim-single --p-front $primerF"
-
+if ${single_end}; then
+    cmdoptions="qiime cutadapt trim-single --p-front $primerF"
+else
+    cmdoptions="qiime cutadapt trim-paired --p-front-f $primerF --p-front-r $primerR" 
+fi
 cmd="$cmdoptions \
     --verbose \
     --p-cores $cpus \

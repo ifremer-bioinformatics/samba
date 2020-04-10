@@ -35,7 +35,7 @@
 
 # Arguments 
 args=("$@")
-data_type=${args[0]}
+single_end=${args[0]}
 manifest=${args[1]}
 dataqza=${args[2]}
 dataqzv=${args[3]}
@@ -43,7 +43,11 @@ import_output=${args[4]}
 logcmd=${args[5]}
 
 #Import all samples files listed in manifest to qiime data structure
-[ ${data_type} == "paired" ] && cmdoptions="--type 'SampleData[PairedEndSequencesWithQuality]' --input-format PairedEndFastqManifestPhred33V2" || cmdoptions="--type 'SampleData[SequencesWithQuality]' --input-format SingleEndFastqManifestPhred33V2"
+if ${single_end}; then
+    cmdoptions="--type 'SampleData[SequencesWithQuality]' --input-format SingleEndFastqManifestPhred33V2"
+else
+    cmdoptions="--type 'SampleData[PairedEndSequencesWithQuality]' --input-format PairedEndFastqManifestPhred33V2" 
+fi
 cmd="qiime tools import --input-path $manifest --output-path $dataqza $cmdoptions"
 echo $cmd > $logcmd
 eval $cmd

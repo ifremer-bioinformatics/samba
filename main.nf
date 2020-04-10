@@ -48,7 +48,7 @@ println "Cmd line: $workflow.commandLine"
 println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
 println "Workflow configuration file : $workflow.configFiles"
-println "Data type : $params.data_type"
+println "Single end data ? : $params.single_end"
 
 if(params.dada2.dada2merge == false) {
     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
@@ -98,7 +98,7 @@ if(params.stats_only == true) {
     
         script :
         """
-        ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} ${params.data_type} &> data_integrity.log 2>&1
+        ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} ${params.single_end} &> data_integrity.log 2>&1
         if test -f "verifications.bad"; then
             if test -f "data_integrity.csv"; then
                 echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
@@ -139,7 +139,7 @@ if(params.stats_only == true) {
         
             script :
             """
-            ${baseDir}/lib/q2_import.sh ${params.data_type} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
+            ${baseDir}/lib/q2_import.sh ${params.single_end} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
             """
         }
         
@@ -167,7 +167,7 @@ if(params.stats_only == true) {
         
             script :
             """
-            ${baseDir}/lib/q2_cutadapt.sh ${params.data_type} ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
+            ${baseDir}/lib/q2_cutadapt.sh ${params.single_end} ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
             """
         }
     
@@ -200,7 +200,7 @@ if(params.stats_only == true) {
         
             script :
             """
-            ${baseDir}/lib/q2_dada2.sh ${params.data_type} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+            ${baseDir}/lib/q2_dada2.sh ${params.single_end} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
             """
         }
         

@@ -36,7 +36,7 @@
 # Arguments 
 args=("$@") 
 
-data_type=${args[0]}
+single_end=${args[0]}
 trimmed_data=${args[1]}
 metadata=${args[2]}
 rep_seqsqza=${args[3]}
@@ -58,7 +58,11 @@ cpus=${args[18]}
 logcmd=${args[19]}
 
 #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
-[ ${data_type} == "paired" ] && cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trim5F --p-trim-left-r $trim5R --p-trunc-len-f $trunclenF --p-trunc-len-r $trunclenR --p-max-ee-f $maxee_f --p-max-ee-r $maxee_r" || cmdoptions="qiime dada2 denoise-single --p-trim-left $trim5F --p-trunc-len $trunclenF --p-max-ee $maxee_f"
+if ${single_end}; then
+    cmdoptions="qiime dada2 denoise-single --p-trim-left $trim5F --p-trunc-len $trunclenF --p-max-ee $maxee_f"
+else
+    cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trim5F --p-trim-left-r $trim5R --p-trunc-len-f $trunclenF --p-trunc-len-r $trunclenR --p-max-ee-f $maxee_f --p-max-ee-r $maxee_r" 
+fi
 cmd="$cmdoptions \
     --verbose \
     --i-demultiplexed-seqs $trimmed_data \

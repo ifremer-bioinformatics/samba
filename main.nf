@@ -47,19 +47,20 @@ def helpMessage() {
       --cutadapt.overlap		Cutadapt overlaping length between primer and read (default : 18)
 
     ASVs inference:
-        --dada2.trimLeft		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming)
-        --dada2.trimRigth		The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming)
-        --dada2.FtruncLen		Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded. (default : 0 = no trimming)
-        --dada2.RtruncLe		Truncate forward reads after RtruncLen bases. Reads shorter than this are discarded. (default : 0 = no trimming)
-        --dada2.FmaxEE			Forward reads with higher than maxEE "expected errors" will be discarded. (default = 2) 
-        --dada2.RmaxEE			Reverse with higher than maxEE "expected errors" will be discarded. (default = 2)  
-        --dada2.minQ			After truncation, reads contain a quality score less than minQ will be discarded. (default = 10)
-        --dada2.chimeras		Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
+      --dada2.trimLeft			The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming)
+      --dada2.trimRigth			The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming)
+      --dada2.FtruncLen			Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded. (default : 0 = no trimming)
+      --dada2.RtruncLen			Truncate forward reads after RtruncLen bases. Reads shorter than this are discarded. (default : 0 = no trimming)
+      --dada2.FmaxEE			Forward reads with higher than maxEE "expected errors" will be discarded. (default = 2) 
+      --dada2.RmaxEE			Reverse with higher than maxEE "expected errors" will be discarded. (default = 2)  
+      --dada2.minQ			After truncation, reads contain a quality score less than minQ will be discarded. (default = 10)
+      --dada2.chimeras			Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
 
     Merge ASVs tables :
-        --dada2.merge			Set to "true" to merge Dada2 ASVs tables
-        --dada2.dada2merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge)
-        --dada2.dada2merge_repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge)
+      --dada2.merge			Set to "true" to merge Dada2 ASVs tables
+      --dada2.dada2merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge)
+      --dada2.dada2merge_repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge)
+
     """.stripIndent()
 }
 

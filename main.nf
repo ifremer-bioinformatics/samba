@@ -19,13 +19,41 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/samba --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' -profile conda
+    nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' -profile conda
 
     Mandatory arguments:
-      --input_metadata                   Path to input file with project samples metadata (csv format)
-      --input_manifest                   Path to input file with samples reads files paths (csv format)
-      -profile                           Configuration profile to use. Can use multiple (comma separated)
-                                         Available: conda.
+      --input_metadata              Path to input file with project samples metadata (csv format)
+      --input_manifest              Path to input file with samples reads files paths (csv format)
+      -profile                      Configuration profile to use. Can use multiple (comma separated)
+                                    Available: conda.
+    Generic:
+      --single_end                  Specifies that the input is single-end reads
+
+    Other options
+      --outdir                      The output directory where the results will be saved
+      -w/--work-dir                 The temporary directory where intermediate data will be saved
+      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+
+    Data integrity:
+      --data_integrity.primerF         Forward primer with '.' characters instead of degenerated bases
+      --data_integrity.primerR         Reverse primer with '.' characters instead of degenerated bases
+      --data_integrity.barcode_filter  Percentage of sample barcode supposed to be found in raw reads (default : 90) 
+      --data_integrity.primer_filter   Percentage of primers supposed to be found in raw reads (default : 70) 
+   
+    Raw reads cleaning:
+      --cutadapt.primerF               Forward primer (to be used in Cutadapt cleaning step)
+      --cutadapt.primerR               Reverse primer (to be used in Cutadapt cleaning step)
+      --cutadapt.errorRate             Cutadapt error rate allowed to match primers (default : 0.1)
+      --cutadapt.overlap               Cutadapt overlaping length between primer and read (default : 18)
+
+    ASVs inference:
+        --dada2.trimLeft                 The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming)
+        --dada2.trimRigth                 The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming)
+        --dada2.trunclenF              Truncate forward reads after trunclenF bases. Reads shorter than this are discarded. (default : 0 = no trimming)
+        --dada2.trunclenR              Truncate forward reads after trunclenF bases. Reads shorter than this are discarded. (default : 0 = no trimming)
+        --dada2.FmaxEE                Forward reads with higher than maxEE "expected errors" will be discarded. (default = 2) 
+        --dada2.RmaxEE                Reverse with higher than maxEE "expected errors" will be discarded. (default = 2)  
+
     """.stripIndent()
 }
 
@@ -200,7 +228,7 @@ if(params.stats_only == true) {
         
             script :
             """
-            ${baseDir}/lib/q2_dada2.sh ${params.single_end} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+            ${baseDir}/lib/q2_dada2.sh ${params.single_end} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
             """
         }
         
@@ -211,7 +239,7 @@ if(params.stats_only == true) {
         /* Run dbotu3 */
         process q2_dbotu3 {
  
-            label 'qiime2_2019_env'
+            label 'qiime2_env'
 
             publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
             publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -794,3 +822,29 @@ process report {
     cp ${reportMD} Report_${params.projectName}.md
     """
 }
+
+
+/* Other functions */
+def nfcoreHeader() {
+    // Log colors ANSI codes
+    c_reset = params.monochrome_logs ? '' : "\033[0m";
+    c_dim = params.monochrome_logs ? '' : "\033[2m";
+    c_black = params.monochrome_logs ? '' : "\033[0;30m";
+    c_green = params.monochrome_logs ? '' : "\033[0;32m";
+    c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
+    c_blue = params.monochrome_logs ? '' : "\033[0;34m";
+    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
+    c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
+    c_white = params.monochrome_logs ? '' : "\033[0;37m";
+
+    return """    -${c_dim}--------------------------------------------------${c_reset}-
+                                            ${c_green},--.${c_black}/${c_green},-.${c_reset}
+    ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
+    ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
+    ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
+                                            ${c_green}`._,._,\'${c_reset}
+    ${c_purple}  nf-core/samba v${workflow.manifest.version}${c_reset}
+    -${c_dim}--------------------------------------------------${c_reset}-
+    """.stripIndent()
+}
+

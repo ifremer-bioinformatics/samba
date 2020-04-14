@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trim5F} ${params.dada2.trim5R} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.maxee_f} ${params.dada2.maxee_r} ${params.dada2.minqual} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
 
 # Arguments 
 args=("$@") 
@@ -46,27 +46,27 @@ tableqzv=${args[6]}
 statsqza=${args[7]}
 statsqzv=${args[8]}
 dada2_output=${args[9]}
-trim5F=${args[10]}
-trim5R=${args[11]}
+trimLeft=${args[10]}
+trimRigth=${args[11]}
 trunclenF=${args[12]}
 trunclenR=${args[13]}
-maxee_f=${args[14]}
-maxee_r=${args[15]}
-minqual=${args[16]}
+FmaxEE=${args[14]}
+RmaxEE=${args[15]}
+minQ=${args[16]}
 chimeras=${args[17]}
 cpus=${args[18]}
 logcmd=${args[19]}
 
 #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
 if ${single_end}; then
-    cmdoptions="qiime dada2 denoise-single --p-trim-left $trim5F --p-trunc-len $trunclenF --p-max-ee $maxee_f"
+    cmdoptions="qiime dada2 denoise-single --p-trim-left $trimLeft --p-trunc-len $trunclenF --p-max-ee $FmaxEE"
 else
-    cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trim5F --p-trim-left-r $trim5R --p-trunc-len-f $trunclenF --p-trunc-len-r $trunclenR --p-max-ee-f $maxee_f --p-max-ee-r $maxee_r" 
+    cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trimLeft --p-trim-left-r $trimRigth --p-trunc-len-f $trunclenF --p-trunc-len-r $trunclenR --p-max-ee-f $FmaxEE --p-max-ee-r $RmaxEE" 
 fi
 cmd="$cmdoptions \
     --verbose \
     --i-demultiplexed-seqs $trimmed_data \
-    --p-trunc-q $minqual \
+    --p-trunc-q $minQ \
     --p-chimera-method $chimeras \
     --p-n-threads $cpus \
     --o-representative-sequences $rep_seqsqza \

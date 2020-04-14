@@ -191,8 +191,8 @@ qiime tools export \
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS USED</b></span>
    <li>trimLeft</li>
    <li>trimRigth</li>
-   <li>trunclenF</li>
-   <li>trunclenR</li>
+   <li>FtruncLen</li>
+   <li>RtruncLen</li>
    <li>maxeeF</li>
    <li>maxeeR</li>
    <li>minQ</li>
@@ -208,8 +208,8 @@ qiime dada2 denoise-paired \
 --i-demultiplexed-seqs data_trimmed.qza \
 --p-trim-left-f $trimLeft \
 --p-trim-left-r $trimRigth \
---p-trunc-len-f $trunclenF \
---p-trunc-len-r $trunclenR \
+--p-trunc-len-f $FtruncLen \
+--p-trunc-len-r $RtruncLen \
 --p-max-ee-f $maxeeF \
 --p-max-ee-r $maxeeR \
 --p-trunc-q $minQ \

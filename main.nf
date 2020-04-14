@@ -22,38 +22,44 @@ def helpMessage() {
     nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' -profile conda
 
     Mandatory arguments:
-      --input_metadata              Path to input file with project samples metadata (csv format)
-      --input_manifest              Path to input file with samples reads files paths (csv format)
-      -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                    Available: conda.
+      --input_metadata			Path to input file with project samples metadata (csv format)
+      --input_manifest			Path to input file with samples reads files paths (csv format)
+      -profile				Configuration profile to use. Can use multiple (comma separated)
+					Available: conda.
     Generic:
-      --single_end                  Specifies that the input is single-end reads
+      --single_end			Specifies that the input is single-end reads
 
     Other options
-      --outdir                      The output directory where the results will be saved
-      -w/--work-dir                 The temporary directory where intermediate data will be saved
-      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+      --outdir				The output directory where the results will be saved
+      -w/--work-dir			The temporary directory where intermediate data will be saved
+      -name				Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
 
     Data integrity:
-      --data_integrity.primerF         Forward primer with '.' characters instead of degenerated bases
-      --data_integrity.primerR         Reverse primer with '.' characters instead of degenerated bases
-      --data_integrity.barcode_filter  Percentage of sample barcode supposed to be found in raw reads (default : 90) 
-      --data_integrity.primer_filter   Percentage of primers supposed to be found in raw reads (default : 70) 
+      --data_integrity.primerF		Forward primer with '.' characters instead of degenerated bases
+      --data_integrity.primerR		Reverse primer with '.' characters instead of degenerated bases
+      --data_integrity.barcode_filter	Percentage of sample barcode supposed to be found in raw reads (default : 90) 
+      --data_integrity.primer_filter	Percentage of primers supposed to be found in raw reads (default : 70) 
    
     Raw reads cleaning:
-      --cutadapt.primerF               Forward primer (to be used in Cutadapt cleaning step)
-      --cutadapt.primerR               Reverse primer (to be used in Cutadapt cleaning step)
-      --cutadapt.errorRate             Cutadapt error rate allowed to match primers (default : 0.1)
-      --cutadapt.overlap               Cutadapt overlaping length between primer and read (default : 18)
+      --cutadapt.primerF		Forward primer (to be used in Cutadapt cleaning step)
+      --cutadapt.primerR		Reverse primer (to be used in Cutadapt cleaning step)
+      --cutadapt.errorRate		Cutadapt error rate allowed to match primers (default : 0.1)
+      --cutadapt.overlap		Cutadapt overlaping length between primer and read (default : 18)
 
     ASVs inference:
-        --dada2.trimLeft                 The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming)
-        --dada2.trimRigth                 The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming)
-        --dada2.trunclenF              Truncate forward reads after trunclenF bases. Reads shorter than this are discarded. (default : 0 = no trimming)
-        --dada2.trunclenR              Truncate forward reads after trunclenF bases. Reads shorter than this are discarded. (default : 0 = no trimming)
-        --dada2.FmaxEE                Forward reads with higher than maxEE "expected errors" will be discarded. (default = 2) 
-        --dada2.RmaxEE                Reverse with higher than maxEE "expected errors" will be discarded. (default = 2)  
+        --dada2.trimLeft		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming)
+        --dada2.trimRigth		The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming)
+        --dada2.FtruncLen		Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded. (default : 0 = no trimming)
+        --dada2.RtruncLe		Truncate forward reads after RtruncLen bases. Reads shorter than this are discarded. (default : 0 = no trimming)
+        --dada2.FmaxEE			Forward reads with higher than maxEE "expected errors" will be discarded. (default = 2) 
+        --dada2.RmaxEE			Reverse with higher than maxEE "expected errors" will be discarded. (default = 2)  
+        --dada2.minQ			After truncation, reads contain a quality score less than minQ will be discarded. (default = 10)
+        --dada2.chimeras		Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
 
+    Merge ASVs tables :
+        --dada2.merge			Set to "true" to merge Dada2 ASVs tables
+        --dada2.dada2merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge)
+        --dada2.dada2merge_repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge)
     """.stripIndent()
 }
 
@@ -228,7 +234,7 @@ if(params.stats_only == true) {
         
             script :
             """
-            ${baseDir}/lib/q2_dada2.sh ${params.single_end} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+            ${baseDir}/lib/q2_dada2.sh ${params.single_end} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.FtruncLen} ${params.dada2.RtruncLen} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
             """
         }
         

@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.trunclenF} ${params.dada2.trunclenR} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
+## q2_dada2.sh ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.FtruncLen} ${params.dada2.RtruncLen} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd > q2_dada2.log 2>&1
 
 # Arguments 
 args=("$@") 
@@ -48,8 +48,8 @@ statsqzv=${args[8]}
 dada2_output=${args[9]}
 trimLeft=${args[10]}
 trimRigth=${args[11]}
-trunclenF=${args[12]}
-trunclenR=${args[13]}
+FtruncLen=${args[12]}
+RtruncLen=${args[13]}
 FmaxEE=${args[14]}
 RmaxEE=${args[15]}
 minQ=${args[16]}
@@ -59,9 +59,9 @@ logcmd=${args[19]}
 
 #Run dada2 : denoises paired-end sequences, dereplicates them and filters chimeras
 if ${single_end}; then
-    cmdoptions="qiime dada2 denoise-single --p-trim-left $trimLeft --p-trunc-len $trunclenF --p-max-ee $FmaxEE"
+    cmdoptions="qiime dada2 denoise-single --p-trim-left $trimLeft --p-trunc-len $FtruncLen --p-max-ee $FmaxEE"
 else
-    cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trimLeft --p-trim-left-r $trimRigth --p-trunc-len-f $trunclenF --p-trunc-len-r $trunclenR --p-max-ee-f $FmaxEE --p-max-ee-r $RmaxEE" 
+    cmdoptions="qiime dada2 denoise-paired --p-trim-left-f $trimLeft --p-trim-left-r $trimRigth --p-trunc-len-f $FtruncLen --p-trunc-len-r $RtruncLen --p-max-ee-f $FmaxEE --p-max-ee-r $RmaxEE" 
 fi
 cmd="$cmdoptions \
     --verbose \

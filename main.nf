@@ -56,10 +56,38 @@ def helpMessage() {
       --dada2.minQ			After truncation, reads contain a quality score less than minQ will be discarded. (default = 10)
       --dada2.chimeras			Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
 
-    Merge ASVs tables :
+    Merge ASVs tables:
       --dada2.merge			Set to "true" to merge Dada2 ASVs tables
       --dada2.dada2merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge)
       --dada2.dada2merge_repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge)
+
+    Distribution based-clustering:
+      --dbotu3.gen-crit			dbotu3 Genetic criterion (default = 0.1)
+      --dbotu3.abund-crit		dbotu3 Abundance criterion (default = 10)
+      --dbotu3.pval-crit		dbotu3 P-value criterion (default = 0.0005)
+
+    Taxonomic assignation:
+      --taxo.extract_db			Set to "true" to extract specific region from reference database
+      --taxo.db_seqs			Path to reference database
+      --taxo.db_tax			Path to taxonomic reference database 
+      --taxo.database			Path to preformatted QIIME2 format database
+      --taxo.confidence			RDP confidence threshold (default = 90)
+
+    Decontamination:
+      --microDecon.control-list		Comma separated list of control samples (e.g : "sample1,sample4,sample7")
+      --microDecon.nb-controls		Number of controled samples listed
+      --microDecon.nb-samples		Number of samples that are not control samples
+   
+    Predict functionnal abundance:
+      --picrust2.method			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'
+      --picrust2.nsti			Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences 
+      
+    Statistics:
+      --stats.kingdom			Kingdom to be displayed in barplots.
+      --stats.taxa-nb			Number of taxa to be displayed in barplots.
+      --stats.alpha-div-group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
+      --stats.beta-div-var		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
+      --stats.sets-analysis-criterion	According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
 
     """.stripIndent()
 }

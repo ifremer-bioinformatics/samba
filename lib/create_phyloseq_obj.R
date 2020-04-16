@@ -51,8 +51,8 @@ create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, co
     METADATA = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     
     if (microDecon == "true") {    
-    control_list =  unlist(strsplit(control,","))
-    METADATA = METADATA[!rownames(METADATA) %in% control_list, ]
+    control-list =  unlist(strsplit(control,","))
+    METADATA = METADATA[!rownames(METADATA) %in% control-list, ]
     write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
     }
     

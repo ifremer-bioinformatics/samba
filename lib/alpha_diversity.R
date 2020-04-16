@@ -49,7 +49,7 @@ for(package in requiredPackages){
 #						   #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group, plot_rarefaction) {
+alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa-nb, distance, group, plot_rarefaction) {
     
     # ~~~~~~~~~~~~~~~ #
     # Alpha diversity #
@@ -159,23 +159,23 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
 
     ## Variable definition ####
     taxaSet1 = unlist(strsplit(kingdom, " "))
-    color_bar = color_vector[1:nbtax]
+    color_bar = color_vector[1:taxa-nb]
     
     ## Barplot representation ####
     #### at the phylum level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Phylum", nbtax, fill="Phylum", group, color_bar, barplot_phylum) 
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Phylum", taxa-nb, fill="Phylum", group, color_bar, barplot_phylum) 
 
     #### at the class level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Class", nbtax, fill="Class", group, color_bar, barplot_class)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Class", taxa-nb, fill="Class", group, color_bar, barplot_class)
 
     #### at the order level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Order", nbtax, fill="Order", group, color_bar, barplot_order)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Order", taxa-nb, fill="Order", group, color_bar, barplot_order)
 
     #### at the family level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Family", nbtax, fill="Family", group, color_bar, barplot_family)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Family", taxa-nb, fill="Family", group, color_bar, barplot_family)
 
     #### at the genus level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", nbtax, fill="Genus", group, color_bar, barplot_genus)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", taxa-nb, fill="Genus", group, color_bar, barplot_genus)
 }
 
 # @@@@@@@@@@@@@@@@@@@@@@@@ #
@@ -191,7 +191,7 @@ main <- function() {
     distance = args[2]
     alpha_div_plots = args[3]
     kingdom = args[4]
-    nbtax = args[5]
+    taxa-nb = args[5]
     barplot_phylum = args[6]
     barplot_class = args[7]
     barplot_order = args[8]
@@ -205,7 +205,7 @@ main <- function() {
     # Get plot_composition function
     if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/barplot_graph_functions.R")))
     # Run alpha diversity analyses
-    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, nbtax, distance, group, plot_rarefaction)
+    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa-nb, distance, group, plot_rarefaction)
 }
 if (!interactive()) {
         main()

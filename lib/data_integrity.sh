@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-## data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.txt verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
+## data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.txt verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode-filter} ${params.data_integrity.primer-filter} > data_integrity.log 2>&1
 
 # Arguments
 args=("$@")
@@ -53,8 +53,8 @@ else
     R2_files=${args[11]}
 fi
 
-barcode_filter=${args[12]}
-primer_filter=${args[13]}
+barcode-filter=${args[12]}
+primer-filter=${args[13]}
 
 # Verify if metadata file contains NA values
 grep -P "NA\t|\tNA" ${metadata}
@@ -99,9 +99,9 @@ valcol=4 #Count_in_R1
 [ ${single_end} ] && addcol=7 #column = Perc_correct_barecode_R1
 [ ! ${single_end} ] && addcol=10 #column = Perc_correct_barecode_R1
 awk -v OFS='\t' -v "newcol=${addcol}" -v "col=${valcol}" '{$newcol = ($col != 0) ? sprintf("%.0f", $col/$3*100) : "0"}1' tmp_output | sort -nr -k ${addcol} > tmp_output.tmp && mv tmp_output.tmp tmp_output
-if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=${addcol}" '{print $newcol}') -ge ${barcode_filter} ] ; then touch barcodes_R1.ok ; else touch barcodes_R1.bad ; fi
+if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=${addcol}" '{print $newcol}') -ge ${barcode-filter} ] ; then touch barcodes_R1.ok ; else touch barcodes_R1.bad ; fi
 [ ! ${single_end} ] && awk -v OFS='\t' -v "newcol=$(($addcol+1))" -v "col=$(($valcol+1))" '{$newcol = ($col != 0) ? sprintf("%.0f", $col/$3*100) : "0"}1' tmp_output | sort -nr -k $(($addcol+1)) > tmp_output.tmp && mv tmp_output.tmp tmp_output
-[ ! ${single_end} ] && if [ $(tail -n 1 tmp_output | awk -F"\t" -v "newcol=$(($addcol+1))" '{print $newcol}') -ge ${barcode_filter} ] ; then touch barcodes_R2.ok ; else touch barcodes_R2.bad ; fi
+[ ! ${single_end} ] && if [ $(tail -n 1 tmp_output | awk -F"\t" -v "newcol=$(($addcol+1))" '{print $newcol}') -ge ${barcode-filter} ] ; then touch barcodes_R2.ok ; else touch barcodes_R2.bad ; fi
 
 # Unique sequencer verification (Sequencer_R1, Sequencer_R2)
 [ ${single_end} ] && valcol=5;addcol=8 #column = Perc_uniq_sequencer_R1 
@@ -115,9 +115,9 @@ if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=${addcol}" '{print $newcol}
 [ ${single_end} ] && valcol=6;addcol=9 #column = Perc_primer_R1
 [ ! ${single_end} ] && valcol=8;addcol=14 #column = Perc_primer_R1
 awk -v OFS='\t' -v "newcol=${addcol}" -v "col=${valcol}" '{$newcol = ($col != 0) ? sprintf("%.0f", $col/$3*100) : "0"}1' tmp_output | sort -nr -k ${addcol} > tmp_output.tmp && mv tmp_output.tmp tmp_output
-if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=${addcol}" '{print $newcol}') -ge ${primer_filter} ] ; then touch primer_R1.ok ; else touch primer_R1.bad ; fi
+if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=${addcol}" '{print $newcol}') -ge ${primer-filter} ] ; then touch primer_R1.ok ; else touch primer_R1.bad ; fi
 [ ! ${single_end} ] && awk -v OFS='\t' -v "newcol=$(($addcol+1))" -v "col=$(($valcol+1))" '{$newcol = ($col != 0) ? sprintf("%.0f", $col/$3*100) : "0"}1' tmp_output | sort -nr -k $(($addcol+1)) > tmp_output.tmp && mv tmp_output.tmp tmp_output
-[ ! ${single_end} ] && if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=$(($addcol+1))" '{print $newcol}') -ge ${primer_filter} ] ; then touch primer_R2.ok ; else touch primer_R2.bad ; fi
+[ ! ${single_end} ] && if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=$(($addcol+1))" '{print $newcol}') -ge ${primer-filter} ] ; then touch primer_R2.ok ; else touch primer_R2.bad ; fi
 
 # Results saving and remove all temporary files
 [ ${single_end} ] && if [[ -e barcodes_R1.ok && sequencer_R1.ok && -e primer_R1.ok ]] ; then touch ${verif_ok} ; else touch ${verif_bad} && echo '@@@ --- All verifications are not satisfied --- @@@' ; fi

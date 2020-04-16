@@ -31,7 +31,7 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-## q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd > q2_dbotu3.log 2>&1
+## q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.gen-crit} ${params.dbotu3.abund-crit} ${params.dbotu3.pval-crit} completecmd > q2_dbotu3.log 2>&1
 
 # Arguments 
 args=("$@") 
@@ -45,13 +45,13 @@ dbotu3_seqsqzv=${args[5]}
 dbotu3_tableqza=${args[6]}
 dbotu3_tableqzv=${args[7]}
 dbotu3_output=${args[8]}
-genet_crit=${args[9]}
-abund_crit=${args[10]}
-pval_crit=${args[11]}
+gen-crit=${args[9]}
+abund-crit=${args[10]}
+pval-crit=${args[11]}
 logcmd=${args[12]}
 
 # Run dbotu2
-cmd="qiime dbotu-q2 call-otus --verbose --i-table $table --i-sequences $seqs --p-gen-crit $genet_crit --p-abund-crit $abund_crit --p-pval-crit $pval_crit --o-representative-sequences $dbotu3_seqsqza --o-dbotu-table $dbotu3_tableqza > $dbotu3_details"
+cmd="qiime dbotu-q2 call-otus --verbose --i-table $table --i-sequences $seqs --p-gen-crit $gen-crit --p-abund-crit $abund-crit --p-pval-crit $pval-crit --o-representative-sequences $dbotu3_seqsqza --o-dbotu-table $dbotu3_tableqza > $dbotu3_details"
 echo $cmd > $logcmd
 eval $cmd
 

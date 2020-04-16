@@ -51,7 +51,7 @@ for(package in requiredPackages){
 args = commandArgs(trailingOnly=TRUE)
 
 ASV_table = args[1]
-control_list =  unlist(strsplit(args[[2]],","))
+control-list =  unlist(strsplit(args[[2]],","))
 blanks = noquote(args[3])
 samples = noquote(args[4])
 output_table = args[5]
@@ -60,7 +60,7 @@ output_ASVs_removed = args[7]
 
 # Load ASV table
 TABLE = read.table(ASV_table,h=T,sep="\t",check.names=FALSE)
-TABLE_control = TABLE %>% select("ASV_ID",c(control_list), everything())  
+TABLE_control = TABLE %>% select("ASV_ID",c(control-list), everything())  
 head(TABLE_control)
 
 # microDecon

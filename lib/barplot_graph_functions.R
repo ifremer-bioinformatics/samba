@@ -27,9 +27,9 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## return data frame for relative abundance plots in ggplot2
-## Return relative abundance of top nbtax at the taxaRank2 level
+## Return relative abundance of top taxa-nb at the taxaRank2 level
 ## within taxaSet1 at taxaRank1 level
-ggformat <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, nbtax) {
+ggformat <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa-nb) {
     stopifnot(!is.null(sample_data(PHYLOSEQ, FALSE)),
               !is.null(tax_table(PHYLOSEQ, FALSE)))
     otutab <- otu_table(PHYLOSEQ)
@@ -57,10 +57,10 @@ ggformat <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, nbtax) {
     ## Aggregate by taxaRank2
     mdf <- aggregate(as.formula(paste("Abundance ~ Sample +", taxaRank2)), data = mdf, FUN = sum)
     topTaxa <- aggregate(as.formula(paste("Abundance ~ ", taxaRank2)), data = mdf, FUN = sum)
-    ## Keep only nbtax top taxa and aggregate the rest as "Other"
+    ## Keep only taxa-nb top taxa and aggregate the rest as "Other"
     topTax <- as.character(topTaxa[ order(topTaxa[ , "Abundance"], decreasing = TRUE), taxaRank2])
     topTax <- topTax[topTax != "Unknown"]
-    topTax <- topTax[1:min(length(topTax), nbtax)]
+    topTax <- topTax[1:min(length(topTax), taxa-nb)]
     ## Change to character
     mdf[ , taxaRank2] <- as.character(mdf[ , taxaRank2])
     ii <- (mdf[ , taxaRank2] %in% c(topTax, "Unknown"))
@@ -83,9 +83,9 @@ gg_color_hue <- function(n) {
 }
 
 ## Plot composition at specific level within the studied kingdom at the kingdom rank
-## Restricts plot to x tax (define by the user : nbtax)
-composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, nbtax, fill, group, color_bar, barplot) {
-  ggdata = ggformat(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, nbtax)
+## Restricts plot to x tax (define by the user : taxa-nb)
+composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa-nb, fill, group, color_bar, barplot) {
+  ggdata = ggformat(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa-nb)
   p = ggplot(ggdata, aes_string(x = "Sample", y = "Abundance", fill = taxaRank2, color = fill))
   ## Manually change color scale to assign grey to "Unknown" (if any)
   if (!is.null(fill) && any(c("Unknown", "Other") %in% unique(ggdata[, fill]))) {
@@ -96,7 +96,7 @@ composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, nbtax, fill, g
       ## Now add the manually re-scaled layer with Unassigned as grey
       p = p + scale_fill_manual(values=colvals) + scale_color_manual(values = colvals)
   }
-  p = p + geom_bar(stat = "identity", position = "stack") + theme(axis.text.x=element_text(angle=90)) + ggtitle(paste("Composition within", taxaSet1, "(", nbtax, "top", taxaRank2, ")")) + theme_classic() + labs(x="Samples",y="Abundance",fill=fill) + scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) + theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) + theme(axis.title.x=element_text(vjust=-1,color="black",size=13)) + theme(axis.text.y=element_text(hjust=0.8,color="black",size=13)) + theme(axis.title.y=element_text(size=11)) + theme(legend.text=element_text(size=16)) + theme(legend.title=element_text(size=16,face="bold")) + facet_wrap(group, scales = "free_x", nrow = 1) + theme(strip.text=element_text(size=13)) + theme(strip.background = element_rect(colour="black", fill="white", size=1.5, linetype="solid")) +theme(plot.title = element_text(hjust = 0.5, size=20, face="bold"))
+  p = p + geom_bar(stat = "identity", position = "stack") + theme(axis.text.x=element_text(angle=90)) + ggtitle(paste("Composition within", taxaSet1, "(", taxa-nb, "top", taxaRank2, ")")) + theme_classic() + labs(x="Samples",y="Abundance",fill=fill) + scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) + theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) + theme(axis.title.x=element_text(vjust=-1,color="black",size=13)) + theme(axis.text.y=element_text(hjust=0.8,color="black",size=13)) + theme(axis.title.y=element_text(size=11)) + theme(legend.text=element_text(size=16)) + theme(legend.title=element_text(size=16,face="bold")) + facet_wrap(group, scales = "free_x", nrow = 1) + theme(strip.text=element_text(size=13)) + theme(strip.background = element_rect(colour="black", fill="white", size=1.5, linetype="solid")) +theme(plot.title = element_text(hjust = 0.5, size=20, face="bold"))
 
  ggsave(filename=paste(barplot,".svg",sep=""), device="svg", width = 20, height = 12)
  ggsave(filename=paste(barplot,".png",sep=""), device="png", width = 20, height = 12)

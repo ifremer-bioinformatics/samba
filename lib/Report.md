@@ -295,9 +295,9 @@ qiime tools export \
 </span></div><br>
 
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS USED</b></span>
-   <li>genet_crit</li>
-   <li>abund_crit</li>
-   <li>pval_crit</li>
+   <li>gen-crit</li>
+   <li>abund-crit</li>
+   <li>pval-crit</li>
 </ul>
 
 
@@ -308,9 +308,9 @@ qiime dbotu-q2 call-otus \
 --verbose \
 --i-table table.qza \
 --i-sequences rep_seqs.qza \
---p-gen-crit $genet_crit \
---p-abund-crit $abund_crit \
---p-pval-crit $pval_crit \
+--p-gen-crit $gen-crit \
+--p-abund-crit $abund-crit \
+--p-pval-crit $pval-crit \
 --o-representative-sequences dbotu3_seqsqza \
 --o-dbotu-table dbotu3_tableqza > dbotu3_details
 
@@ -427,9 +427,9 @@ If you have sequenced control samples, this step allows you to decontaminate you
 </div><br>
 
 <ul style = "border: 2px dashed #FF0000 ;margin:0;padding:1;"><b><span style ="color:red;">CONFIGURATION SETTINGS USED</b></span>
-   <li>control_list</li>
-   <li>nb_controls</li>
-   <li>nb_samples</li>   
+   <li>control-list</li>
+   <li>nb-controls</li>
+   <li>nb-samples</li>   
 </ul>
 
 

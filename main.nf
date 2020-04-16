@@ -19,11 +19,11 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' -profile conda
+    nextflow run main.nf --input-metadata 'PATH-TO-metadata.csv' --input-manifest 'PATH-TO-manifest.csv' -profile conda
 
     Mandatory arguments:
-      --input_metadata			Path to input file with project samples metadata (csv format).
-      --input_manifest			Path to input file with samples reads files paths (csv format).
+      --input-metadata			Path to input file with project samples metadata (csv format).
+      --input-manifest			Path to input file with samples reads files paths (csv format).
       -profile				Configuration profile to use. Can use multiple (comma separated).
 					Available: conda.
     Generic:
@@ -37,8 +37,8 @@ def helpMessage() {
     Data integrity:
       --data_integrity.primerF		Forward primer with '.' characters instead of degenerated bases.
       --data_integrity.primerR		Reverse primer with '.' characters instead of degenerated bases.
-      --data_integrity.barcode_filter	Percentage of sample barcode supposed to be found in raw reads (default : 90).
-      --data_integrity.primer_filter	Percentage of primers supposed to be found in raw reads (default : 70).
+      --data_integrity.barcode-filter	Percentage of sample barcode supposed to be found in raw reads (default : 90).
+      --data_integrity.primer-filter	Percentage of primers supposed to be found in raw reads (default : 70).
    
     Raw reads cleaning:
       --cutadapt.primerF		Forward primer (to be used in Cutadapt cleaning step).
@@ -58,8 +58,8 @@ def helpMessage() {
 
     Merge ASVs tables:
       --dada2.merge			Set to "true" to merge Dada2 ASVs tables.
-      --dada2.dada2merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
-      --dada2.dada2merge_repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
+      --dada2.merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
+      --dada2.merge-repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
     Distribution based-clustering:
       --dbotu3.gen-crit			dbotu3 Genetic criterion (default = 0.1).
@@ -67,9 +67,9 @@ def helpMessage() {
       --dbotu3.pval-crit		dbotu3 P-value criterion (default = 0.0005).
 
     Taxonomic assignation:
-      --taxo.extract_db			Set to "true" to extract specific region from reference database.
-      --taxo.db_seqs			Path to reference database.
-      --taxo.db_tax			Path to taxonomic reference database.
+      --taxo.extract-db			Set to "true" to extract specific region from reference database.
+      --taxo.seqs-db			Path to reference database.
+      --taxo.taxa-db			Path to taxonomic reference database.
       --taxo.database			Path to preformatted QIIME2 format database.
       --taxo.confidence			RDP confidence threshold (default = 90).
 
@@ -87,7 +87,7 @@ def helpMessage() {
       --stats.taxa-nb			Number of taxa to be displayed in barplots.
       --stats.alpha-div-group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
       --stats.beta-div-var		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
-      --stats.sets-analysis-criterion	According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
+      --stats.sets-analysis-crit	According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
       --stats.hc-method			Hierarchical clustering method (default = 'ward.D2').
 
     """.stripIndent()
@@ -115,18 +115,18 @@ println "Workflow configuration file : $workflow.configFiles"
 println "Single end data ? : $params.single_end"
 
 if(params.dada2.dada2merge == false) {
-    Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
-    println "Manifest file : $params.input_manifest"
+    Channel.fromPath(params.input-manifest, checkIfExists:true).into { manifest ; manifest4integrity }
+    println "Manifest file : $params.input-manifest"
 }
-Channel.fromPath(params.input_metadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
-println "Metadata file : $params.input_metadata"
+Channel.fromPath(params.input-metadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
+println "Metadata file : $params.input-metadata"
 
 //Copy base.config file to output directory for each run
 paramsfile = file('conf/base.config')
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
-if (params.taxo.extract_db == "yes" && params.taxo.database == null ) {
-   println("ERROR : When extract database option (params.taxo.extract_db) is enable, a taxonomy database (params.taxo.database) must be set.");
+if (params.taxo.extract-db == "yes" && params.taxo.database == null ) {
+   println("ERROR : When extract database option (params.taxo.extract-db) is enable, a taxonomy database (params.taxo.database) must be set.");
    System.exit(1);
 }
 
@@ -162,7 +162,7 @@ if(params.stats_only == true) {
     
         script :
         """
-        ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} ${params.single_end} &> data_integrity.log 2>&1
+        ${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode-filter} ${params.data_integrity.primer-filter} ${params.single_end} &> data_integrity.log 2>&1
         if test -f "verifications.bad"; then
             if test -f "data_integrity.csv"; then
                 echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
@@ -269,7 +269,7 @@ if(params.stats_only == true) {
         }
         
         data_table.set { table_picrust2 }
-        data_repseqs.into { dada2_seqs_dbotu3 ; seqs_taxo ; seqs_phylo }
+        data_repseqs.into { dada2_seqs-dbotu3 ; seqs_taxo ; seqs_phylo }
         dada2_summary.set { summary }
         
         /* Run dbotu3 */
@@ -283,7 +283,7 @@ if(params.stats_only == true) {
 
             input :
                 file table from data_table
-                file seqs from dada2_seqs_dbotu3
+                file seqs from dada2_seqs-dbotu3
                 file metadata_dbotu3 from metadata_dbotu3
 
             output :
@@ -300,7 +300,7 @@ if(params.stats_only == true) {
   
             script :
             """
-            ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.genet_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+            ${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.gen-crit} ${params.dbotu3.abund-crit} ${params.dbotu3.pval-crit} completecmd &> q2_dbotu3.log 2>&1
             """
         }
 
@@ -318,8 +318,8 @@ if(params.stats_only == true) {
             publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
     
             input :
-                path table_dir from params.dada2.dada2merge_tabledir
-                path seq_dir from params.dada2.dada2merge_repseqdir
+                path table_dir from params.dada2.merge_tabledir
+                path seq_dir from params.dada2.merge-repseqdir
     
             output :
                 file 'merged_table.qza' into merged_table
@@ -365,7 +365,7 @@ if(params.stats_only == true) {
             file 'ASV_table_with_taxonomy.biom' into biom
             file 'ASV_table_with_taxonomy.tsv' into biom_tsv
             file 'taxonomic_database.qza' optional true into trained_database
-            file 'db_seqs_amplicons.qza' optional true into db_seqs_filtered
+            file 'seqs-db_amplicons.qza' optional true into seqs-db_filtered
             file 'completecmd' into complete_cmd_taxo
     
         //Run only if process is activated in base.config file
@@ -374,7 +374,7 @@ if(params.stats_only == true) {
     
         script :
         """
-        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.db_seqs} ${params.taxo.db_tax} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza db_seqs_amplicons.qza completecmd &> q2_taxo.log 2>&1
+        ${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.seqs-db} ${params.taxo.taxa-db} ${params.taxo.database} ${params.taxo.extract-db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs-db_amplicons.qza completecmd &> q2_taxo.log 2>&1
         """ 
     }
 
@@ -410,7 +410,7 @@ if(params.stats_only == true) {
             """ 
             sed '1d' ${microDecon_table} > microDecon_table
             sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
-            ${baseDir}/lib/microDecon.R microDecon_table ${params.microDecon.control_list} ${params.microDecon.nb_controls} ${params.microDecon.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
+            ${baseDir}/lib/microDecon.R microDecon_table ${params.microDecon.control-list} ${params.microDecon.nb-controls} ${params.microDecon.nb-samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
             cp ${baseDir}/lib/microDecon.R completecmd &>> microDecon.log 2>&1
             
             """
@@ -607,7 +607,7 @@ if(params.stats_only == true) {
 
     script :
     """
-    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.stats.beta_div_criteria} functional_predictions_NMDS ${params.microDecon_enable} ${params.microDecon.control_list} &> picrust2_stats.log 2>&1
+    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.stats.beta-div-var} functional_predictions_NMDS ${params.microDecon_enable} ${params.microDecon.control-list} &> picrust2_stats.log 2>&1
     cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
     """
     }
@@ -637,7 +637,7 @@ process prepare_data_for_stats {
     script :
     """
     ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
-    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick} &>> stats_prepare_data.log 2&>1 
+    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control-list} ${newick} &>> stats_prepare_data.log 2&>1 
     """
 }
     
@@ -673,7 +673,7 @@ process stats_alpha {
     
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.distance} alpha_div_plots ${params.stats.kingdom} ${params.stats.nbtax} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.stats.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.distance} alpha_div_plots ${params.stats.kingdom} ${params.stats.taxa-nb} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.stats.alpha-div-group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
     """
 }
 
@@ -705,7 +705,7 @@ process stats_beta {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.stats.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta-div-var} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.stats.hc-method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
     """
 }
 
@@ -738,7 +738,7 @@ process stats_beta_rarefied {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.stats.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta-div-var} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.stats.hc-method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -771,7 +771,7 @@ process stats_beta_deseq2 {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.stats.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.stats.beta-div-var} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.stats.hc-method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -805,7 +805,7 @@ process stats_beta_css {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_criteria} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.stats.beta-div-var} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc-method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
     """
 }
 
@@ -828,7 +828,7 @@ process stats_sets_analysis {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/sets_analysis.R ${phyloseq_rds} ${params.stats.sets_analysis_criteria} upset_plot &> stats_sets_analysis.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/sets_analysis.R ${phyloseq_rds} ${params.stats.sets-analysis-crit} upset_plot &> stats_sets_analysis.log 2>&1
     touch end_analysis.ok
     """
 }

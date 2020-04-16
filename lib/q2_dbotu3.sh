@@ -51,7 +51,7 @@ pval_crit=${args[11]}
 logcmd=${args[12]}
 
 # Run dbotu2
-cmd="qiime dbotu-q2 call-otus --verbose --i-table $table --i-sequences $seqs --p-gen_crit $gen_crit --p-abund_crit $abund_crit --p-pval_crit $pval_crit --o-representative-sequences $dbotu3_seqsqza --o-dbotu-table $dbotu3_tableqza > $dbotu3_details"
+cmd="qiime dbotu-q2 call-otus --verbose --i-table $table --i-sequences $seqs --p-gen-crit $gen_crit --p-abund-crit $abund_crit --p-pval-crit $pval_crit --o-representative-sequences $dbotu3_seqsqza --o-dbotu-table $dbotu3_tableqza > $dbotu3_details"
 echo $cmd > $logcmd
 eval $cmd
 

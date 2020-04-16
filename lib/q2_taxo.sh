@@ -31,16 +31,16 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ## Command run by nextflow :
-##  q2_taxo.sh ${task.cpus} ${params.taxo.seqs-db} ${params.taxo.taxa-db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs-db_amplicons.qza completecmd > q2_taxo.log 2>&1
+##  q2_taxo.sh ${task.cpus} ${params.taxo.seqs_db} ${params.taxo.taxa_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${data_repseqs} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} Final_ASV_table_with_taxonomy.biom Final_ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd > q2_taxo.log 2>&1
 
 # Arguments 
 args=("$@")
 
 cpus=${args[0]}
-seqs-db=${args[1]}
-taxa-db=${args[2]}
+seqs_db=${args[1]}
+taxa_db=${args[2]}
 database_no_extract=${args[3]}
-extract-db=${args[4]}
+extract_db=${args[4]}
 Fprimer=${args[5]}
 Rprimer=${args[6]}
 confidence=${args[7]}
@@ -53,22 +53,22 @@ dbotu3_summary=${args[13]}
 final_asv_taxo_biom=${args[14]}
 final_asv_taxo_tsv=${args[15]}
 database=${args[16]}
-seqs-db_filtered=${args[17]}
+seqs_db_filtered=${args[17]}
 logcmd=${args[18]}
 
-if [ $extract-db = "yes" ]; then
+if [ $extract_db ]; then
     #Train the classifier
     cmd="qiime feature-classifier extract-reads \
-        --i-sequences $seqs-db \
+        --i-sequences $seqs_db \
         --p-f-primer $Fprimer \
         --p-r-primer $Rprimer \
-        --o-reads $seqs-db_filtered"
+        --o-reads $seqs_db_filtered"
     echo $cmd > $logcmd
     eval $cmd
     
     cmd="qiime feature-classifier fit-classifier-naive-bayes \
-        --i-reference-reads $seqs-db_filtered \
-        --i-reference-taxonomy $taxa-db \
+        --i-reference-reads $seqs_db_filtered \
+        --i-reference-taxonomy $taxa_db \
         --o-classifier $database"
     echo $cmd >> $logcmd
     eval $cmd

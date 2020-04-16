@@ -61,8 +61,8 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
   # Load metatada
   metadata = read.table(metadata, h=T, sep="\t", check.names=F)
   if (microDecon == "true") {
-     control-list =  unlist(strsplit(control,","))
-     metadata = metadata[!metadata[,1] %in% control-list, ]
+     control_list =  unlist(strsplit(control,","))
+     metadata = metadata[!metadata[,1] %in% control_list, ]
   }
   
   # Perform normalization

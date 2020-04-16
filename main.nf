@@ -57,7 +57,7 @@ def helpMessage() {
       --dada2.chimeras			Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
 
     Merge ASVs tables:
-      --dada2.merge			Set to "true" to merge Dada2 ASVs tables.
+      --dada2.merge			Set to true to merge Dada2 ASVs tables.
       --dada2.merge_tabledir	Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
       --dada2.merge_repseqdir	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
@@ -67,7 +67,7 @@ def helpMessage() {
       --dbotu3.pval_crit		dbotu3 P-value criterion (default = 0.0005).
 
     Taxonomic assignation:
-      --taxo.extract_db			Set to "true" to extract specific region from reference database.
+      --taxo.extract_db			Set to true to extract specific region from reference database.
       --taxo.seqs_db			Path to reference database.
       --taxo.taxa_db			Path to taxonomic reference database.
       --taxo.database			Path to preformatted QIIME2 format database.
@@ -125,7 +125,7 @@ println "Metadata file : $params.input_metadata"
 paramsfile = file('conf/base.config')
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
-if (params.taxo.extract_db == "yes" && params.taxo.database == null ) {
+if (params.taxo.extract_db && params.taxo.database == null ) {
    println("ERROR : When extract database option (params.taxo.extract_db) is enable, a taxonomy database (params.taxo.database) must be set.");
    System.exit(1);
 }

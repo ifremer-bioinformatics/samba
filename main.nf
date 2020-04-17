@@ -127,7 +127,7 @@ println "Cmd line: $workflow.commandLine"
 println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
 println "Workflow configuration file : $workflow.configFiles"
-println "Single end data ? : $params.singleEnd"
+println "SingleEnd data ? : $params.singleEnd"
 
 if(params.dada2.dada2merge == false) {
     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
@@ -644,7 +644,7 @@ process q2_picrust2_stats {
 
     script :
     """
-    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.stats.beta_div_criteria} functional_predictions_NMDS ${params.microDecon_enable} ${params.microDecon.control_list} &> picrust2_stats.log 2>&1
+    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.stats.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.microDecon.control_list} &> picrust2_stats.log 2>&1
     cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
     """
 }

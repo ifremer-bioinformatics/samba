@@ -31,8 +31,8 @@ else
   echo "Resume of the previous analysis"
 fi
 
-#run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run main.nf -profile conda --taxo.database /home1/datahome/lquintri/SAMBA-nextflow/tax.databases.test/DATABASE_silva_v132_99_16S.qza $@
+#run nextflow nextmb workflow 
+nextflow -trace nextflow.executor run main.nf -profile conda --database /home1/datahome/lquintri/SAMBA-nextflow/tax.databases.test/DATABASE_silva_v132_99_16S.qza $@
 
 #deactivate nextflow environment
 . $BASEDIR/conf/conda_envs/delenv.sh

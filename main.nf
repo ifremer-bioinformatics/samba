@@ -19,7 +19,7 @@ Usage:
 
 The typical command for running the pipeline is as follows:
 
-	nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' --taxo.database "PATH-TO-preformatted-QIIME-db.qza"	-profile conda
+	nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' --database "PATH-TO-preformatted-QIIME-db.qza"	-profile conda
 
 	Mandatory arguments:
 	--input_metadata		Path to input file with project samples metadata (csv format).
@@ -36,66 +36,66 @@ The typical command for running the pipeline is as follows:
 
 	Data integrity:
 	--data_integrity_enable		Data integrity checking step. Set to false to deactivate this step. (default = true)
-	--data_integrity.primerF	Forward primer with '.' characters instead of degenerated bases.
-	--data_integrity.primerR	Reverse primer with '.' characters instead of degenerated bases.
-	--data_integrity.barcode_filter	Percentage of sample barcode supposed to be found in raw reads (default : 90).
-	--data_integrity.primer_filter	Percentage of primers supposed to be found in raw reads (default : 70).
+	--data_integrity_primerF	Forward primer with '.' characters instead of degenerated bases.
+	--data_integrity_primerR	Reverse primer with '.' characters instead of degenerated bases.
+	--barcode_filter		Percentage of sample barcode supposed to be found in raw reads (default : 90).
+	--primer_filter			Percentage of primers supposed to be found in raw reads (default : 70).
    
 	Raw reads cleaning:
-	--cutadapt.primerF		Forward primer (to be used in Cutadapt cleaning step).
-	--cutadapt.primerR		Reverse primer (to be used in Cutadapt cleaning step).
-	--cutadapt.errorRate		Cutadapt error rate allowed to match primers (default : 0.1).
-	--cutadapt.overlap		Cutadapt overlaping length between primer and read (default : 18).
+	--primerF			Forward primer (to be used in Cutadapt cleaning step).
+	--primerR			Reverse primer (to be used in Cutadapt cleaning step).
+	--errorRate			Cutadapt error rate allowed to match primers (default : 0.1).
+	--overlap			Cutadapt overlaping length between primer and read (default : 18).
 
 	ASVs inference:
-	--dada2.trimLeft		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
-	--dada2.trimRigth		The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
-	--dada2.FtruncLen		Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--dada2.RtruncLen		Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--dada2.FmaxEE			Forward reads with higher than maxEE "expected errors" will be discarded (default = 2).
-	--dada2.RmaxEE			Reverse with higher than maxEE "expected errors" will be discarded (default = 2). 
-	--dada2.minQ			After truncation, reads contain a quality score less than minQ will be discarded (default = 10).
-	--dada2.chimeras		Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
+	--trimLeft			The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
+	--trimRigth			The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
+	--FtruncLen			Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--RtruncLen			Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--FmaxEE			Forward reads with higher than maxEE "expected errors" will be discarded (default = 2).
+	--RmaxEE			Reverse with higher than maxEE "expected errors" will be discarded (default = 2). 
+	--minQ				After truncation, reads contain a quality score less than minQ will be discarded (default = 10).
+	--chimeras			Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
 
 	Merge ASVs tables:
-	--dada2.merge			Set to true to merge Dada2 ASVs tables.
-	--dada2.merge_tabledir		Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
-	--dada2.merge_repseqdir		Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
+	--dada2merge			Set to true to merge Dada2 ASVs tables.
+	--merge_tabledir		Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
+	--merge_repseqdir		Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
 	Distribution based-clustering:
 	--dbotu3_enable			Distribution based-clustering step. Set to false to deactivate this step. (defalut = true)
-	--dbotu3.gen_crit		dbotu3 Genetic criterion (default = 0.1).
-	--dbotu3.abund_crit		dbotu3 Abundance criterion (default = 10).
-	--dbotu3.pval_crit		dbotu3 P-value criterion (default = 0.0005).
+	--gen_crit			dbotu3 Genetic criterion (default = 0.1).
+	--abund_crit			dbotu3 Abundance criterion (default = 10).
+	--pval_crit			dbotu3 P-value criterion (default = 0.0005).
 
 	Taxonomic assignation:
-	--taxo.extract_db		Set to true to extract specific region from reference database.
-	--taxo.seqs_db			Path to reference database.
-	--taxo.taxa_db			Path to taxonomic reference database.
-	--taxo.database			Path to preformatted QIIME2 format database.
-	--taxo.confidence		RDP confidence threshold (default = 90).
+	--extract_db			Set to true to extract specific region from reference database.
+	--seqs_db			Path to reference database.
+	--taxa_db			Path to taxonomic reference database.
+	--database			Path to preformatted QIIME2 format database.
+	--confidence			RDP confidence threshold (default = 90).
 
 	Decontamination:
         --microDecon_enable		Sample decontamination step. Set to true to activate this step. (default = false)
-	--microDecon.control_list	Comma separated list of control samples (e.g : "sample1,sample4,sample7").
-	--microDecon.nb_controls	Number of controled samples listed.
-	--microDecon.nb_samples		Number of samples that are not control samples.
+	--control_list			Comma separated list of control samples (e.g : "sample1,sample4,sample7").
+	--nb_controls			Number of controled samples listed.
+	--nb_samples			Number of samples that are not control samples.
    
 	Predict functionnal abundance:
-	--picrust2.method		HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
-	--picrust2.nsti			Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
+	--method			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
+	--nsti				Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
       
 	Statistics:
 	--stats_alpha_enable		Set to false to deactivate Alpha diversity statistics step. (default = true)
 	--stats_beta_enable		Set to false to deactivate Beta diversity statistics steps. (default = true)
 	--stats_sets_analysis_enable	Set to false to deactivate UpsetR graphs steps. (default = true)
 
-	--stats.kingdom			Kingdom to be displayed in barplots.
-	--stats.taxa_nb			Number of taxa to be displayed in barplots.
-	--stats.alpha_div_group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
-	--stats.beta_div_var		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
-	--stats.sets_analysis_crit	According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
-	--stats.hc_method		Hierarchical clustering method (default = 'ward.D2').
+	--kingdom			Kingdom to be displayed in barplots.
+	--taxa_nb			Number of taxa to be displayed in barplots.
+	--alpha_div_group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
+	--beta_div_var			According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
+	--sets_analysis_crit		According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
+	--hc_method			Hierarchical clustering method (default = 'ward.D2').
 
 	--stats_only			Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
 	--inasv_table			if stats_only is activated, set the path to your own ASV table in tsv format.
@@ -140,7 +140,7 @@ if (params.stats_beta_enable) println "- Beta diversity statistics steps enabled
 if (params.stats_sets_analysis_enable) println "- UpsetR graphs steps enabled"
 println "--------------------------------------------------------------"
 
-if(params.dada2.dada2merge == false) {
+if(params.dada2merge == false) {
     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
     println "Manifest file : $params.input_manifest"
 }
@@ -151,8 +151,8 @@ println "Metadata file : $params.input_metadata"
 paramsfile = file('conf/base.config')
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
-if (params.taxo.extract_db && params.taxo.database == null ) {
-   println("ERROR : When extract database option (params.taxo.extract_db) is enable, a taxonomy database (params.taxo.database) must be set.");
+if (params.extract_db && params.database == null ) {
+   println("ERROR : When extract database option (params.extract_db) is enable, a taxonomy database (params.database) must be set.");
    System.exit(1);
 }
 
@@ -172,11 +172,11 @@ output :
 	file 'data_integrity.csv' optional true into data_integrity_csv
 
 when :
-	params.data_integrity_enable && params.stats_only == false && params.dada2.dada2merge == false
+	params.data_integrity_enable && params.stats_only == false && params.dada2merge == false
 
 script :
 """
-${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.csv verifications.ok verifications.bad ${params.data_integrity.barcode_column_name} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_single_files_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
+${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity_primerF} ${params.data_integrity_primerR} data_integrity.csv verifications.ok verifications.bad ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
 if test -f "verifications.bad"; then
 	if test -f "data_integrity.csv"; then
 		echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
@@ -212,7 +212,7 @@ process q2_import {
 		file 'completecmd' into complete_cmd_import
 
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false
+		params.stats_only == false && params.dada2merge == false
 
 	script :
 	"""
@@ -239,11 +239,11 @@ process q2_cutadapt {
 		file 'completecmd' into complete_cmd_cutadapt
 
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false
+		params.stats_only == false && params.dada2merge == false
 
 	script :
 	"""
-	${baseDir}/lib/q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.cutadapt.errorRate} ${params.cutadapt.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
+	${baseDir}/lib/q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
 	"""
 }
 
@@ -265,17 +265,17 @@ process q2_dada2 {
 		file 'rep_seqs.qzv' into visu_repseps
 		file 'table.qza' into data_table, dada2_table_picrust2
 		file 'table.qzv' into visu_table
-		file 'stats.qza' into stats_table
-		file 'stats.qzv' into visu_stats
+		file 'qza' into stats_table
+		file 'qzv' into visu_stats
 		file 'dada2_output' into dada2_summary
 		file 'completecmd' into complete_cmd_dada2
 
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false
+		params.stats_only == false && params.dada2merge == false
 	
 	script :
 	"""
-	${baseDir}/lib/q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.dada2.trimLeft} ${params.dada2.trimRigth} ${params.dada2.FtruncLen} ${params.dada2.RtruncLen} ${params.dada2.FmaxEE} ${params.dada2.RmaxEE} ${params.dada2.minQ} ${params.dada2.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+	${baseDir}/lib/q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv qza qzv dada2_output ${params.trimLeft} ${params.trimRigth} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
 	"""
 }
 
@@ -303,15 +303,15 @@ process q2_dbotu3 {
 		file 'completecmd' into complete_cmd_dbotu3
 
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false && params.dbotu3_enable
+		params.stats_only == false && params.dada2merge == false && params.dbotu3_enable
 
 	script :
 	"""
-	${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.gen_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+	${baseDir}/lib/q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} completecmd &> q2_dbotu3.log 2>&1
 	"""
 }
 
-/* dada2 merge ASV/seqs */
+/* dada2_merge ASV/seqs */
 process q2_dada2_merge {
 
 	label 'qiime2_env'
@@ -320,8 +320,8 @@ process q2_dada2_merge {
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
 
 	input :
-		path table_dir from params.dada2.merge_tabledir
-		path seq_dir from params.dada2.merge_repseqdir
+		path table_dir from params.merge_tabledir
+		path seq_dir from params.merge_repseqdir
 
 	output :
 		file 'merged_table.qza' into merged_table_picrust2
@@ -330,7 +330,7 @@ process q2_dada2_merge {
 		file 'completecmd' into complete_cmd_dada2merge
 
 	when :
-	params.dada2.dada2merge && params.stats_only == false
+	params.dada2merge && params.stats_only == false
 
 	script :
 	"""
@@ -338,7 +338,7 @@ process q2_dada2_merge {
 	"""
 }
 
-if (params.dada2.dada2merge) {
+if (params.dada2merge) {
    merge_seqs_taxo.set { seqs_taxo }
    merge_summary.set { summary }
 } else {
@@ -383,7 +383,7 @@ process q2_taxonomy {
 
 	script :
 	"""
-	${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.seqs_db} ${params.taxo.taxa_db} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_taxo.log 2>&1
+	${baseDir}/lib/q2_sh ${task.cpus} ${params.seqs_db} ${params.taxa_db} ${params.database} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_log 2>&1
 	""" 
 }
 
@@ -412,14 +412,14 @@ process microDecon_step1 {
 		file 'completecmd' into complete_cmd_microDecon
 		
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
+		params.stats_only == false && params.dada2merge == false && params.microDecon_enable == true
 		
 	shell :
 	""" 
 	sed '1d' ${microDecon_table} > microDecon_table
 	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
-	${baseDir}/lib/microDecon.R microDecon_table ${params.microDecon.control_list} ${params.microDecon.nb_controls} ${params.microDecon.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
-	cp ${baseDir}/lib/microDecon.R completecmd &>> microDecon.log 2>&1
+	${baseDir}/lib/R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> log 2>&1
+	cp ${baseDir}/lib/R completecmd &>> log 2>&1
 	
 	"""
 }
@@ -438,7 +438,7 @@ process microDecon_step2 {
 		file 'decontaminated_ASV_table.qza' into decontam_table_qza, decontam_table_picrust2
 		
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
+		params.stats_only == false && params.dada2merge == false && params.microDecon_enable == true
 		
 	shell :
 	"""
@@ -465,7 +465,7 @@ process microDecon_step3 {
 		file 'decontaminated_ASV.fasta' into decontam_ASV_fasta
 		
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
+		params.stats_only == false && params.dada2merge == false && params.microDecon_enable == true
 		
 	shell :
 	"""
@@ -501,7 +501,7 @@ process microDecon_step4 {
 		file 'completecmd' into complete_cmd_decontam_phylogeny
 		
 	when :
-		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
+		params.stats_only == false && params.dada2merge == false && params.microDecon_enable == true
 		
 	shell :
 	"""
@@ -512,7 +512,7 @@ process microDecon_step4 {
 	"""
 }
 
-if (params.dada2.dada2merge) {
+if (params.dada2merge) {
    merge_seqs_phylo.set { seqs_phylo }
 } else {
    if (params.dbotu3_enable) {
@@ -561,7 +561,7 @@ process q2_phylogeny {
 	"""
 }
 
-if (params.dada2.dada2merge){
+if (params.dada2merge){
    merged_table_picrust2.set { table_picrust2 }
    merge_seqs_picrust2.set { seqs_picrust2 }
 } else {
@@ -611,7 +611,7 @@ process q2_picrust2_analysis {
 
 	script :
 	"""
-	${baseDir}/lib/q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.picrust2.method} ${params.picrust2.nsti} complete_picrust2_cmd &> q2_picrust2.log 2>&1
+	${baseDir}/lib/q2_sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_log 2>&1
 	"""
 }
 
@@ -637,8 +637,8 @@ process q2_picrust2_stats {
 
     script :
     """
-    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.stats.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.microDecon.control_list} &> picrust2_stats.log 2>&1
-    cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
+    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_log 2>&1
+    cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_log 2>&1
     """
 }
 
@@ -665,14 +665,14 @@ process prepare_data_for_stats {
         file newick_tree from newick
     
     output :
-        file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
-        file 'metadata_stats.tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
+        file 'ASV_table_with_taxo_for_tsv' into biom_tsv_stats
+        file 'metadata_tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
         file 'phyloseq.rds' into phyloseq_rds, phyloseq_rds_alpha, phyloseq_rds_beta, phyloseq_rds_beta_rarefied, phyloseq_rds_beta_deseq2, phyloseq_rds_beta_css,phyloseq_rds_set
  
     script :
     """
-    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
-    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
+    ${baseDir}/lib/prepare_data_for_sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_tsv metadata_tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_tsv metadata_tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
     """
 }
    
@@ -703,7 +703,7 @@ process stats_alpha {
     
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.stats.distance} alpha_div_plots ${params.stats.kingdom} ${params.stats.taxa_nb} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.stats.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/alpha_diversity.R phyloseq.rds ${params.distance} alpha_div_plots ${params.kingdom} ${params.taxa_nb} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
     """
 }
 
@@ -734,7 +734,7 @@ process stats_beta {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.stats.beta_div_var} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.stats.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity.R ${phyloseq_rds} ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
     """
 }
 
@@ -766,7 +766,7 @@ process stats_beta_rarefied {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_var} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.stats.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -798,7 +798,7 @@ process stats_beta_deseq2 {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_var} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.stats.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -831,7 +831,7 @@ process stats_beta_css {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.stats.beta_div_var} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.stats.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
     """
 }
 
@@ -853,7 +853,7 @@ process stats_sets_analysis {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/lib/sets_analysis.R ${phyloseq_rds} ${params.stats.sets_analysis_crit} upset_plot &> stats_sets_analysis.log 2>&1
+    Rscript --vanilla ${baseDir}/lib/sets_analysis.R ${phyloseq_rds} ${params.sets_analysis_crit} upset_plot &> stats_sets_analysis.log 2>&1
     touch end_analysis.ok
     """
 }

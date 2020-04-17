@@ -137,7 +137,7 @@ if (params.stats_only) {
 }
 if (params.stats_alpha_enable) println "- Alpha diversity statistics step enabled"
 if (params.stats_beta_enable) println "- Beta diversity statistics steps enabled"
-if (params.stats_sets_analysis_enable) println "- UpsetR graphs steps enabled"
+if (params.stats_sets_analysis_enable) println "- UpsetR graphs step enabled"
 println "--------------------------------------------------------------"
 
 if(params.dada2merge == false) {

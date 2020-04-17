@@ -116,7 +116,7 @@ if (params.help){
     helpMessage()
     exit 0
 }
-
+println "--------------------------------------------------------------"
 println "Workflow for project : $params.projectName"
 println "Workflow description : $workflow.manifest.description"
 println "Workflow gitLab URL : $workflow.manifest.homePage"
@@ -125,8 +125,8 @@ println "Workflow source code : $workflow.projectDir"
 println "Cmd line: $workflow.commandLine"
 println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
-println "Workflow configuration file : $workflow.configFiles"
-println "SingleEnd data ? : $params.singleEnd"
+if (params.singleEnd) println "Going to process SingleEnd data"
+println "--------------------------------------------------------------"
 println "Optionnal activated steps : "
 if (params.stats_only) {
    println "- Statistics steps only activated"
@@ -138,6 +138,7 @@ if (params.stats_only) {
 if (params.stats_alpha_enable) println "- Alpha diversity statistics step enabled"
 if (params.stats_beta_enable) println "- Beta diversity statistics steps enabled"
 if (params.stats_sets_analysis_enable) println "- UpsetR graphs steps enabled"
+println "--------------------------------------------------------------"
 
 if(params.dada2.dada2merge == false) {
     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }

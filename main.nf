@@ -35,6 +35,7 @@ Usage:
 	-name				Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
 
 	Data integrity:
+	--data_integrity_enable		Data integrity checking step. Set to false to deactivate this step. (default = true)
 	--data_integrity.primerF	Forward primer with '.' characters instead of degenerated bases.
 	--data_integrity.primerR	Reverse primer with '.' characters instead of degenerated bases.
 	--data_integrity.barcode_filter	Percentage of sample barcode supposed to be found in raw reads (default : 90).
@@ -62,6 +63,7 @@ Usage:
 	--dada2.merge_repseqdir		Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
 	Distribution based-clustering:
+	--dbotu3_enable			Distribution based-clustering step. Set to false to deactivate this step. (defalut = true)
 	--dbotu3.gen_crit		dbotu3 Genetic criterion (default = 0.1).
 	--dbotu3.abund_crit		dbotu3 Abundance criterion (default = 10).
 	--dbotu3.pval_crit		dbotu3 P-value criterion (default = 0.0005).
@@ -74,6 +76,7 @@ Usage:
 	--taxo.confidence		RDP confidence threshold (default = 90).
 
 	Decontamination:
+        --microDecon_enable		Sample decontamination step. Set to true to activate this step. (default = false)
 	--microDecon.control_list	Comma separated list of control samples (e.g : "sample1,sample4,sample7").
 	--microDecon.nb_controls	Number of controled samples listed.
 	--microDecon.nb_samples		Number of samples that are not control samples.
@@ -83,12 +86,24 @@ Usage:
 	--picrust2.nsti			Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
       
 	Statistics:
+	--prepare_data_for_stats_enable	Set to false to deactivate Phyloseq object creation. (default = true)
+	--stats_alpha_enable		Set to false to deactivate Alpha diversity statistics step. (default = true)
+	--stats_beta_enable		Set to false to deactivate Beta diversity statistics steps. (default = true)
+	--stats_sets_analysis_enable	Set to false to deactivate UpsetR graphs steps. (default = true)
+
 	--stats.kingdom			Kingdom to be displayed in barplots.
 	--stats.taxa_nb			Number of taxa to be displayed in barplots.
 	--stats.alpha_div_group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
 	--stats.beta_div_var		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
 	--stats.sets_analysis_crit	According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
 	--stats.hc_method		Hierarchical clustering method (default = 'ward.D2').
+
+	--stats_only			Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
+	--inasv_table			if stats_only is activated, set the path to your own ASV table in tsv format.
+	--newick			if stats_only is activated, set the path to your own phylogenetic tree in newick format.
+	
+	Final analysis report:
+	--report_enable			Set to false to deactivate report creation. (default = true)
 
     """.stripIndent()
 }
@@ -243,7 +258,7 @@ process q2_dada2 {
 		file metadata from metadata 
 
 	output :
-		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_phylo, dada2_seqs_picrust2
+		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2
 		file 'rep_seqs.qzv' into visu_repseps
 		file 'table.qza' into data_table, dada2_table_picrust2
 		file 'table.qzv' into visu_table
@@ -277,7 +292,7 @@ process q2_dbotu3 {
 
 	output :
 		file 'dbotu3_details.txt' into dbotu3_details
-		file 'dbotu3_seqs.qza' into dbotu3_seqs, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2
+		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2
 		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
 		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2
 		file 'dbotu3_table.qzv' into dbotu3_table_visu
@@ -421,7 +436,7 @@ process microDecon_step2 {
 		file table4microDecon from decontam_table_step2
 
 	output :
-		file 'decontaminated_ASV_table.qza' into decontam_table_qza, microdecon_table_picrust2
+		file 'decontaminated_ASV_table.qza' into decontam_table_qza, decontam_table_picrust2
 		
 	when :
 		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
@@ -460,13 +475,10 @@ process microDecon_step3 {
 	"""
 }
 
-if (params.dada2.dada2merge) {
-   merge_seqs_phylo.set { seqs_phylo }
-}
 if (params.dbotu3_enable) {
-   dbotu3_seqs_phylo.set { seqs_phylo }
-} else { 
-   dada2_seqs_phylo.set { seqs_pĥylo }
+      dbotu3_seqs_decontam.set { seqs_decontam }
+} else {
+      dada2_seqs_decontam.set { seqs_decontam }
 }
 
 /* Run phylogeny from decontaminated ASV sequences */
@@ -481,19 +493,19 @@ process microDecon_step4 {
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
 
 	input :
-		file decontam_ASV_fasta from seqs_phylo
+		file decontam_ASV_fasta from seqs_decontam
 
 	output :
-		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_picrust2
-		file 'aligned_repseq.qza' into aligned_repseq
-		file 'masked-aligned_repseq.qza' into masked_aligned
-		file 'tree.qza' into tree
-		file 'tree.log' into tree_bestmodel_log
-		file 'rooted_tree.qza' into rooted_tree
-		file 'tree_export_dir' into tree_export_dir
-		file 'tree_export.log' into tree_export_log
-		file 'tree.nwk' into newick
-		file 'completecmd' into complete_cmd_phylogeny
+		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2
+		file 'aligned_repseq.qza' into decontam_aligned_repseq
+		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
+		file 'tree.qza' into decontam_tree
+		file 'tree.log' into decontam_tree_bestmodel_log
+		file 'rooted_tree.qza' into decontam_rooted_tree
+		file 'tree_export_dir' into decontam_tree_export_dir
+		file 'tree_export.log' into decontam_tree_export_log
+		file 'tree.nwk' into decontam_newick
+		file 'completecmd' into complete_cmd_decontam_phylogeny
 		
 	when :
 		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
@@ -507,8 +519,21 @@ process microDecon_step4 {
 	"""
 }
 
-/* Run phylogeny construction */
+if (params.dada2.dada2merge) {
+   merge_seqs_phylo.set { seqs_phylo }
+} else {
+   if (params.dbotu3_enable) {
+      if (params.microDecon_enable) {
+         decontam_seqs_phylo.set { seqs_phylo }
+      } else {
+         dbotu3_seqs_phylo.set { seqs_phylo }
+      }
+   } else { 
+      dada2_seqs_phylo.set { seqs_pĥylo }
+   }
+}
 
+/* Run phylogeny construction */
 process q2_phylogeny {
 
 	label 'qiime2_env'
@@ -546,14 +571,19 @@ process q2_phylogeny {
 if (params.dada2.dada2merge){
    merged_table_picrust2.set { table_picrust2 }
    merge_seqs_picrust2.set { seqs_picrust2 }
-} else if (params.dbotu3_enable) {
-   dbotu3_table_picrust2.set { table_picrust2 }
-   dbotu3_seqs_picrust2.set { seqs_picrust2 }
-} else if (params.microDecon_enable) {
-   decontam_seqs_picrust2.set { seqs_picrust2 }
 } else {
-   dada2_table_picrust2.set { table_picrust2 }
-   dada2_seqs_picrust2.set { seqs_picrust2 }
+   if (params.dbotu3_enable) {
+      if (params.microDecon_enable) {
+         decontam_table_picrust2.set { table_picrust2 }
+         decontam_seqs_picrust2.set { seqs_picrust2 }
+      } else {
+         dbotu3_table_picrust2.set { table_picrust2 }
+         dbotu3_seqs_picrust2.set { seqs_picrust2 }
+      }
+    } else {
+      dada2_table_picrust2.set { table_picrust2 }
+      dada2_seqs_picrust2.set { seqs_picrust2 }
+   }
 }
 
 /* Run functional predictions */

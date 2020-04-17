@@ -56,7 +56,7 @@ database=${args[16]}
 seqs_db_filtered=${args[17]}
 logcmd=${args[18]}
 
-if [ $extract_db ]; then
+if [ "$extract_db" = true ]; then
     #Train the classifier
     cmd="qiime feature-classifier extract-reads \
         --i-sequences $seqs_db \

@@ -265,8 +265,8 @@ process q2_dada2 {
 		file 'rep_seqs.qzv' into visu_repseps
 		file 'table.qza' into data_table, dada2_table_picrust2
 		file 'table.qzv' into visu_table
-		file 'qza' into stats_table
-		file 'qzv' into visu_stats
+		file 'stats.qza' into stats_table
+		file 'stats.qzv' into visu_stats
 		file 'dada2_output' into dada2_summary
 		file 'completecmd' into complete_cmd_dada2
 
@@ -275,7 +275,7 @@ process q2_dada2 {
 	
 	script :
 	"""
-	${baseDir}/lib/q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv qza qzv dada2_output ${params.trimLeft} ${params.trimRigth} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+	${baseDir}/lib/q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.trimLeft} ${params.trimRigth} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
 	"""
 }
 
@@ -311,7 +311,7 @@ process q2_dbotu3 {
 	"""
 }
 
-/* dada2_merge ASV/seqs */
+/* dada2 merge ASV/seqs */
 process q2_dada2_merge {
 
 	label 'qiime2_env'
@@ -383,7 +383,7 @@ process q2_taxonomy {
 
 	script :
 	"""
-	${baseDir}/lib/q2_sh ${task.cpus} ${params.seqs_db} ${params.taxa_db} ${params.database} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_log 2>&1
+	${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.seqs_db} ${params.taxa_db} ${params.database} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_taxo.log 2>&1
 	""" 
 }
 
@@ -418,8 +418,8 @@ process microDecon_step1 {
 	""" 
 	sed '1d' ${microDecon_table} > microDecon_table
 	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
-	${baseDir}/lib/R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> log 2>&1
-	cp ${baseDir}/lib/R completecmd &>> log 2>&1
+	${baseDir}/lib/microDecon.R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
+	cp ${baseDir}/lib/microDecon.R completecmd &>> microDecon.log 2>&1
 	
 	"""
 }
@@ -611,7 +611,7 @@ process q2_picrust2_analysis {
 
 	script :
 	"""
-	${baseDir}/lib/q2_sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_log 2>&1
+	${baseDir}/lib/q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_picrust2.log 2>&1
 	"""
 }
 
@@ -637,8 +637,8 @@ process q2_picrust2_stats {
 
     script :
     """
-    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_log 2>&1
-    cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_log 2>&1
+    ${baseDir}/lib/functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+    cp ${baseDir}/lib/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
     """
 }
 
@@ -665,14 +665,14 @@ process prepare_data_for_stats {
         file newick_tree from newick
     
     output :
-        file 'ASV_table_with_taxo_for_tsv' into biom_tsv_stats
-        file 'metadata_tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
+        file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
+        file 'metadata_stats.tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
         file 'phyloseq.rds' into phyloseq_rds, phyloseq_rds_alpha, phyloseq_rds_beta, phyloseq_rds_beta_rarefied, phyloseq_rds_beta_deseq2, phyloseq_rds_beta_css,phyloseq_rds_set
  
     script :
     """
-    ${baseDir}/lib/prepare_data_for_sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_tsv metadata_tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
-    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_tsv metadata_tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
+    ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
     """
 }
    

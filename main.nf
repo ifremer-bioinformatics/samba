@@ -17,9 +17,9 @@ def helpMessage() {
 
 Usage:
 
-	The typical command for running the pipeline is as follows:
+The typical command for running the pipeline is as follows:
 
-	nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' -profile conda
+	nextflow run main.nf --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' --taxo.database "PATH-TO-preformatted-QIIME-db.qza"	-profile conda
 
 	Mandatory arguments:
 	--input_metadata		Path to input file with project samples metadata (csv format).
@@ -86,7 +86,6 @@ Usage:
 	--picrust2.nsti			Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
       
 	Statistics:
-	--prepare_data_for_stats_enable	Set to false to deactivate Phyloseq object creation. (default = true)
 	--stats_alpha_enable		Set to false to deactivate Alpha diversity statistics step. (default = true)
 	--stats_beta_enable		Set to false to deactivate Beta diversity statistics steps. (default = true)
 	--stats_sets_analysis_enable	Set to false to deactivate UpsetR graphs steps. (default = true)
@@ -100,7 +99,7 @@ Usage:
 
 	--stats_only			Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
 	--inasv_table			if stats_only is activated, set the path to your own ASV table in tsv format.
-	--newick			if stats_only is activated, set the path to your own phylogenetic tree in newick format.
+	--innewick			if stats_only is activated, set the path to your own phylogenetic tree in newick format.
 	
 	Final analysis report:
 	--report_enable			Set to false to deactivate report creation. (default = true)
@@ -128,6 +127,17 @@ println "Workflow working/temp directory : $workflow.workDir"
 println "Workflow output/publish directory : $params.outdir"
 println "Workflow configuration file : $workflow.configFiles"
 println "SingleEnd data ? : $params.singleEnd"
+println "Optionnal activated steps : "
+if (params.stats_only) {
+   println "- Statistics steps only activated"
+} else {
+   if (params.data_integrity_enable) println "- Data integrity step enabled"
+   if (params.dbotu3_enable) println "- Distribution based-clustering step enabled"
+   if (params.microDecon_enable) println "- Decontamination step enabled"
+}
+if (params.stats_alpha_enable) println "- Alpha diversity statistics step enabled"
+if (params.stats_beta_enable) println "- Beta diversity statistics steps enabled"
+if (params.stats_sets_analysis_enable) println "- UpsetR graphs steps enabled"
 
 if(params.dada2.dada2merge == false) {
     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
@@ -145,14 +155,6 @@ if (params.taxo.extract_db && params.taxo.database == null ) {
    System.exit(1);
 }
 
-if(params.stats_only == true) {
-
-    Channel.fromPath(params.newick, checkIfExists:true).set { newick }
-    Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
-    println "Input ASV table used for statistics steps : $params.inasv_table"
-
-}
-	
 /* Check data integrity */
 
 process data_integrity {
@@ -370,7 +372,7 @@ process q2_taxonomy {
 		file 'ASV_taxonomy.tsv' into taxonomy_tsv
 		file 'taxo_output' into taxo_summary
 		file 'ASV_table_with_taxonomy.biom' into biom
-		file 'ASV_table_with_taxonomy.tsv' into biom_tsv
+		file 'ASV_table_with_taxonomy.tsv' into biom_tsv, biom_tsv_decontam
 		file 'taxonomic_database.qza' optional true into trained_database
 		file 'seqs_db_amplicons.qza' optional true into seqs_db_filtered
 		file 'completecmd' into complete_cmd_taxo
@@ -382,10 +384,6 @@ process q2_taxonomy {
 	"""
 	${baseDir}/lib/q2_taxo.sh ${task.cpus} ${params.taxo.seqs_db} ${params.taxo.taxa_db} ${params.taxo.database} ${params.taxo.extract_db} ${params.cutadapt.primerF} ${params.cutadapt.primerR} ${params.taxo.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_taxo.log 2>&1
 	""" 
-}
-
-if(params.microDecon_enable == true) {
-    biom_tsv.set { tsv }
 }
 
 /* Run sample decontamination using MicroDecon */
@@ -404,10 +402,10 @@ process microDecon_step1 {
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_microDecon -> "cmd/${task.process}_complete.sh" }
 
 	input :
-		file microDecon_table from biom_tsv
+		file microDecon_table from biom_tsv_decontam
 
 	output :
-		file 'decontaminated_ASV_table.tsv' into decontam_table, decontam_table_step2, decontam_table_step3, tsv
+		file 'decontaminated_ASV_table.tsv' into decontam_table, decontam_table_step2, decontam_table_step3
 		file 'abundance_removed.txt' into abund_removed
 		file 'ASV_removed.txt' into ASV_removed
 		file 'completecmd' into complete_cmd_microDecon
@@ -463,7 +461,7 @@ process microDecon_step3 {
 
 	output :
 		file 'decontaminated_ASV_ID.txt' into decontam_ASV_ID
-		file 'decontaminated_ASV.fasta' into decontam_ASV_fasta,seqs_phylo
+		file 'decontaminated_ASV.fasta' into decontam_ASV_fasta
 		
 	when :
 		params.stats_only == false && params.dada2.dada2merge == false && params.microDecon_enable == true
@@ -473,12 +471,6 @@ process microDecon_step3 {
 	cut -d \$'\t' -f1 ${decontam_table} | sed '1d' > decontaminated_ASV_ID.txt
 	seqtk subseq ${dada2_summary}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
 	"""
-}
-
-if (params.dbotu3_enable) {
-      dbotu3_seqs_decontam.set { seqs_decontam }
-} else {
-      dada2_seqs_decontam.set { seqs_decontam }
 }
 
 /* Run phylogeny from decontaminated ASV sequences */
@@ -493,7 +485,7 @@ process microDecon_step4 {
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
 
 	input :
-		file decontam_ASV_fasta from seqs_decontam
+		file ASV_fasta from decontam_ASV_fasta
 
 	output :
 		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2
@@ -512,7 +504,7 @@ process microDecon_step4 {
 		
 	shell :
 	"""
-	qiime tools import --input-path ${decontam_ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
+	qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
 	${baseDir}/lib/q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd &> q2_phylogeny.log 2>&1
 	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
 	
@@ -555,7 +547,7 @@ process q2_phylogeny {
 		file 'rooted_tree.qza' into rooted_tree
 		file 'tree_export_dir' into tree_export_dir
 		file 'tree_export.log' into tree_export_log
-		file 'tree.nwk' into newick
+		file 'tree.nwk' into newick_phylo
 		file 'completecmd' into complete_cmd_phylogeny
 
 	when :
@@ -649,6 +641,16 @@ process q2_picrust2_stats {
     """
 }
 
+if (params.stats_only) {
+    Channel.fromPath(params.innewick, checkIfExists:true).set { newick }
+    Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
+    println "Input ASV table used for statistics steps : $params.inasv_table"
+} else {
+   if (params.microDecon_enable) decontam_table.set { tsv }
+   else biom_tsv.set { tsv }
+   newick_phylo.set { newick }
+}
+	
 process prepare_data_for_stats {
     
     label 'r_stats_env'
@@ -659,20 +661,17 @@ process prepare_data_for_stats {
     input :
         file metadata from metadata4stats
         file biom_tsv from tsv
-        file newick from newick
+        file newick_tree from newick
     
     output :
         file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
         file 'metadata_stats.tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
         file 'phyloseq.rds' into phyloseq_rds, phyloseq_rds_alpha, phyloseq_rds_beta, phyloseq_rds_beta_rarefied, phyloseq_rds_beta_deseq2, phyloseq_rds_beta_css,phyloseq_rds_set
  
-    when :
-        params.prepare_data_for_stats_enable
-    
     script :
     """
     ${baseDir}/lib/prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
-    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick} &>> stats_prepare_data.log 2&>1 
+    Rscript --vanilla ${baseDir}/lib/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.microDecon.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
     """
 }
    

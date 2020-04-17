@@ -18,7 +18,6 @@ then
     export NXF_TEMP=$BASEDIR/.nxf_temp
     mkdir -p $NXF_TEMP
     export tax_db_dir=$BASEDIR/tax.databases.test
-    #sed -i "s|/PATH-TO/database.qza|$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza|g" conf/base.config
     #download taxonomic database
     DB=$tax_db_dir/DATABASE_silva_v132_99_16S.qza
   if [ -f "$DB" ]

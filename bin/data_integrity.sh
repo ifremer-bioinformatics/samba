@@ -1,39 +1,10 @@
 #!/usr/bin/env bash
 ###############################################################################
 ##                                                                           ##
-## Script name: data_integrity.sh                                          ####
-##                                                                           ##
 ## Purpose of script: Check integrity of raw data                            ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2019-08-29                                               ####
-## Modified on: 2020-01-31                                                 ####
-##                                                                           ##
-## Email: samba-sebimer@ifremer.fr                                         ####
-##                                                                           ##
-## Copyright (c) SeBiMER, august-2019                                      ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ## 
-##                                                                           ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
-##                                                                           ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-## Command run by nextflow :
-## data_integrity.sh ${manifest} ${metadata} ${params.data_integrity.primerF} ${params.data_integrity.primerR} data_integrity.txt verifications.ok verifications.bad ${params.data_integrity.barcode} ${params.data_integrity.sampleid_column_name} ${params.data_integrity.R1_files_column_name} ${params.data_integrity.R2_files_column_name} ${params.data_integrity.barcode_filter} ${params.data_integrity.primer_filter} > data_integrity.log 2>&1
+###############################################################################
 
-# Arguments
 args=("$@")
 manifest=${args[0]}
 metadata=${args[1]}

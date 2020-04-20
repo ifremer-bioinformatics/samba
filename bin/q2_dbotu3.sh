@@ -1,39 +1,10 @@
 #!/usr/bin/env bash
 ###############################################################################
 ##                                                                           ##
-## Script name: q2_dbotu3.sh                                               ####
-##                                                                           ##
 ## Purpose of script: Clustering of AVSs to reduce PCR errors                ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2020-02-25                                               ####
-## Modified on: 2020-02-25                                                 ####
-##                                                                           ##
-## Email: samba-sebimer@ifremer.fr                                         ####
-##                                                                           ##
-## Copyright (c) SeBiMER, february-2020                                    ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ## 
-##                                                                           ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
-##                                                                           ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-## Command run by nextflow :
-## q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.dbotu3.gen_crit} ${params.dbotu3.abund_crit} ${params.dbotu3.pval_crit} completecmd > q2_dbotu3.log 2>&1
+###############################################################################
 
-# Arguments 
 args=("$@") 
 
 table=${args[0]}

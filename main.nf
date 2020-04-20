@@ -262,9 +262,9 @@ process q2_dada2 {
 		file metadata from metadata 
 
 	output :
-		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2
+		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
 		file 'rep_seqs.qzv' into visu_repseps
-		file 'table.qza' into data_table, dada2_table_picrust2
+		file 'table.qza' into data_table, dada2_table_picrust2, dada2_table_ancom
 		file 'table.qzv' into visu_table
 		file 'stats.qza' into stats_table
 		file 'stats.qzv' into visu_stats
@@ -296,9 +296,9 @@ process q2_dbotu3 {
 
 	output :
 		file 'dbotu3_details.txt' into dbotu3_details
-		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2
+		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
 		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
-		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2
+		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
 		file 'dbotu3_table.qzv' into dbotu3_table_visu
 		file 'dbotu3_output' into dbotu3_summary
 		file 'completecmd' into complete_cmd_dbotu3
@@ -325,8 +325,8 @@ process q2_dada2_merge {
 		path seq_dir from params.merge_repseqdir
 
 	output :
-		file 'merged_table.qza' into merged_table_picrust2
-		file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2
+		file 'merged_table.qza' into merged_table_picrust2, merged_table_ancom
+		file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merged_seqs_ancom
 		file 'merge_output' into merge_summary
 		file 'completecmd' into complete_cmd_dada2merge
 
@@ -436,7 +436,7 @@ process microDecon_step2 {
 		file table4microDecon from decontam_table_step2
 
 	output :
-		file 'decontaminated_ASV_table.qza' into decontam_table_qza, decontam_table_picrust2
+		file 'decontaminated_ASV_table.qza' into decontam_table_qza, decontam_table_picrust2, decontam_table_ancom
 		
 	when :
 		params.stats_only == false && params.dada2merge == false && params.microDecon_enable == true
@@ -490,7 +490,7 @@ process microDecon_step4 {
 		file ASV_fasta from decontam_ASV_fasta
 
 	output :
-		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2
+		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
 		file 'aligned_repseq.qza' into decontam_aligned_repseq
 		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
 		file 'tree.qza' into decontam_tree
@@ -643,6 +643,24 @@ process q2_picrust2_stats {
     """
 }
 
+if (params.dada2merge){
+   merged_table_ancom.set { table_ancom }
+   merge_seqs_ancom.set { seqs_ancom }
+} else {
+   if (params.dbotu3_enable) {
+      if (params.microDecon_enable) {
+         decontam_table_ancom.set { table_ancom }
+         decontam_seqs_ancom.set { seqs_ancom }
+      } else {
+         dbotu3_table_ancom.set { table_ancom }
+         dbotu3_seqs_ancom.set { seqs_ancom }
+      }
+    } else {
+      dada2_table_ancom.set { table_ancom }
+      dada2_seqs_ancom.set { seqs_ancom }
+   }
+}
+
 /* Differential abundance testing with ANCOM  */
 process q2_ancom {
 
@@ -653,9 +671,9 @@ process q2_ancom {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
 
     input :
-        file table4ancom from ...
+        file table4ancom from table_ancom
         file metadata4ancom from metadata4ancom
-        file taxonomy4ancom from ...
+        file taxonomy4ancom from seqs_ancom
     output :
         file 'compo_table*.qza' into compo_table
         file 'ancom_*.qzv' into ancom_table

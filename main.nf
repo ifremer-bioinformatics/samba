@@ -176,7 +176,7 @@ when :
 
 script :
 """
-${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.data_integrity_primerF} ${params.data_integrity_primerR} data_integrity.csv verifications.ok verifications.bad ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
+${baseDir}/lib/data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv verifications.ok verifications.bad ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
 if test -f "verifications.bad"; then
 	if test -f "data_integrity.csv"; then
 		echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"

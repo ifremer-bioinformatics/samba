@@ -37,8 +37,9 @@
 args=("$@")
 manifest=${args[0]}
 metadata=${args[1]}
-primerF=${args[2]}
-primerR=${args[3]}
+#Replace degenerated bases by dots in primers
+primerF=$(echo "${args[2]}"|sed -e 's/[RYSWKMBDHVN]/\./g')
+primerR=$(echo "${args[3]}"|sed -e 's/[RYSWKMBDHVN]/\./g')
 summary=${args[4]}
 verif_ok=${args[5]}
 verif_bad=${args[6]}

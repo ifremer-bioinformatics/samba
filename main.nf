@@ -82,7 +82,10 @@ The typical command for running the pipeline is as follows:
 	Predict functionnal abundance:
 	--method			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
 	--nsti				Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
-      
+
+	Differential abundance testing:
+	--ancor_var         According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis.
+	
 	Statistics:
 	--stats_alpha_enable		Set to false to deactivate Alpha diversity statistics step. (default = true)
 	--stats_beta_enable		Set to false to deactivate Beta diversity statistics steps. (default = true)
@@ -142,7 +145,7 @@ if(params.dada2merge == false) {
     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest ; manifest4integrity }
     println "Manifest file : $params.input_manifest"
 }
-Channel.fromPath(params.input_metadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 }
+Channel.fromPath(params.input_metadata, checkIfExists:true).into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
 println "Metadata file : $params.input_metadata"
 
 //Copy base.config file to output directory for each run
@@ -637,6 +640,35 @@ process q2_picrust2_stats {
     """
     functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
     cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
+    """
+}
+
+/* Differential abundance testing with ANCOM  */
+process q2_ancom {
+
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'   
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
+
+    input :
+        file table4ancom from ...
+        file metadata4ancom from metadata4ancom
+        file taxonomy4ancom from ...
+    output :
+        file 'compo_table*.qza' into compo_table
+        file 'ancom_*.qzv' into ancom_table
+        file 'export_ancom_*' into export_ancom
+        file 'collapsed_table_*.qza' into collapsed_taxolevel_table
+        file 'completecmd_ancom' into completecmd_ancom
+
+    when :
+        params.stats_only == false
+
+    script :
+    """
+    q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata4ancom} ${params.ancom_var} ancom_${params.ancom_var}.qzv export_ancom_${params.ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${params.ancom_var}_family.qzv export_ancom_${params.ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${params.ancom_var}_genus.qzv export_ancom_${params.ancom_var}_genus completecmd_ancom > q2_ANCOM.log 2>&1
     """
 }
 

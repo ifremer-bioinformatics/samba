@@ -1,41 +1,9 @@
 #!/usr/bin/env Rscript
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the SAMBA-nextflow workflow                   ####
-##                                                                           ##
 ## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2020-04-02                                               ####
-## Modified on: 2020-04-02                                                 ####
-##                                                                           ##
-## Emails: samba-sebimer@ifremer.fr                                        ####
-##                                                                           ##
-## Copyright (c) SeBiMER, april-2020                                       ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ## 
-##                                                                           ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
-##                                                                           ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-##                                                                           ##
-## Notes: This part of the script performs identification og all possible    ##
-##        logical relationships between several sets of present in your      ##
-##        ASV table based on your specified variable                         ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+###############################################################################
 
 ## Load up the needed packages ####
 requiredPackages = c("phyloseq","UpSetR","svglite","dplyr")

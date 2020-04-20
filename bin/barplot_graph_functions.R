@@ -1,30 +1,9 @@
 #!/usr/bin/env Rscript
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the SAMBA-nextflow workflow                   ####
-##                                                                           ##
 ## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2019-12-13                                               ####
-## Modified on: 2020-01-31                                                 ####
-##                                                                           ##
-## Emails: samba-sebimer@ifremer.fr                                        ####
-##									     ##
-## Copyright (c) SeBiMER, december-2019                                    ####
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-##                                                                           ##
-## Note: This part contains the function for construction of the barplot     ##   
-## 									     ##
-## Modified from https://raw.githubusercontent.com/mahendra-mariadassou/     ##
-## phyloseq-extended/master/R/graphical_methods.R"                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+###############################################################################
 
 ## return data frame for relative abundance plots in ggplot2
 ## Return relative abundance of top taxa_nb at the taxaRank2 level
@@ -47,7 +26,6 @@ ggformat <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb) {
     }
     mdf <- melt(data = otutab, varnames = c("OTU", "Sample"))
     colnames(mdf)[3] <- "Abundance"
-    ## mdf <- mdf[mdf$Abundance > 0, ] ## Remove absent taxa
     ## Add taxonomic information and replace NA and unclassified Unknown
     tax <- as(tax_table(PHYLOSEQ), "matrix")
     tax[is.na(tax)] <- "Unknown"

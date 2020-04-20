@@ -2,40 +2,9 @@
 
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the SAMBA-nextflow workflow                   ####
-##                                                                           ##
 ## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2019-08-29                                               ####
-## Modified on: 2020-01-24                                                 ####
-##                                                                           ##
-## Email: samba-sebimer@ifremer.fr                                         ####
-## 									     ##
-## Copyright (c) SeBiMER, august-2019                                      ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ## 
-##									     ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt 		     ##
-## 									     ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-##                                                                           ##
-## Notes: This part of the script performs only the alpha diversity and      ##
-##        taxonomic diversity based on your data                             ##   
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+###############################################################################
 
 ## Load up the needed packages ####
 requiredPackages = c("dplyr","stringr","ggplot2","svglite","vegan","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager","phyloseq", "microbiome")
@@ -205,7 +174,7 @@ main <- function() {
     workflow_dir = args[14]
     plot_rarefaction = args[15]
     # Get plot_composition function
-    if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/barplot_graph_functions.R")))
+    if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/barplot_graph_functions.R")))
     # Run alpha diversity analyses
     alphadiversity(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, distance, group, plot_rarefaction)
 }

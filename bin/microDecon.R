@@ -1,41 +1,9 @@
 #!/usr/bin/env Rscript
-
 ###############################################################################
-##                                                                           ##
-## Script name: microDecon.R                                               ####
 ##                                                                           ##
 ## Purpose of script: Filter contaminants from ASV table                     ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2020-02-28                                               ####
-## Modified on: 2020-03-05                                                 ####
-##                                                                           ##
-## Email: samba-sebimer@ifremer.fr                                         ####
-##                                                                           ##
-## Copyright (c) SeBiMER, february-2020                                    ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ## 
-##                                                                           ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
-##                                                                           ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-##                                                                           ##
-## Notes: This part of the script performs decontamination of your data      ##
-##        based on control samples using microDecon R package                ##   
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+###############################################################################
 
 ## Load up the needed packages ####
 requiredPackages = c("microDecon","dplyr")

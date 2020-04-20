@@ -11,12 +11,6 @@ for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
-#                                                                               #
-# Function to standardize ordination analysis of the functional predictions     #
-#                                                                               #
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
-
 functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDecon,control) {
   
   # Format functional predictions tables ####

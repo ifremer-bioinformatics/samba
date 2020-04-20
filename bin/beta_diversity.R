@@ -1,42 +1,9 @@
 #!/usr/bin/env Rscript
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the SAMBA-nextflow workflow                   ####
-##                                                                           ##
 ## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2019-08-29                                               ####
-## Modified on: 2020-01-31                                                 ####
-##                                                                           ##
-## Emails: samba-sebimer@ifremer.fr                                        ####
-##                                                                           ##
-## Copyright (c) SeBiMER, august-2019                                      ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ## 
-##                                                                           ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
-##                                                                           ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-##                                                                           ##
-## Notes: This part of the script performs the beta diversity (NMDS, PCoa &  ##
-##        Hierachical Clustering) on the non-normalized ASV table based on   ##
-##        four distance matrices (Jaccard, Bray-Curtis, UniFrac & Weighted   ##
-##        UniFrac)                                                           ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+###############################################################################
 
 ## Load up the needed packages ####
 requiredPackages = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager", "phyloseq")
@@ -144,7 +111,7 @@ main_jaccard  <- function(){
     variance_significance_tests=args[9]
     plot_pie = args[10]
     # Check if functions are loaded, if not source them
-    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
@@ -170,7 +137,7 @@ main_bray  <- function(){
     variance_significance_tests=args[9]
     plot_pie = args[10]
     # Check if functions are loaded, if not source them
-    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
@@ -195,7 +162,7 @@ main_unifrac  <- function(){
     variance_significance_tests=args[9]
     plot_pie = args[10]
     # Check if functions are loaded, if not source them
-    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }
@@ -220,7 +187,7 @@ main_wunifrac  <- function(){
     variance_significance_tests=args[9]
     plot_pie = args[10]
     # Check if functions are loaded, if not source them
-    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/beta_diversity_graphs.R")))
+    if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
     betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie)
 }

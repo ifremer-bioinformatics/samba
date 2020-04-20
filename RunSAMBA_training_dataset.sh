@@ -10,9 +10,10 @@ then
     if [ ! -d "$BASEDIR/training_dataset" ]
     then 
         mkdir -p $BASEDIR/training_dataset
-        wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/ -P $BASEDIR/training_dataset
+        wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/q2* -P $BASEDIR/training_dataset
         sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
         sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest.single
+        wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/dna-sequence-raw/*_subsampled.fastq.gz -P $BASEDIR/training_dataset
     fi
     #nextflow temp directory
     export NXF_TEMP=$BASEDIR/.nxf_temp

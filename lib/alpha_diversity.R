@@ -49,7 +49,7 @@ for(package in requiredPackages){
 #						   #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, distance, group, plot_rarefaction) {
+alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, distance, group, plot_rarefaction) {
     
     # ~~~~~~~~~~~~~~~ #
     # Alpha diversity #
@@ -63,6 +63,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_div_plots, index_significance_tests, 
     detach("package:microbiome", unload=TRUE)
     
     alpha_rich$Pielou = evenness$pielou
+    write.table(alpha_rich,alpha_rich_results,col.names=NA,row.names=T,sep="\t",dec=".",quote=F)  
     df = data.frame(alpha_rich,sample_data(PHYLOSEQ))
     df2 = gather(df,key="Measure",value="Value",Observed,Chao1,Shannon,InvSimpson,Pielou)
     df2$Measure = factor(df2$Measure,levels=c("Observed","Chao1","InvSimpson","Shannon","Pielou"))
@@ -189,23 +190,24 @@ main <- function() {
     args = commandArgs(trailingOnly=TRUE)
     PHYLOSEQ = readRDS(args[1])
     distance = args[2]
-    alpha_div_plots = args[3]
-    kingdom = args[4]
-    taxa_nb = args[5]
-    barplot_phylum = args[6]
-    barplot_class = args[7]
-    barplot_order = args[8]
-    barplot_family = args[9]
-    barplot_genus = args[10]
+    alpha_rich_results = args[3]
+    alpha_div_plots = args[4]
+    kingdom = args[5]
+    taxa_nb = args[6]
+    barplot_phylum = args[7]
+    barplot_class = args[8]
+    barplot_order = args[9]
+    barplot_family = args[10]
+    barplot_genus = args[11]
     # Get group variable an replace "-" by "_"
-    group = str_replace(args[11], "-", "_")
-    index_significance_tests = args[12]
-    workflow_dir = args[13]
-    plot_rarefaction = args[14]
+    group = str_replace(args[12], "-", "_")
+    index_significance_tests = args[13]
+    workflow_dir = args[14]
+    plot_rarefaction = args[15]
     # Get plot_composition function
     if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/lib/barplot_graph_functions.R")))
     # Run alpha diversity analyses
-    alphadiversity(PHYLOSEQ, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, distance, group, plot_rarefaction)
+    alphadiversity(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, distance, group, plot_rarefaction)
 }
 if (!interactive()) {
         main()

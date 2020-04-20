@@ -1,9 +1,10 @@
 #!/usr/bin/env Rscript
+
 ###############################################################################
 ##                                                                           ##
-## Script name: R script for the SAMBA-nextflow workflow                   ####
+## Script name: microDecon.R                                               ####
 ##                                                                           ##
-## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
+## Purpose of script: Filter contaminants from ASV table                     ##
 ##                                                                           ##
 ##                                                                           ##
 ##                                                                           ##
@@ -11,12 +12,12 @@
 ##          Bioinformatics engineers                                         ##
 ##          SeBiMER, Ifremer                                                 ##
 ##                                                                           ##
-## Creation Date: 2020-04-02                                               ####
-## Modified on: 2020-04-02                                                 ####
+## Creation Date: 2020-02-28                                               ####
+## Modified on: 2020-03-05                                                 ####
 ##                                                                           ##
-## Emails: samba-sebimer@ifremer.fr                                        ####
+## Email: samba-sebimer@ifremer.fr                                         ####
 ##                                                                           ##
-## Copyright (c) SeBiMER, april-2020                                       ####
+## Copyright (c) SeBiMER, february-2020                                    ####
 ## This program is free software: you can redistribute it and/or modify it   ##
 ## under the terms of the GNU Affero General Public License as published by  ##
 ## the Free Software Foundation, either version 3 of the License, or         ##
@@ -31,46 +32,45 @@
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 ##                                                                           ##
-## Notes: This part of the script performs identification og all possible    ##
-##        logical relationships between several sets of present in your      ##
-##        ASV table based on your specified variable                         ##
+## Notes: This part of the script performs decontamination of your data      ##
+##        based on control samples using microDecon R package                ##   
 ##                                                                           ##
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
 
 ## Load up the needed packages ####
-requiredPackages = c("phyloseq","UpSetR","svglite","dplyr")
+requiredPackages = c("microDecon","dplyr")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-# @@@@@@@@@@@@ #
-#              #
-# Set analysis #
-#              #
-# @@@@@@@@@@@@ #
+# @@@@@@@@@@@@@@@@@@@@@@@@ #
+#                          #
+# Decontamination analysis #
+#                          #
+# @@@@@@@@@@@@@@@@@@@@@@@@ #
 args = commandArgs(trailingOnly=TRUE)
 
-PHYLOSEQ = readRDS(args[1])
-PHYLOSEQ_merged = merge_samples(PHYLOSEQ, args[2])
+ASV_table = args[1]
+control_list =  unlist(strsplit(args[[2]],","))
+blanks = noquote(args[3])
+samples = noquote(args[4])
+output_table = args[5]
+output_abund_removed = args[6]
+output_ASVs_removed = args[7]
 
-sets = data.frame(t(otu_table(PHYLOSEQ_merged)))
-sets[sets > 0] <- 1
+# Load ASV table
+TABLE = read.table(ASV_table,h=T,sep="\t",check.names=FALSE)
+TABLE_control = TABLE %>% select("ASV_ID",c(control_list), everything())  
+head(TABLE_control)
 
-PHYLOSEQ_relabund = transform_sample_counts(PHYLOSEQ, function(x) x / sum(x) * 100)
-PHYLOSEQ_melt = psmelt(PHYLOSEQ_relabund)
-PHYLOSEQ_melt = PHYLOSEQ_melt[,c(1,3)]
-PHYLOSEQ_melt[PHYLOSEQ_melt==0] <- NA
-PHYLOSEQ_melt_value = PHYLOSEQ_melt[complete.cases(PHYLOSEQ_melt),]
-PHYLOSEQ_melt_mean = data.frame(aggregate(Abundance ~ OTU, PHYLOSEQ_melt_value , mean))
+# microDecon
+result = decon(TABLE_control, numb.blanks=as.numeric(blanks), numb.ind=as.numeric(samples), taxa=TRUE, runs=2, thresh=1)
 
-sets_abund = merge(PHYLOSEQ_melt_mean,sets,by.x="OTU",by.y="row.names")
-row.names(sets_abund)=sets_abund[,1]
-final_sets = sets_abund %>% select (-OTU)
+# Output reformat
+decontaminated_table = result$decon.table[-2]
+final_decontaminated_table = decontaminated_table[rowSums(decontaminated_table[,2:(length(decontaminated_table)-1)])!=0, ]
 
-svg(paste(args[3],".svg",sep=""), width = 12, height = 10)
-upset(final_sets, nsets=ncol(final_sets), boxplot.summary = "Abundance",number.angles = 0, text.scale = c(1.6,1.3,1.6,1.3,1.3,1.3),point.size = 2, line.size = 1, mainbar.y.label = "Number of ASVs", sets.x.label = "Total ASV")
-dev.off()
-
-png(paste(args[3],".png",sep=""), res=150, width=1600, height = 1400)
-upset(final_sets, nsets=ncol(final_sets), boxplot.summary = "Abundance",number.angles = 0, text.scale = c(1.6,1.3,1.6,1.3,1.3,1.3),point.size = 2, line.size = 1, mainbar.y.label = "Number of ASVs", sets.x.label = "Total ASV")
-dev.off()
+# Save output
+write.table(final_decontaminated_table, file=output_table, row.names=F,col.names=T,quote=F,sep="\t")
+write.table(result$reads.removed, file=output_abund_removed,row.names=F,col.names=T,quote=F,sep="\t")
+write.table(result$OTUs.removed, file=output_ASVs_removed,row.names=F,col.names=T,quote=F,sep="\t")

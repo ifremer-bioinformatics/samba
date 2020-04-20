@@ -1,39 +1,10 @@
 #!/usr/bin/env bash
 ###############################################################################
 ##                                                                           ##
-## Script name: q2_ANCOM.sh                                                ####
-##                                                                           ##
 ## Purpose of script: Differential abundance testing with ANCOM              ##
 ##                                                                           ##
-##                                                                           ##
-##                                                                           ##
-## Authors: Laure QUINTRIC and Cyril NOEL                                  ####
-##          Bioinformatics engineers                                         ##
-##          SeBiMER, Ifremer                                                 ##
-##                                                                           ##
-## Creation Date: 2020-04-20                                               ####
-## Modified on: 2020-04-20                                                 ####
-##                                                                           ##
-## Email: samba-sebimer@ifremer.fr                                         ####
-##                                                                           ##
-## Copyright (c) SeBiMER, april-2020                                       ####
-## This program is free software: you can redistribute it and/or modify it   ##
-## under the terms of the GNU Affero General Public License as published by  ##
-## the Free Software Foundation, either version 3 of the License, or         ##
-## (at your option) any later version.                                       ##
-##                                                                           ##
-## License at https://www.gnu.org/licenses/agpl-3.0.txt                      ##
-##                                                                           ##
-## This program is distributed in the hope that it will be useful, but       ##
-## WITHOUT ANY WARRANTY; without even the implied warranty of                ##
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                      ##
-## See the GNU Affero General Public License for more details.               ##
-##                                                                           ##
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-## Command run by snakemake :
-### q2_ANCOM.sh ${table} compo_table.qza ${metadata} ${params.ancom_var} ancom_${params.ancom_var}.qzv export_ancom_${params.ancom_var} ${taxonomy} collapsed_table_family.qza compo_table_family.qza ancom_${params.ancom_var}_family.qzv export_ancom_${params.ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${params.ancom_var}_genus.qzv export_ancom_${params.ancom_var}_genus completecmd > q2_ANCOM.log 2>&1
+###############################################################################
 
-# Arguments
 args=("$@")
 table=${args[0]}
 compo_table=${args[1]}

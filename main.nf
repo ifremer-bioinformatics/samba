@@ -986,7 +986,6 @@ process report {
     """
 }
 
-
 /* Other functions */
 def nfcoreHeader() {
     // Log colors ANSI codes

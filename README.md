@@ -7,7 +7,7 @@
 [![Conda](https://img.shields.io/badge/conda-%E2%89%A54.8.1-blue.svg)](https://docs.conda.io/en/latest/)
 [![R](https://img.shields.io/badge/r_version-%E2%89%A53.6.1-blue.svg)](https://www.r-project.org/)
 
-![SAMBA Workflow](./SAMBA_schemaEN.png)
+![SAMBA Workflow](./docs/images/SAMBA_schemaEN.png)
 
 ## How to install
 

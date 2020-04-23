@@ -770,7 +770,7 @@ process prepare_data_for_stats {
     script :
     """
     prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &> stats_prepare_data.log 2&>1
-    Rscript --vanilla create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
+    Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
     """
 }
    
@@ -803,7 +803,7 @@ process stats_alpha {
     
     shell :
     """
-    Rscript --vanilla alpha_diversity.R phyloseq.rds ${params.distance} alpha_div_values.txt alpha_div_plots ${params.kingdom} ${params.taxa_nb} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R phyloseq.rds alpha_div_values.txt alpha_div_plots ${params.kingdom} ${params.taxa_nb} barplot_phylum barplot_class barplot_order barplot_family barplot_genus ${params.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
     """
 }
 
@@ -834,7 +834,7 @@ process stats_beta {
 
     shell :
     """
-    Rscript --vanilla beta_diversity.R ${phyloseq_rds} ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_ PCoA_ ${params.hc_method} hclustering_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
     """
 }
 
@@ -866,7 +866,7 @@ process stats_beta_rarefied {
 
     shell :
     """
-    Rscript --vanilla beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_rarefied_ PCoA_rarefied_ ${params.hc_method} hclustering_rarefied_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -898,7 +898,7 @@ process stats_beta_deseq2 {
 
     shell :
     """
-    Rscript --vanilla beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_DESeq2_ PCoA_DESeq2_ ${params.hc_method} hclustering_DESeq2_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -931,7 +931,7 @@ process stats_beta_css {
 
     shell :
     """
-    Rscript --vanilla beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_CSS_ PCoA_CSS_ ${params.hc_method} hclustering_CSS_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
     """
 }
 
@@ -953,7 +953,7 @@ process stats_sets_analysis {
 
     shell :
     """
-    Rscript --vanilla sets_analysis.R ${phyloseq_rds} ${params.sets_analysis_crit} upset_plot &> stats_sets_analysis.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/sets_analysis.R ${phyloseq_rds} ${params.sets_analysis_crit} upset_plot &> stats_sets_analysis.log 2>&1
     touch end_analysis.ok
     """
 }

@@ -566,6 +566,7 @@ if (params.microDecon_enable) {
     }
 }
 
+seqs_phylo = Channel.create()
 if (params.dada2merge) {
    merge_seqs_phylo.set { seqs_phylo }
 } else {

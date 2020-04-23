@@ -33,7 +33,6 @@ else
 fi
 
 #run nextflow nextmb workflow 
-#nextflow -trace nextflow.executor run main.nf -profile conda --database /home1/datahome/lquintri/SAMBA-nextflow/tax.databases.test/DATABASE_silva_v132_99_16S.qza $@
 nextflow -trace nextflow.executor run main.nf -profile conda,test $@
 
 #deactivate nextflow environment

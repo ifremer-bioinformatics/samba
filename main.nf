@@ -165,7 +165,7 @@ if (!params.dada2merge && (!params.input_manifest || params.input_manifest.isEmp
    exit 1 
 }
 params.dada2merge ?: Channel.fromPath(params.input_manifest, checkIfExists:true)
-                                          .into { manifest ; manifest4integrity }
+                            .into { manifest ; manifest4integrity }
 
 if (params.dada2merge) {
    if (!params.merge_tabledir || params.merge_tabledir.isEmpty()) {
@@ -957,6 +957,7 @@ if (params.report_enable) {
         """
     }
 }
+
 /* Other functions */
 def nfcoreHeader() {
     // Log colors ANSI codes

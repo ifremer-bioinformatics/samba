@@ -70,7 +70,7 @@ The typical command for running the pipeline is as follows:
 	Taxonomic assignation:
 	--extract_db			Set to true to extract specific region from reference database (default = false)
 	--seqs_db			Path to reference database (required if extract_db = true).
-	--taxa_db			Path to taxonomic reference database (required if extract_db = true).
+	--taxo_db			Path to taxonomic reference database (required if extract_db = true).
 	--database			Path to preformatted QIIME2 format database (required if extract_db = false).
 	--confidence			RDP confidence threshold (default = 90).
 
@@ -136,6 +136,7 @@ if (params.stats_only) {
    if (params.data_integrity_enable) println "- Data integrity step enabled"
    if (params.dbotu3_enable) println "- Distribution based-clustering step enabled"
    if (params.microDecon_enable) println "- Decontamination step enabled"
+   if (params.dada2merge) println "- Dada2 merge step enabled"
 }
 println "--------------------------------------------------------------"
 println "Activated statistics steps : "
@@ -150,63 +151,76 @@ log.info "Pipeline running in ${workflow.profile} mode"
 paramsfile = file('conf/base.config')
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
-Channel.fromPath(params.input_metadata, checkIfExists:true)
-       .ifEmpty { exit 1, "Cannot find input metadata file --input_metadata : ${params.input_metadata}\nNB: Path needs to be enclosed in quotes!" }
-       .into { metadata; metadata_dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
-
-if (!params.dada2merge) {
-    Channel.fromPath(params.input_manifest, checkIfExists:true)
-           .ifEmpty { exit 1, "Cannot find input manifest file --input_manifest : ${params.input_manifest}\nNB: Path needs to be enclosed in quotes!" }
-           .into { manifest ; manifest4integrity }
-} else {
-    println("Dada2 Merge process enabled")
-    Channel.fromPath(params.merge_tabledir, checkIfExists:true)
-           .ifEmpty { exit 1, "Cannot find path to directory with ASV tables to merge --merge_tabledir : ${params.merge_tabledir}" }
-           .set { dada2merge_tabledir }
-    Channel.fromPath(params.merge_repseqsdir, checkIfExists:true)
-           .ifEmpty { exit 1, "Cannot find path to directory with ASV sequences files to merge --merge_repseqsdir : ${params.merge_repseqsdir}" }
-           .set { dada2merge_repseqsdir }
+if (!params.input_metadata || params.input_metadata.isEmpty()) {
+   log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
+   exit 1
 }
+Channel.fromPath(params.input_metadata, checkIfExists:true)
+       .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+
+if (!params.dada2merge && (!params.input_manifest || params.input_manifest.isEmpty())) { 
+   log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
+   exit 1 
+}
+params.dada2merge ?: Channel.fromPath(params.input_manifest, checkIfExists:true)
+                                          .into { manifest ; manifest4integrity }
+
+if (params.dada2merge) {
+   if (!params.merge_tabledir || params.merge_tabledir.isEmpty()) {
+      log.error "Parameter --merge_tabledir cannot be null or empty. Set the path to the folder with ASV tables to merge"
+      exit 1
+   }
+   if (!params.dada2merge_repseqsdir || params.dada2merge_repseqsdir.isEmpty()) {
+       log.error "Parameter --dada2merge_repseqsdir cannot be null or empty. Set the path to the folder with ASV sequences to merge"  
+       exit 1
+   }
+}
+params.dada2merge ? Channel.fromPath(params.merge_tabledir, checkIfExists:true)
+                           .set { dada2merge_tabledir }
+                  : Channel.empty()
+
+params.dada2merge ? Channel.fromPath(params.merge_repseqsdir, checkIfExists:true)
+                           .set { dada2merge_repseqsdir }
+                  : Channel.empty()
 
 if (params.extract_db) {
-   if (params.seqs_db == "none" || params.taxa_db == "none") {
-      println("ERROR : When extract database option (--extract_db) is enable, reference database (--seqs_db) and taxonomy (--taxa_db) must be set.");
+   if (!params.seqs_db || params.seqs_db.isEmpty()) {
+      log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
       exit 1
-   } else {
-     Channel.fromPath(params.seqs_db,  checkIfExists:true)  
-            .ifEmpty { exit 1, "Cannot find --seqs_db : ${params.seqs_db}" }
-     Channel.fromPath(params.taxo_db,  checkIfExists:true)  
-            .ifEmpty { exit 1, "Cannot find --taxo_db : ${params.taxo_db}" }
    }
-} else {
-   if (params.database == "none" ) {
-      println("ERROR : When extract database option (--extract_db) is disable, a taxonomy database (--database) must be set.");
+   if (!params.taxo_db || params.taxo_db.isEmpty()) {
+      log.error "Parameter --taxo_db cannot be null or empty. Set the path to the reference taxonomy"
       exit 1
-   } else {
-      Channel.fromPath(params.database, checkIfExists:true)
-             .ifEmpty { exit 1, "Cannot find --database : ${params.database}" }
    }
 }
+params.extract_db ? Channel.fromPath(params.seqs_db,checkIfExists:true)
+                           .set { seqs_db_ch }
+                  : Channel.value("none").set { seqs_db_ch }
+
+params.extract_db ? Channel.fromPath(params.taxo_db,checkIfExists:true)
+                           .set { taxo_db_ch }
+                  : Channel.value("none").set { taxo_db_ch }
+
+params.extract_db ? Channel.value("none").set { database_ch }
+                  : Channel.fromPath(params.database,checkIfExists:true)
+                           .set { database_ch }
 
 if (params.microDecon_enable && !params.control_list) {
    println("ERROR : A comma separated list of control samples (--control_list) must be set.");
    exit 1
 }
 
-if (params.stats_only) {
-   if (!params.inasv_table || !params.innewick) {
-      println("ERROR : For stats only analysis, please set an input asv table (--inasv_table) and an input newick tree (--innewick).");
-      exit 1
-   } else {
-      Channel.fromPath(params.inasv_table, checkIfExists:true)
-             .ifEmpty { exit 1, "Cannot find --inasv_table : ${params.inasv_table}" }
-      Channel.fromPath(params.innewick, checkIfExists:true)
-             .ifEmpty { exit 1, "Cannot find --innewick : ${params.innewick}" }
-   }
-}
+inasv_table_ch = params.stats_only ? Channel.fromPath(params.inasv_table, checkIfExists:true)
+                                            .ifEmpty { exit 1, "Cannot find --inasv_table : ${params.inasv_table}" }
+                                            .set { tsv }
+                                   : Channel.empty()
+
+newick_ch = params.stats_only ? Channel.fromPath(params.innewick, checkIfExists:true)
+                                       .ifEmpty { exit 1, "Cannot find --innewick : ${params.innewick}" }
+                                       .set { newick }
+                               : Channel.empty()
 
 /* Check data integrity */
-
 process data_integrity {
 	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
@@ -216,17 +230,15 @@ process data_integrity {
 		file metadata from metadata4integrity
 	
 	output :
-		file 'verifications.ok' optional true into ckeck_ok
-		file 'verifications.bad' optional true into check_bad
-		file 'data_integrity.csv' optional true into data_integrity_csv
+		file 'data_integrity.csv' 
 	
 	when :
 		params.data_integrity_enable && !params.stats_only && !params.dada2merge
 	
 	script :
 	"""
-	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv verifications.ok verifications.bad ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
-	if test -f "verifications.bad"; then
+	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
+	if test -f "data_integrity_control.bad"; then
 		if test -f "data_integrity.csv"; then
 			echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
 			mkdir -p ${params.outdir}/${params.data_integrity_dirname}
@@ -236,12 +248,10 @@ process data_integrity {
 		fi
 		exit 1
 	 fi
-
-"""
+         """
 }
 
 /* Import metabarcode data */
-
 process q2_import {
 
 	label 'qiime2_env'
@@ -252,7 +262,6 @@ process q2_import {
 
 	input : 
 		file q2_manifest from manifest
-		file check_ok from ckeck_ok
 
 	output : 
 		file 'data.qza' into imported_data
@@ -307,10 +316,10 @@ process q2_dada2 {
 
 	input : 
 		file trimmed_data from trimmed_data
-		file metadata from metadata 
+		file metadata from metadata4dada2
 
 	output :
-		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
+		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
 		file 'rep_seqs.qzv' into visu_repseps
 		file 'table.qza' into data_table, dada2_table_picrust2, dada2_table_ancom
 		file 'table.qzv' into visu_table
@@ -341,11 +350,11 @@ if (params.dbotu3_enable) {
     	input :
     		file table from data_table
     		file seqs from dada2_seqs_dbotu3
-    		file metadata_dbotu3 from metadata_dbotu3
+    		file metadata from metadata4dbotu3
     
     	output :
     		file 'dbotu3_details.txt' into dbotu3_details
-    		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
+    		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
     		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
     		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
     		file 'dbotu3_table.qzv' into dbotu3_table_visu
@@ -357,7 +366,7 @@ if (params.dbotu3_enable) {
     
     	script :
     	"""
-    	q2_dbotu3.sh ${table} ${seqs} ${metadata_dbotu3} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+    	q2_dbotu3.sh ${table} ${seqs} ${metadata} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} completecmd &> q2_dbotu3.log 2>&1
     	"""
     }
 }
@@ -378,7 +387,7 @@ if (params.dada2merge) {
     
             output :
                     file 'merged_table.qza' into merged_table_picrust2, merged_table_ancom
-                    file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merged_seqs_ancom
+                    file 'merged_seq.qza' into merge_seqs_taxo, seqs_phylo, merge_seqs_picrust2, merged_seqs_ancom
                     file 'merge_output' into merge_summary
                     file 'completecmd' into complete_cmd_dada2merge
     
@@ -418,6 +427,9 @@ process q2_taxonomy {
 	input :
 		file repseqs_taxo from seqs_taxo
 		file summary from summary
+                file seqs_db from seqs_db_ch
+                file taxo_db from taxo_db_ch
+                file database from database_ch
 
 	output :
 		file 'taxonomy.qza' into data_taxonomy
@@ -435,7 +447,7 @@ process q2_taxonomy {
 
 	script :
 	"""
-	q2_taxo.sh ${task.cpus} ${params.seqs_db} ${params.taxa_db} ${params.database} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_taxo.log 2>&1
+	q2_taxo.sh ${task.cpus} ${seqs_db} ${taxo_db} ${database} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_taxo.log 2>&1
 	""" 
 }
 
@@ -542,7 +554,7 @@ if (params.microDecon_enable) {
     		file ASV_fasta from decontam_ASV_fasta
     
     	output :
-    		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
+    		file 'decontam_seqs.qza' into decontam_seqs_qza, seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
     		file 'aligned_repseq.qza' into decontam_aligned_repseq
     		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
     		file 'tree.qza' into decontam_tree
@@ -565,21 +577,27 @@ if (params.microDecon_enable) {
     	"""
     }
 }
-
-seqs_phylo = Channel.create()
+/*
 if (params.dada2merge) {
+   println("passe mergedada")
    merge_seqs_phylo.set { seqs_phylo }
 } else {
    if (params.dbotu3_enable) {
       if (params.microDecon_enable) {
+         println("passe decontam")
          decontam_seqs_phylo.set { seqs_phylo }
       } else {
+         println("passe dbotu3")
          dbotu3_seqs_phylo.set { seqs_phylo }
       }
    } else { 
-      dada2_seqs_phylo.set { seqs_pĥylo }
+      println("passe dada2")
+     // dada2_seqs_phylo.view { "value: $it" }
+      //dada2_seqs_phylo.set { seqs_pĥylo }
+      //dada2_seqs_phylo.view { "value: $it" }
    }
 }
+*/
 
 /* Run phylogeny construction */
 process q2_phylogeny {
@@ -682,7 +700,7 @@ process q2_picrust2_stats {
         file ec_metagenome from EC_predictions_tsv
         file ko_metagenome from KO_predictions_tsv
         file metacyc_predictions_ from pathway_predictions_tsv
-        file metadata4picrust2 from metadata4picrust2
+        file metadata from metadata4picrust2
     output :
         file '*functional_predictions_NMDS*' into functional_pred_NMDS
         file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
@@ -692,7 +710,7 @@ process q2_picrust2_stats {
 
     script :
     """
-    functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata4picrust2} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+    functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
     cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
     """
 }
@@ -722,7 +740,7 @@ process q2_ancom {
 
     input :
         file table4ancom from table_ancom
-        file metadata4ancom from metadata4ancom
+        file metadata from metadata4ancom
         file taxonomy4ancom from data_taxonomy
     output :
         file 'compo_table*.qza' into compo_table
@@ -736,20 +754,16 @@ process q2_ancom {
 
     script :
     """
-    q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata4ancom} ${params.ancom_var} ancom_${params.ancom_var}.qzv export_ancom_${params.ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${params.ancom_var}_family.qzv export_ancom_${params.ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${params.ancom_var}_genus.qzv export_ancom_${params.ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
+    q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${params.ancom_var} ancom_${params.ancom_var}.qzv export_ancom_${params.ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${params.ancom_var}_family.qzv export_ancom_${params.ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${params.ancom_var}_genus.qzv export_ancom_${params.ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
     """
 }
 
-if (params.stats_only) {
-    Channel.fromPath(params.innewick, checkIfExists:true).set { newick }
-           .println()
-    Channel.fromPath(params.inasv_table, checkIfExists:true).set { tsv }
-           .println()
+if (params.microDecon_enable) {
+   decontam_table.set { tsv }
 } else {
-   if (params.microDecon_enable) decontam_table.set { tsv }
-   else biom_tsv.set { tsv }
-   newick_phylo.set { newick }
+   biom_tsv.set { tsv }
 }
+newick_phylo.set { newick }
 	
 process prepare_data_for_stats {
     

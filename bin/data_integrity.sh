@@ -12,37 +12,37 @@ metadata=${args[1]}
 primerF=$(echo "${args[2]}"|sed -e 's/[RYSWKMBDHVN]/\./g')
 primerR=$(echo "${args[3]}"|sed -e 's/[RYSWKMBDHVN]/\./g')
 summary=${args[4]}
-verif_ok=${args[5]}
-verif_bad=${args[6]}
-barcode=${args[7]}
-sampleid=${args[8]}
+barcode=${args[5]}
+sampleid=${args[6]}
 
-singleEnd=${args[14]}
+singleEnd=${args[12]}
 if ${singleEnd}; then
-    R1_files=${args[9]}
+    R1_files=${args[7]}
 else 
-    R1_files=${args[10]}
-    R2_files=${args[11]}
+    R1_files=${args[8]}
+    R2_files=${args[9]}
 fi
 
-barcode_filter=${args[12]}
-primer_filter=${args[13]}
+barcode_filter=${args[10]}
+primer_filter=${args[11]}
+
+verif_bad="data_integrity_control.bad"
 
 # Verify if metadata file contains NA values
 grep -P "NA\t|\tNA" ${metadata}
 [ $? -eq 0 ] && { 
    echo "NA values found in $metadata, please remove them before running SAMBA"; 
-   touch ${verif_bad} && echo "@@@ --- All verifications are not satisfied --- @@@"; 
+   touch ${verif_bad} && echo "@@@ --- All controls are not satisfied --- @@@"; 
    exit 0; 
 }
 
 # Creation of temporary files
 #get sample id list from manifest file
-COL=`head -n1 ${manifest} | tr "\t" "\n" | grep -n ${sampleid} | cut -d ":" -f1`
-cut -f$COL ${manifest} | sed '1d' > tmp_sampleID
+COL=$(head -n1 ${manifest}|tr "\t" "\n"|grep -n ${sampleid}|cut -d ":" -f1)
+cut -f$COL ${manifest}|sed '1d' > tmp_sampleID
 
 #get R1 file path from manifest file
-COL=`head -n1 ${manifest} | tr "\t" "\n" | grep -n ${R1_files} | cut -d ":" -f1`
+COL=$(head -n1 ${manifest} | tr "\t" "\n" | grep -n ${R1_files} | cut -d ":" -f1)
 cut -f$COL ${manifest} | sed '1d' > tmp_R1
 
 #get R2 file path from manifest file
@@ -50,7 +50,7 @@ cut -f$COL ${manifest} | sed '1d' > tmp_R1
 [ ! ${singleEnd} ] && cut -f$COL ${manifest} | sed '1d' > tmp_R2
 
 #get barcode
-COL=`head -n1 ${metadata} | tr "\t" "\n" | grep -n ${barcode} | cut -d ":" -f1`
+COL=$(head -n1 ${metadata} | tr "\t" "\n" | grep -n ${barcode} | cut -d ":" -f1)
 cut -f$COL ${metadata} | sed '1d' > tmp_barcodes
 
 for i in $(cat tmp_R1) ; do echo $(zcat ${i}|wc -l)/4|bc >> tmp_reads ; done
@@ -92,8 +92,8 @@ if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=${addcol}" '{print $newcol}
 [ ! ${singleEnd} ] && if [ $(tail -n 1 tmp_output | awk -F "\t" -v "newcol=$(($addcol+1))" '{print $newcol}') -ge ${primer_filter} ] ; then touch primer_R2.ok ; else touch primer_R2.bad ; fi
 
 # Results saving and remove all temporary files
-[ ${singleEnd} ] && if [[ -e barcodes_R1.ok && sequencer_R1.ok && -e primer_R1.ok ]] ; then touch ${verif_ok} ; else touch ${verif_bad} && echo '@@@ --- All verifications are not satisfied --- @@@' ; fi
-[ ! ${singleEnd} ] && if [[ -e barcodes_R1.ok && -e barcodes_R2.ok && -e sequencer_R1.ok && -e sequencer_R2.ok && -e primer_R1.ok && -e primer_R2.ok ]] ; then touch ${verif_ok} ; else touch ${verif_bad} && echo '@@@ --- All verifications are not satisfied --- @@@' ; fi
+[ ${singleEnd} ] && if [[ -e barcodes_R1.ok && -e sequencer_R1.ok && -e primer_R1.ok ]] ; then echo '@@@ --- Your data passed the control --- @@@' ; else touch ${verif_bad} && echo '@@@ --- All controls are not satisfied --- @@@' ; fi
+[ ! ${singleEnd} ] && if [[ -e barcodes_R1.ok && -e barcodes_R2.ok && -e sequencer_R1.ok && -e sequencer_R2.ok && -e primer_R1.ok && -e primer_R2.ok ]] ; then echo '@@@ --- Your data passed the control --- @@@' ; else touch ${verif_bad} && echo '@@@ --- All controls are not satisfied --- @@@' ; fi
 mv tmp_output ${summary}
 [ ${singleEnd} ] && sed -i '1 i\SampleID\tBarcode\tReads_count\tCount_in_R1\tSequencer_R1\tPrimerF_in_R1\tPerc_correct_barcode_R1\tPerc_uniq_sequencer_R1\tPerc_primerF_R1' ${summary}
 [ ! ${singleEnd} ] && sed -i '1 i\SampleID\tBarcode\tReads_count\tCount_in_R1\tCount_in_R2\tSequencer_R1\tSequencer_R2\tPrimerF_in_R1\tPrimerR_in_R2\tPerc_correct_barcode_R1\tPerc_correct_barcode_R2\tPerc_uniq_sequencer_R1\tPerc_uniq_sequencer_R2\tPerc_primerF_R1\tPerc_primerR_R2' ${summary}

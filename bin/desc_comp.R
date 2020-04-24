@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 ###############################################################################
 ##                                                                           ##
-## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##
+## Purpose of script:  Descriptive comparisons with UpsetR                   ##
 ##                                                                           ##
 ###############################################################################
 
@@ -11,11 +11,6 @@ for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-# @@@@@@@@@@@@ #
-#              #
-# Set analysis #
-#              #
-# @@@@@@@@@@@@ #
 args = commandArgs(trailingOnly=TRUE)
 
 PHYLOSEQ = readRDS(args[1])
@@ -42,3 +37,4 @@ dev.off()
 png(paste(args[3],".png",sep=""), res=150, width=1600, height = 1400)
 upset(final_sets, nsets=ncol(final_sets), boxplot.summary = "Abundance",number.angles = 0, text.scale = c(1.6,1.3,1.6,1.3,1.3,1.3),point.size = 2, line.size = 1, mainbar.y.label = "Number of ASVs", sets.x.label = "Total ASV")
 dev.off()
+

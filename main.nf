@@ -59,7 +59,7 @@ The typical command for running the pipeline is as follows:
 	Merge ASVs tables:
 	--dada2merge			Set to true to merge Dada2 ASVs tables.
 	--merge_tabledir		Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
-	--merge_repseqdir		Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
+	--merge_repseqsdir		Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
 	Distribution based-clustering:
 	--dbotu3_enable			Distribution based-clustering step. Set to false to deactivate this step. (default = true)
@@ -81,6 +81,7 @@ The typical command for running the pipeline is as follows:
 	--nb_samples			Number of samples that are not control samples (required if microDecon_enable = true).
    
 	Predict functionnal abundance:
+        --picrust2_enable		Set to true to enable functionnal prediction step. (default = false)
 	--method			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
 	--nsti				Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
 
@@ -90,13 +91,13 @@ The typical command for running the pipeline is as follows:
 	Statistics:
 	--stats_alpha_enable		Set to false to deactivate Alpha diversity statistics step. (default = true)
 	--stats_beta_enable		Set to false to deactivate Beta diversity statistics steps. (default = true)
-	--stats_sets_analysis_enable	Set to false to deactivate UpsetR graphs steps. (default = true)
+	--stats_desc_comp_enable	Set to false to deactivate Descriptive comparisons steps. (default = true)
 
 	--kingdom			Kingdom to be displayed in barplots.
 	--taxa_nb			Number of taxa to be displayed in barplots.
 	--alpha_div_group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
 	--beta_div_var			According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
-	--sets_analysis_crit		According to your metadata file, select the column name corresponding to the variable of interest for UpsetR graphs. 
+	--sets_analysis_crit		According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs. 
 	--hc_method			Hierarchical clustering method (default = 'ward.D2').
 
 	--stats_only			Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
@@ -137,12 +138,13 @@ if (params.stats_only) {
    if (params.dbotu3_enable) println "- Distribution based-clustering step enabled"
    if (params.microDecon_enable) println "- Decontamination step enabled"
    if (params.dada2merge) println "- Dada2 merge step enabled"
+   if (params.picrust2_enable) println "- Picrust2 functionnal prediction step enabled"
 }
 println "--------------------------------------------------------------"
 println "Activated statistics steps : "
 if (params.stats_alpha_enable) println "- Alpha diversity statistics step enabled"
 if (params.stats_beta_enable) println "- Beta diversity statistics steps enabled"
-if (params.stats_sets_analysis_enable) println "- UpsetR graphs step enabled"
+if (params.stats_desc_comp_enable) println "- Descriptive comparisons step enabled"
 println "--------------------------------------------------------------"
 
 log.info "Pipeline running in ${workflow.profile} mode"
@@ -175,13 +177,11 @@ if (params.dada2merge) {
        exit 1
    }
 }
-params.dada2merge ? Channel.fromPath(params.merge_tabledir, checkIfExists:true)
-                           .set { dada2merge_tabledir }
-                  : Channel.empty()
+dada2merge_tabledir_ch = params.dada2merge ? Channel.fromPath(params.merge_tabledir, checkIfExists:true)
+                                        : Channel.empty()
 
-params.dada2merge ? Channel.fromPath(params.merge_repseqsdir, checkIfExists:true)
-                           .set { dada2merge_repseqsdir }
-                  : Channel.empty()
+dada2merge_repseqsdir_ch = params.dada2merge ? Channel.fromPath(params.merge_repseqsdir, checkIfExists:true)
+                                          : Channel.empty()
 
 if (params.extract_db) {
    if (!params.seqs_db || params.seqs_db.isEmpty()) {
@@ -220,35 +220,37 @@ newick_ch = params.stats_only ? Channel.fromPath(params.innewick, checkIfExists:
                                        .set { newick }
                                : Channel.empty()
 
-/* Check data integrity */
-process data_integrity {
-	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
-
-	input :
-		file manifest from manifest4integrity
-		file metadata from metadata4integrity
-	
-	output :
-		file 'data_integrity.csv' 
-	
-	when :
-		params.data_integrity_enable && !params.stats_only && !params.dada2merge
-	
-	script :
-	"""
-	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
-	if test -f "data_integrity_control.bad"; then
-		if test -f "data_integrity.csv"; then
-			echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
-			mkdir -p ${params.outdir}/${params.data_integrity_dirname}
-			cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
-		else
-			echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
-		fi
-		exit 1
-	 fi
-         """
+if (params.data_integrity_enable) {
+    /* Check data integrity */
+    process data_integrity {
+    	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+    
+    	input :
+    		file manifest from manifest4integrity
+    		file metadata from metadata4integrity
+    	
+    	output :
+    		file 'data_integrity.csv' 
+    	
+    	when :
+    		params.data_integrity_enable && !params.stats_only && !params.dada2merge
+    	
+    	script :
+    	"""
+    	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
+    	if test -f "data_integrity_control.bad"; then
+    		if test -f "data_integrity.csv"; then
+    			echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
+    			mkdir -p ${params.outdir}/${params.data_integrity_dirname}
+    			cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
+    		else
+    			echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
+    		fi
+    		exit 1
+    	 fi
+             """
+    }
 }
 
 /* Import metabarcode data */
@@ -319,9 +321,9 @@ process q2_dada2 {
 		file metadata from metadata4dada2
 
 	output :
-		file 'rep_seqs.qza' into data_repseqs, dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
+		file 'rep_seqs.qza' into dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
 		file 'rep_seqs.qzv' into visu_repseps
-		file 'table.qza' into data_table, dada2_table_picrust2, dada2_table_ancom
+		file 'table.qza' into dada2_table_dbotu3, dada2_table_picrust2, dada2_table_ancom
 		file 'table.qzv' into visu_table
 		file 'stats.qza' into stats_table
 		file 'stats.qzv' into visu_stats
@@ -348,13 +350,13 @@ if (params.dbotu3_enable) {
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
     
     	input :
-    		file table from data_table
+    		file table from dada2_table_dbotu3
     		file seqs from dada2_seqs_dbotu3
     		file metadata from metadata4dbotu3
     
     	output :
     		file 'dbotu3_details.txt' into dbotu3_details
-    		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
+    		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
     		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
     		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
     		file 'dbotu3_table.qzv' into dbotu3_table_visu
@@ -372,45 +374,40 @@ if (params.dbotu3_enable) {
 }
 
 if (params.dada2merge) {
-
     /* dada2 merge ASV/seqs */
     process q2_dada2_merge {
     
             label 'qiime2_env'
-    
+     
             publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
             publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
-    
+        
             input :
-                    path table_dir from dada2merge_tabledir
-                    path seq_dir from dada2merge_repseqdir
-    
+                    path table_dir from dada2merge_tabledir_ch
+                    path seq_dir from dada2merge_repseqsdir_ch
+     
             output :
-                    file 'merged_table.qza' into merged_table_picrust2, merged_table_ancom
-                    file 'merged_seq.qza' into merge_seqs_taxo, seqs_phylo, merge_seqs_picrust2, merged_seqs_ancom
+                    file 'merged_table.qza' into merge_table_picrust2, merge_table_ancom
+                    file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merge_seqs_ancom
                     file 'merge_output' into merge_summary
                     file 'completecmd' into complete_cmd_dada2merge
     
             when :
-                   params.dada2merge 
-    
+                params.dada2merge 
+        
             script :
             """
             q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza merge_output completecmd &> q2_merge.log 2>&1
             """
     }
-
-   merge_seqs_taxo.set { seqs_taxo }
-   merge_summary.set { summary }
-} else {
-   if (params.dbotu3_enable) {
-      dbotu3_seqs_taxo.set { seqs_taxo }
-      dbotu3_summary.into { summary; decontam_summary }
-   } else {
-      dada2_seqs_taxo.set { seqs_taxo }
-      dada2_summary.into { summary; decontam_summary }
-   }
 }
+
+summaryA = params.dada2merge ? merge_summary : dada2_summary 
+summary_ch = params.dbotu3_enable ? dbotu3_summary : summaryA
+summary_ch.into { summary ; decontam_summary }
+
+seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
+seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
 
 /* Run taxonomy assignment */
 process q2_taxonomy {
@@ -554,7 +551,7 @@ if (params.microDecon_enable) {
     		file ASV_fasta from decontam_ASV_fasta
     
     	output :
-    		file 'decontam_seqs.qza' into decontam_seqs_qza, seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
+    		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
     		file 'aligned_repseq.qza' into decontam_aligned_repseq
     		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
     		file 'tree.qza' into decontam_tree
@@ -577,27 +574,10 @@ if (params.microDecon_enable) {
     	"""
     }
 }
-/*
-if (params.dada2merge) {
-   println("passe mergedada")
-   merge_seqs_phylo.set { seqs_phylo }
-} else {
-   if (params.dbotu3_enable) {
-      if (params.microDecon_enable) {
-         println("passe decontam")
-         decontam_seqs_phylo.set { seqs_phylo }
-      } else {
-         println("passe dbotu3")
-         dbotu3_seqs_phylo.set { seqs_phylo }
-      }
-   } else { 
-      println("passe dada2")
-     // dada2_seqs_phylo.view { "value: $it" }
-      //dada2_seqs_phylo.set { seqs_pĥylo }
-      //dada2_seqs_phylo.view { "value: $it" }
-   }
-}
-*/
+
+seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
+seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
+seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
 
 /* Run phylogeny construction */
 process q2_phylogeny {
@@ -634,100 +614,83 @@ process q2_phylogeny {
 	"""
 }
 
-if (params.dada2merge){
-   merged_table_picrust2.set { table_picrust2 }
-   merge_seqs_picrust2.set { seqs_picrust2 }
-} else {
-   if (params.dbotu3_enable) {
-      if (params.microDecon_enable) {
-         decontam_table_picrust2.set { table_picrust2 }
-         decontam_seqs_picrust2.set { seqs_picrust2 }
-      } else {
-         dbotu3_table_picrust2.set { table_picrust2 }
-         dbotu3_seqs_picrust2.set { seqs_picrust2 }
-      }
-    } else {
-      dada2_table_picrust2.set { table_picrust2 }
-      dada2_seqs_picrust2.set { seqs_picrust2 }
-   }
-}
+table_picrust2A = params.dada2merge ? merge_table_picrust2 : dada2_table_picrust2
+table_picrust2B = params.dbotu3_enable ? dbotu3_table_picrust2 : table_picrust2A
+table_picrust2 = params.microDecon_enable ? decontam_table_picrust2 : table_picrust2B
 
-/* Run functional predictions */
-process q2_picrust2_analysis {
+seqs_picrust2A = params.dada2merge ? merge_seqs_picrust2 : dada2_seqs_picrust2
+seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
+seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
 
-	label 'qiime2_2019_env'
+if (params.picrust2_enable) {
+    
+    /* Run functional predictions */
+    process q2_picrust2_analysis {
+    
+    	label 'qiime2_2019_env'
+    
+    	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
+    	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
+    	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*'
+    	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_cmd', saveAs : { complete_picrust2_cmd -> "cmd/${task.process}_complete.sh" }
+    
+    	input :
+    		file seqs_picrust2 from seqs_picrust2
+    		file table_picrust2 from table_picrust2
+    
+    	output :
+    		file 'q2-picrust2_output/ec_metagenome.qza' into EC_predictions
+    		file 'q2-picrust2_output/ec_metagenome.qzv' into EC_predictions_visu
+    		file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions*.tsv' into EC_predictions_tsv
+    		file 'q2-picrust2_output/ko_metagenome.qza' into KO_predictions
+    		file 'q2-picrust2_output/ko_metagenome.qzv' into KO_predictions_visu
+    		file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions*.tsv' into KO_predictions_tsv
+    		file 'q2-picrust2_output/pathway_abundance.qza' into pathway_predictions
+    		file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
+    		file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
+    		file 'complete_picrust2_cmd' into complete_picrust2_cmd
+    
+    	when :
+    		!params.stats_only
+    
+    	script :
+    	"""
+    	q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_picrust2.log 2>&1
+    	"""
+    }
+    
+    /* Statistical analysis of functional predictions  */
+    process q2_picrust2_stats {
+    
+        label 'r_stats_env'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
+    
+        input :
+            file ec_metagenome from EC_predictions_tsv
+            file ko_metagenome from KO_predictions_tsv
+            file metacyc_predictions_ from pathway_predictions_tsv
+            file metadata from metadata4picrust2
+        output :
+            file '*functional_predictions_NMDS*' into functional_pred_NMDS
+            file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
+    
+        when :
+            !params.stats_only
+    
+        script :
+        """
+        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+        cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
+        """
+    }
+}    
 
-	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
-	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
-	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*'
-	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_cmd', saveAs : { complete_picrust2_cmd -> "cmd/${task.process}_complete.sh" }
-
-	input :
-		file seqs_picrust2 from seqs_picrust2
-		file table_picrust2 from table_picrust2
-
-	output :
-		file 'q2-picrust2_output/ec_metagenome.qza' into EC_predictions
-		file 'q2-picrust2_output/ec_metagenome.qzv' into EC_predictions_visu
-		file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions*.tsv' into EC_predictions_tsv
-		file 'q2-picrust2_output/ko_metagenome.qza' into KO_predictions
-		file 'q2-picrust2_output/ko_metagenome.qzv' into KO_predictions_visu
-		file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions*.tsv' into KO_predictions_tsv
-		file 'q2-picrust2_output/pathway_abundance.qza' into pathway_predictions
-		file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
-		file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
-		file 'complete_picrust2_cmd' into complete_picrust2_cmd
-
-	when :
-		!params.stats_only
-
-	script :
-	"""
-	q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_picrust2.log 2>&1
-	"""
-}
-
-/* Statistical analysis of functional predictions  */
-process q2_picrust2_stats {
-
-    label 'r_stats_env'
-
-    publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
-
-    input :
-        file ec_metagenome from EC_predictions_tsv
-        file ko_metagenome from KO_predictions_tsv
-        file metacyc_predictions_ from pathway_predictions_tsv
-        file metadata from metadata4picrust2
-    output :
-        file '*functional_predictions_NMDS*' into functional_pred_NMDS
-        file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
-
-    when :
-        !params.stats_only
-
-    script :
-    """
-    functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${params.beta_div_var} functional_predictions_NMDS ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
-    cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
-    """
-}
-
-if (params.dada2merge){
-   merged_table_ancom.set { table_ancom }
-} else {
-   if (params.dbotu3_enable) {
-      if (params.microDecon_enable) {
-         decontam_table_ancom.set { table_ancom }
-      } else {
-         dbotu3_table_ancom.set { table_ancom }
-      }
-    } else {
-      dada2_table_ancom.set { table_ancom }
-   }
-}
+table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
+table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
+table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
 
 /* Differential abundance testing with ANCOM  */
 process q2_ancom {
@@ -758,11 +721,7 @@ process q2_ancom {
     """
 }
 
-if (params.microDecon_enable) {
-   decontam_table.set { tsv }
-} else {
-   biom_tsv.set { tsv }
-}
+tsv = params.microDecon_enable ? decontam_table : biom_tsv
 newick_phylo.set { newick }
 	
 process prepare_data_for_stats {
@@ -950,7 +909,7 @@ process stats_beta_css {
     """
 }
 
-process stats_sets_analysis {
+process stats_desc_comp {
 
     label 'r_stats_env'
 
@@ -961,18 +920,17 @@ process stats_sets_analysis {
 
     output :
         file 'upset_plot*' into upset_plot
-        file 'end_analysis.ok' into end_ok
 
     when :
-        params.stats_sets_analysis_enable
+        params.stats_desc_comp_enable
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/sets_analysis.R ${phyloseq_rds} ${params.sets_analysis_crit} upset_plot &> stats_sets_analysis.log 2>&1
-    touch end_analysis.ok
+    Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${params.desc_comp_crit} upset_plot &> stats_desc_comp.log 2>&1
     """
 }
 
+workflow.onComplete {
 if (params.report_enable) {
     Channel.fromPath(params.reportHTML, checkIfExists:true).set { reportHTML }
            .println()
@@ -986,7 +944,6 @@ process report {
     input :
         file reportHTML from reportHTML
         file reportMD from reportMD
-        file 'end_analysis.ok' from end_ok
 
     output :
         file 'Report_*' into Reports
@@ -1000,7 +957,7 @@ process report {
     cp ${reportMD} Report_${params.projectName}.md
     """
 }
-
+}
 /* Other functions */
 def nfcoreHeader() {
     // Log colors ANSI codes

@@ -212,13 +212,13 @@ if (params.microDecon_enable && !params.control_list) {
 
 inasv_table_ch = params.stats_only ? Channel.fromPath(params.inasv_table, checkIfExists:true)
                                             .ifEmpty { exit 1, "Cannot find --inasv_table : ${params.inasv_table}" }
-                                            .set { tsv }
+                                            .set { tsv_only }
                                    : Channel.empty()
 
 newick_ch = params.stats_only ? Channel.fromPath(params.innewick, checkIfExists:true)
                                        .ifEmpty { exit 1, "Cannot find --innewick : ${params.innewick}" }
-                                       .set { newick }
-                               : Channel.empty()
+                                       .set { newick_only }
+                              : Channel.empty()
 
 if (params.data_integrity_enable) {
     /* Check data integrity */
@@ -721,8 +721,10 @@ process q2_ancom {
     """
 }
 
-tsv = params.microDecon_enable ? decontam_table : biom_tsv
-newick_phylo.set { newick }
+
+tsvA= params.microDecon_enable ? decontam_table : biom_tsv
+tsv = params.stats_only ? tsv_only : tsvA
+newick = params.stats_only ? newick_only : newick_phylo
 	
 process prepare_data_for_stats {
     
@@ -930,33 +932,30 @@ process stats_desc_comp {
     """
 }
 
-workflow.onComplete {
+reportHTML_ch = params.report_enable ? Channel.fromPath(params.reportHTML, checkIfExists:true) : Channel.empty()
+reportMD_ch = params.report_enable ? Channel.fromPath(params.reportMD, checkIfExists:true) : Channel.empty()
+
 if (params.report_enable) {
-    Channel.fromPath(params.reportHTML, checkIfExists:true).set { reportHTML }
-           .println()
-    Channel.fromPath(params.reportMD, checkIfExists:true).set { reportMD }
-           .println()
-}
-process report {
-
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report_*'
-
-    input :
-        file reportHTML from reportHTML
-        file reportMD from reportMD
-
-    output :
-        file 'Report_*' into Reports
-
-    when :
-       params.report_enable
-
-    shell :
-    """
-    cp ${reportHTML} Report_${params.projectName}.html
-    cp ${reportMD} Report_${params.projectName}.md
-    """
-}
+    process report {
+    
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report_*'
+    
+        input :
+            file reportHTML from reportHTML_ch
+            file reportMD from reportMD_ch
+    
+        output :
+            file 'Report_*' into Reports
+    
+        when :
+           params.report_enable
+    
+        shell :
+        """
+        cp ${reportHTML} Report_${params.projectName}.html
+        cp ${reportMD} Report_${params.projectName}.md
+        """
+    }
 }
 /* Other functions */
 def nfcoreHeader() {

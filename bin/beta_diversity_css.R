@@ -29,7 +29,7 @@ CSS_TABLE = MRcounts(css, norm = T)
 PHYLOSEQ_css = PHYLOSEQ
 otu_table(PHYLOSEQ_css) = otu_table(CSS_TABLE,taxa_are_rows=TRUE)
 CSS_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_css)),as.data.frame(tax_table(PHYLOSEQ_css)))
-write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",")
+write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".")
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 #                                                                               #

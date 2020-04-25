@@ -35,7 +35,7 @@ PHYLOSEQ_deseq2 = PHYLOSEQ
 otu_table(PHYLOSEQ_deseq2) = otu_table(deseq2_vst,taxa_are_rows=TRUE)
 otu_table(PHYLOSEQ_deseq2)[otu_table(PHYLOSEQ_deseq2) <0 ] <-0
 DESeq2_normalized_table = cbind(as.data.frame(otu_table(PHYLOSEQ_deseq2)),as.data.frame(tax_table(PHYLOSEQ_deseq2)))
-write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=",")
+write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t",col.names=T,row.names=T,dec=".")
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 #                                                                               #

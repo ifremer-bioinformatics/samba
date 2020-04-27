@@ -4,30 +4,28 @@
 ## Purpose of script: Taxonomic assignation of ASVs                          ##
 ##                                                                           ##
 ###############################################################################
-
 args=("$@")
 
 cpus=${args[0]}
-seqs_db=${args[1]}
-taxa_db=${args[2]}
-database_no_extract=${args[3]}
-extract_db=${args[4]}
-Fprimer=${args[5]}
-Rprimer=${args[6]}
-confidence=${args[7]}
-data_repseqs=${args[8]}
-taxoqza=${args[9]}
-taxoqzv=${args[10]}
-taxo_output=${args[11]}
-asv_taxo_tsv=${args[12]}
-dbotu3_summary=${args[13]}
-final_asv_taxo_biom=${args[14]}
-final_asv_taxo_tsv=${args[15]}
-database=${args[16]}
-seqs_db_filtered=${args[17]}
-logcmd=${args[18]}
+extract_db=${args[1]}
+Fprimer=${args[2]}
+Rprimer=${args[3]}
+confidence=${args[4]}
+data_repseqs=${args[5]}
+taxoqza=${args[6]}
+taxoqzv=${args[7]}
+taxo_output=${args[8]}
+asv_taxo_tsv=${args[9]}
+dbotu3_summary=${args[10]}
+final_asv_taxo_biom=${args[11]}
+final_asv_taxo_tsv=${args[12]}
+database=${args[13]}
+seqs_db_filtered=${args[14]}
+logcmd=${args[15]}
 
 if [ "$extract_db" = true ]; then
+    seqs_db=${args[16]}
+    taxa_db=${args[17]}
     #Train the classifier
     cmd="qiime feature-classifier extract-reads \
         --i-sequences $seqs_db \
@@ -46,7 +44,7 @@ if [ "$extract_db" = true ]; then
 
 else 
     # Keep complete database
-    database=$database_no_extract
+    database=${args[16]}
 fi
 
 #Run RDP Classifier for taxonomy assignment

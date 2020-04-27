@@ -164,18 +164,25 @@ if (!params.dada2merge && (!params.input_manifest || params.input_manifest.isEmp
    log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
    exit 1 
 }
-params.dada2merge ?: Channel.fromPath(params.input_manifest, checkIfExists:true)
-                            .into { manifest ; manifest4integrity }
+params.dada2merge ? Channel.empty()
+                           .into { manifest ; manifest4integrity }
+                  : Channel.fromPath(params.input_manifest, checkIfExists:true)
+                           .into { manifest ; manifest4integrity }
 
 if (params.dada2merge) {
    if (!params.merge_tabledir || params.merge_tabledir.isEmpty()) {
       log.error "Parameter --merge_tabledir cannot be null or empty. Set the path to the folder with ASV tables to merge"
       exit 1
    }
-   if (!params.dada2merge_repseqsdir || params.dada2merge_repseqsdir.isEmpty()) {
-       log.error "Parameter --dada2merge_repseqsdir cannot be null or empty. Set the path to the folder with ASV sequences to merge"  
+   if (!params.merge_repseqsdir || params.merge_repseqsdir.isEmpty()) {
+       log.error "Parameter --merge_repseqsdir cannot be null or empty. Set the path to the folder with ASV sequences to merge"  
        exit 1
    }
+    params.data_integrity_enable = false
+    params.dbotu3_enable = false
+    params.microDecon_enable = false
+    params.picrust2_enable = false
+    params.stats_only = false
 }
 dada2merge_tabledir_ch = params.dada2merge ? Channel.fromPath(params.merge_tabledir, checkIfExists:true)
                                         : Channel.empty()
@@ -210,16 +217,30 @@ if (params.microDecon_enable && !params.control_list) {
    exit 1
 }
 
+if (params.stats_only) {
+   if (!params.inasv_table || params.inasv_table.isEmpty()) {
+      log.error "Parameter --inasv_table cannot be null or empty. Set the path to the ASV count table"
+      exit 1
+   }
+   if (!params.innewick || params.innewick.isEmpty()) {
+      log.error "Parameter --innewick cannot be null or empty. Set the path to the newick tree"
+      exit 1
+   }
+   params.dada2merge = false
+   params.data_integrity_enable = false
+   params.dbotu3_enable = false
+   params.microDecon_enable = false
+   params.picrust2_enable = false
+}
+
 inasv_table_ch = params.stats_only ? Channel.fromPath(params.inasv_table, checkIfExists:true)
-                                            .ifEmpty { exit 1, "Cannot find --inasv_table : ${params.inasv_table}" }
                                             .set { tsv_only }
                                    : Channel.empty()
 
 newick_ch = params.stats_only ? Channel.fromPath(params.innewick, checkIfExists:true)
-                                       .ifEmpty { exit 1, "Cannot find --innewick : ${params.innewick}" }
                                        .set { newick_only }
                               : Channel.empty()
-
+i
 if (params.data_integrity_enable) {
     /* Check data integrity */
     process data_integrity {
@@ -443,8 +464,9 @@ process q2_taxonomy {
 	!params.stats_only
 
 	script :
+        def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
 	"""
-	q2_taxo.sh ${task.cpus} ${seqs_db} ${taxo_db} ${database} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd &> q2_taxo.log 2>&1
+	q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db &> q2_taxo.log 2>&1
 	""" 
 }
 

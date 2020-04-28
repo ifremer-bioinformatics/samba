@@ -501,7 +501,7 @@ if (params.dada2merge) {
 
 outputA = params.dada2merge ? merge_output : dada2_output
 output_ch = params.dbotu3_enable ? dbotu3_output : outputA
-output_ch.set { decontam_output }
+output_ch.into { taxonomy_output ; decontam_output }
 
 seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
 seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
@@ -522,10 +522,10 @@ process q2_taxonomy {
 
 	input :
 		file repseqs_taxo from seqs_taxo
-		file summary_output from output_ch
-                file seqs_db from seqs_db_ch
-                file taxo_db from taxo_db_ch
-                file database from database_ch
+		file summary_output from taxonomy_output
+        file seqs_db from seqs_db_ch
+        file taxo_db from taxo_db_ch
+        file database from database_ch
 
 	output :
 		file 'taxonomy.qza' into data_taxonomy

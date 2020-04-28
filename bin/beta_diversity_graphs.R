@@ -44,7 +44,7 @@ plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result
     ggsave(filename=paste(pcoa,distance,"_",criteria,".png",sep=""), device="png", width = width, height = height)
 }
 
-plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance, width, height) {
+plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance, width, height, criteria) {
     ## Sort GROUP color palette according to dend ####
     color = col_group[order.dendrogram(dendro)]
     ## Plot dendrogram ####

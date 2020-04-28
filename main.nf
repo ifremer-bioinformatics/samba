@@ -1075,14 +1075,108 @@ if (params.report_enable) {
     
         output :
             file 'Report_*' into Reports
+            file 'data.json' into report_data
     
         when :
            params.report_enable
     
-        shell :
+        script :
         """
-        cp ${reportHTML} Report_${params.projectName}.html
-        cp ${reportMD} Report_${params.projectName}.md
+        #!/usr/bin/env python
+        import json
+        from shutil import copyfile
+
+        data = {}
+        data["projectName"] = '$params.projectName'
+        data["singleEnd"] = '$params.singleEnd'
+        data["manifest"] = '$params.input_manifest'
+        data["metadata"] = '$params.input_metadata'
+        data["outdir"] = '$params.outdir'
+        data["steps"] = []
+        data["steps"].append({
+            'data_integrity_enable': '$params.data_integrity_enable',
+            'dbotu3_enable': '$params.dbotu3_enable',
+            'microDecon_enable': '$params.microDecon_enable',
+            'picrust2_enable': '$params.picrust2_enable',
+            'stats_alpha_enable': '$params.stats_alpha_enable',
+            'stats_beta_enable': '$params.stats_beta_enable',
+            'stats_desc_comp_enable': '$params.stats_desc_comp_enable',
+            'report_enable': '$params.report_enable',
+            'stats_only': '$params.stats_only',
+            'dada2merge': '$params.dada2merge'
+        })
+            
+        data["integrity"] = []
+        data["integrity"].append({
+            'barcode_filter': '$params.barcode_filter',
+            'primer_filter': '$params.primer_filter'
+        })
+        
+        data["cutadapt"] = []
+        data["cutadapt"].append({
+           'primerF': '$params.primerF',
+           'primerR': '$params.primerR',
+           'errorRate': '$params.errorRate',
+           'overlap': '$params.overlap'
+        })
+        data["dada2"] = []
+        data["dada2"].append({
+            'trimLeft': '$params.trimLeft',
+            'trimRigth': '$params.trimRigth',
+            'FtruncLen': '$params.FtruncLen',
+            'RtruncLen': '$params.RtruncLen',
+            'FmaxEE': '$params.FmaxEE',
+            'RmaxEE': '$params.RmaxEE',
+            'minQ': '$params.minQ',
+            'chimeras': '$params.chimeras'
+        })
+        data["dada2merge"] = []
+        data["dada2merge"].append({
+            'merge_tabledir': '$params.merge_tabledir',
+            'merge_repseqsdir': '$params.merge_repseqsdir'
+        })
+        data["dbotu3"] = []
+        data["dbotu3"].append({
+            'gen_crit': '$params.gen_crit',
+            'abund_crit': '$params.abund_crit',
+            'pval_crit': '$params.pval_crit'
+        })
+        data["taxonomy"] = []
+        data["taxonomy"].append({
+            'database': '$params.database',
+            'seqs_db': '$params.seqs_db',
+            'taxo_db': '$params.taxo_db',
+            'extract_db': '$params.extract_db',
+            'confidence': '$params.confidence'
+        })
+        data["picrust2"] = []
+        data["picrust2"].append({
+            'method': '$params.method',
+            'nsti': '$params.nsti'
+        })
+        data["microdecon"] = []
+        data["microdecon"].append({
+            'control_list': '$params.control_list',
+            'nb_controls': '$params.nb_controls',
+            'nb_samples': '$params.nb_samples'
+        })
+        data["stats"] = []
+        data["stats"].append({
+            'ancom_var': '$params.ancom_var',
+            'kingdom': '$params.kingdom',
+            'taxa_nb': '$params.taxa_nb',
+            'hc_method': '$params.hc_method',
+            'alpha_div_group': '$params.alpha_div_group',
+            'beta_div_var': '$params.beta_div_var',
+            'desc_comp_crit': '$params.desc_comp_crit',
+            'inasv_table': '$params.inasv_table',
+            'innewick': '$params.innewick'
+        }) 
+        with open('data.json', 'w') as outfile:
+           json.dump(data, outfile, sort_keys=True, indent=4)
+ 
+        copyfile("${reportHTML}", "Report_${params.projectName}.html")
+        copyfile("${reportMD}", "Report_${params.projectName}.md")
         """
     }
 }

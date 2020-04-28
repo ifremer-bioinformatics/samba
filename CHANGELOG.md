@@ -1,30 +1,22 @@
 # nf-core/samba: Changelog
 
-## Version 2.0.0
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### Pipeline updates
+## v2.0.0 - May 2020
 
+Initial release of nf-core/samba, created with the [nf-core](http://nf-co.re/) template.
 This release marks the point where the pipeline was moved from [SeBiMER/SAMBA-nextflow](https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow)
 over the new [nf-core](http://nf-co.re/) community, at [nf-core/samba](https://github.com/nf-core/samba).
-* Sample decontamination step using [microDecon](https://github.com/donaldtmcknight/microDecon)
-* Update statistics part with Venn diagram like graphs using [UpsetR](https://github.com/hms-dbmi/UpSetR) 
-* To be completed...........
 
-* Added options :
-    * samba can now handle single-end data
+### `Added`
 
-### Bug fixes
+### `Fixed`
 
-* List fixed bugs
+### `Dependencies`
 
-## Version 1.0.0
+See README.md
 
-### Pipeline updates
-
-* To be completed...........
-
-### Packaged dependencies
-
-* To be completed...........
+### `Deprecated`
 
 Thanks to everyone who has worked on this release!

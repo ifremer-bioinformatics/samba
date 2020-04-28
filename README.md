@@ -1,105 +1,77 @@
-# SAMBA
-## Standardized and Automated MetaBarcoding Analysis workflow using Nextflow
+# ![nf-core/samba](docs/images/nf-core-samba_logo.png)
 
-[![SAMBA Version](https://img.shields.io/badge/version-1.0.1-red.svg)]()
-[![Install](https://img.shields.io/badge/install-SeBiMER_gitlab-brightgreen.svg)](https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A520.01.0-blue.svg)](https://www.nextflow.io/)
-[![Conda](https://img.shields.io/badge/conda-%E2%89%A54.8.1-blue.svg)](https://docs.conda.io/en/latest/)
-[![R](https://img.shields.io/badge/r_version-%E2%89%A53.6.1-blue.svg)](https://www.r-project.org/)
+**Standardized and Automated MetaBarcoding Analyses workflow (Ifremer SeBiMER)**.
 
-![SAMBA Workflow](./docs/images/SAMBA_schemaEN.png)
+[![GitHub Actions CI Status](https://github.com/nf-core/samba/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/samba/actions)
+[![GitHub Actions Linting Status](https://github.com/nf-core/samba/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/samba/actions)
+[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
+[![Docker](https://img.shields.io/docker/automated/nfcore/samba.svg)](https://hub.docker.com/r/nfcore/samba)
 
-## How to install
+## Introduction
 
-### How to get this worflow
-#### For Ifremer users
-```bash
-# connect to datarmor
-ssh datarmor
-# get a local copy of the workflow in the directory SAMBA-nextflow
-git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
-cd SAMBA-nextflow
-# get stable SAMBA version 1.0.1
-git checkout v1.0.1
-```
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
-### For other users
-```bash
-# get a local copy of the workflow in the directory SAMBA-nextflow
-git clone https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow
-cd SAMBA-nextflow
-# get stable SAMBA version 1.0.1
-git checkout v1.0.1
-```
-This workflow uses conda to resolve process dependencies, please be sure to have the following dependencies installed beforehand:
-- Conda >=4.8.1 binary in your PATH or a conda init file in your environment -> https://docs.anaconda.com/anaconda/user-guide/faq/
-- Nextflow >=20.01.0 -> conda install -c bioconda nextflow=20.01.0
+## Quick Start
 
-For nextflow, update the following files conf/conda_envs/nextflow_env.sh and conf/conda_envs/delenv.sh to fit your environment's paths
+i. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-SAMBA is written to be executed on a grid cluster with PBS Professionnal scheduler. If your scheduler is different, change the executor name in the file conf/resources.config.
+ii. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))
 
-### To test the workflow
-```bash
-# Enter in your local copy
-cd SAMBA-nextflow
-# Run the workflow
-./RunSAMBA_training_dataset.sh 
-```
-At the end of the workflow, have a look at the html report : SAMBA_results_of_training_dataset_project/00_report/Report_training_dataset_project.html
-
-## How to use with your own data
-
-### Input files
-
-Create a folder containing:
-
-* dna-sequence-raw : a folder with all your R1 and R2 fastq.gz files [required] 
-For Ifremer users, this folder is normally already created in the DATAREF folder of your project
-
-* q2\_manifest : tabular file with sample name and path to corresponding R1 and R2 fastq.gz files [required]
-For Ifremer users, the paths to your files can point directly to DATAREF
-
-Mandatory columns are listed below :
-
-sample-id | forward-absolute-filepath | reverse-absolute-filepath 
-:---: | :---: | :---:
-sample1 | /path/to/sample1-R1.fastq.gz | /path/to/sample1-R2.fastq.gz
-sample2 | /path/to/sample2-R1.fastq.gz | /path/to/sample2-R2.fastq.gz
-sample3 | /path/to/sample3-R1.fastq.gz | /path/to/sample3-R2.fastq.gz
-
-* q2\_metadata : tabular file describing samples metadata (prefer to use "\_" for long variable names) [required]
-
-Mandatory columns are sample-id and barcode. For your metadata colums, prefer to use "\_" to name your variables :
-
-sample-id | barcode | metadata\_1 | metadata\_2
-:---: | :---: | :---: | :---:
-sample1 | ATTAC | metadata1 | A
-sample2 | ACTGA | metadata1 | B
-sample3 | CTTCA | metadata2 | B
-
-* [inasv\_table] : ASV table to use as input if running only statistics steps [optional]
-
-### Workflow parameters
-
-* nextflow.config : general configs for Nextflow (set TMPDIR, Workdir...). Check this file and adapt to your environment !
-* conf/base.config : workflow workdir definition, processes (tasks) parameters and activation. Check this file and adapt to your data !
-* conf/resources.config : scheduler resources to attribute to each process. Check this file and adapt to your scheduler !
-* conf/report.config : nextflow automatic reports parameters 
-* main.nf : each step is described within its command line
-
-### How to run
-Don't forget to modify nextflow config files before running the workflow (see nextflow.config and config directory).
-
-Note : This workflow is design to run on a PBS pro cluster (See resources.config to change cluster options)
+iii. Download the pipeline and test it on a minimal dataset with a single command
 
 ```bash
-# RUN FROM SCRATCH
-./RunSAMBA.sh
-
-# RUN RESUME (when a task has failed or if you run steps separately)
-./RunSAMBA.sh -resume
+nextflow run nf-core/samba -profile test,<docker/singularity/conda/institute>
 ```
+
+> Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
+
+iv. Start running your own analysis!
+
+```bash
+nextflow run nf-core/samba -profile <docker/singularity/conda/institute>,custom
+```
+
+See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
+
+## Documentation
+
+The nf-core/samba pipeline comes with documentation about the pipeline, found in the `docs/` directory:
+
+1. [Installation](https://nf-co.re/usage/installation)
+2. Pipeline configuration
+    * [Local installation](https://nf-co.re/usage/local_installation)
+    * [Adding your own system config](https://nf-co.re/usage/adding_own_config)
+    * [Reference genomes](https://nf-co.re/usage/reference_genomes)
+3. [Running the pipeline](docs/usage.md)
+4. [Output and how to interpret the results](docs/output.md)
+5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
+
+![SAMBA Workflow](./docs/images/samba-v2.0.0.png)
+
+## Credits
+
+nf-core/samba was originally written by IFREMER-IRSI-SeBiMER.
+
+## Contributions and Support
+
+If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+
+For further information or help, don't hesitate to get in touch on [Slack](https://nfcore.slack.com/channels/samba) (you can join with [this invite](https://nf-co.re/join/slack)).
+
+## Citation
+
+<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi. -->
+<!-- If you use  nf-core/samba for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+
+You can cite the `nf-core` publication as follows:
+
+> **The nf-core framework for community-curated bioinformatics pipelines.**
+>
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+>
+> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).  
+> ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
 
 ### References 
 

@@ -1068,6 +1068,8 @@ if (params.report_enable) {
     process report {
     
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report_*'
+        publishDir "${params.outdir}/${params.report_dirname}/cmd", mode: 'copy', pattern : 'data.json'
+
     
         input :
             file reportHTML from reportHTML_ch

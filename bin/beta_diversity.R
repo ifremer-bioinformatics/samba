@@ -86,7 +86,7 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_te
     n_group = length(unique(group))
     cols = color_vector[1:n_group]
     col_group = cols[group]
-    plot.hc(dendro, group, cols, col_group, method_hc, plot_hc, distance, 12, 10)
+    plot.hc(dendro, group, cols, col_group, method_hc, plot_hc, distance, 12, 10, criteria)
 }
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #

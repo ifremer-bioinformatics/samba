@@ -76,6 +76,6 @@ composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill,
   }
   p = p + geom_bar(stat = "identity", position = "stack") + theme(axis.text.x=element_text(angle=90)) + ggtitle(paste("Composition within", taxaSet1, "(", taxa_nb, "top", taxaRank2, ")")) + theme_classic() + labs(x="Samples",y="Abundance",fill=fill) + scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) + theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) + theme(axis.title.x=element_text(vjust=-1,color="black",size=13)) + theme(axis.text.y=element_text(hjust=0.8,color="black",size=13)) + theme(axis.title.y=element_text(size=11)) + theme(legend.text=element_text(size=16)) + theme(legend.title=element_text(size=16,face="bold")) + facet_wrap(group, scales = "free_x", nrow = 1) + theme(strip.text=element_text(size=13)) + theme(strip.background = element_rect(colour="black", fill="white", size=1.5, linetype="solid")) +theme(plot.title = element_text(hjust = 0.5, size=20, face="bold"))
 
- ggsave(filename=paste(barplot,"_",group,".svg",sep=""), device="svg", width = 20, height = 12)
- ggsave(filename=paste(barplot,"_",group,".png",sep=""), device="png", width = 20, height = 12)
+ ggsave(filename=paste(barplot,".svg",sep=""), device="svg", width = 20, height = 12)
+ ggsave(filename=paste(barplot,".png",sep=""), device="png", width = 20, height = 12)
 }

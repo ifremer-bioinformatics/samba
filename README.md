@@ -51,7 +51,7 @@ The nf-core/samba pipeline comes with documentation about the pipeline, found in
 
 ## Credits
 
-nf-core/samba was originally written by IFREMER-IRSI-SeBiMER.
+nf-core/samba was originally written by [IFREMER-IRSI-SeBiMER](https://wwz.ifremer.fr/Recherche/Departements-scientifiques/Departement-Infrastructures-de-Recherche-et-Systemes-d-Information/Activites/Bioinformatique).
 
 ## Contributions and Support
 

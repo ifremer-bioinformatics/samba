@@ -59,8 +59,8 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
     labs(caption = paste("Stress:",pred_nmds_stress,
                          "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
                          paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
-  ggsave(filename=paste(name,pred_plot,"_",criteria,".svg",sep=""), device="svg", width = 12, height = 10)
-  ggsave(filename=paste(name,pred_plot,"_",criteria,".png",sep=""), device="png", width = 12, height = 10)
+  ggsave(filename=paste(name,pred_plot,".svg",sep=""), device="svg", width = 12, height = 10)
+  ggsave(filename=paste(name,pred_plot,".png",sep=""), device="png", width = 12, height = 10)
 }
 
 main_ec <- function(){

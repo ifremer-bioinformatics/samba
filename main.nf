@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-
 /*
 ========================================================================================
                          nf-core/samba
@@ -15,232 +14,296 @@ def helpMessage() {
     log.info nfcoreHeader()
     log.info"""
 
-Usage:
+    Usage:
 
-The typical command for running the pipeline is as follows:
+    The typical command for running the pipeline after filling the conf/custom.config file is as follows:
 
-	nextflow run main.nf --projectName "MyProject" --input_metadata 'PATH-TO-metadata.csv' --input_manifest 'PATH-TO-manifest.csv' --database "PATH-TO-preformatted-QIIME-db.qza"	-profile conda
+	nextflow run nf-core/samba -profile conda,custom
 
 	Mandatory arguments:
-        --projectName			Name of the project being analyzed.
-	--input_metadata		Path to input file with project samples metadata (csv format).
-	--input_manifest		Path to input file with samples reads files paths (csv format).
-      	-profile			Configuration profile to use. Can use multiple (comma separated).
-					Available: conda.
+	--input_metadata [file]		Path to input file with project samples metadata (csv format).
+	--input_manifest [file]		Path to input file with samples reads files paths (csv format).
+      	-profile [str]			Configuration profile to use. Can use multiple (comma separated).
+					Available: conda, docker, singularity, test, custom.
 	Generic:
-	--singleEnd			Set to true to specify that the inputs are single-end reads.
+	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
 
 	Other options
-	--outdir			The output directory where the results will be saved.
+	--outdir [path]			The output directory where the results will be saved.
 	-w/--work-dir			The temporary directory where intermediate data will be saved.
-	-name				Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+	--email [email]                 Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
+	--email_on_fail [email]         Same as --email, except only send mail if the workflow is not successful
+	-name [str]			Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+	--projectName [str]		Name of the project being analyzed.
 
 	Data integrity:
-	--data_integrity_enable		Data integrity checking step. Set to false to deactivate this step. (default = true)
-	--barcode_filter		Percentage of sample barcode supposed to be found in raw reads (default : 90).
-	--primer_filter			Percentage of primers supposed to be found in raw reads (default : 70).
+	--data_integrity_enable [bool]	Data integrity checking step. Set to false to deactivate this step. (default = true)
+	--barcode_filter [str]		Percentage of sample barcode supposed to be found in raw reads (default : 90).
+	--primer_filter [str]		Percentage of primers supposed to be found in raw reads (default : 70).
    
 	Raw reads cleaning:
-	--primerF			Forward primer (to be used in Cutadapt cleaning step).
-	--primerR			Reverse primer (to be used in Cutadapt cleaning step).
-	--errorRate			Cutadapt error rate allowed to match primers (default : 0.1).
-	--overlap			Cutadapt overlaping length between primer and read (default : 18).
+	--primerF [str]			Forward primer (to be used in Cutadapt cleaning step).
+	--primerR [str]			Reverse primer (to be used in Cutadapt cleaning step).
+	--errorRate [str]		Cutadapt error rate allowed to match primers (default : 0.1).
+	--overlap [str]			Cutadapt overlaping length between primer and read (default : 18).
 
 	ASVs inference:
-	--trimLeft			The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
-	--trimRigth			The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
-	--FtruncLen			Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--RtruncLen			Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--FmaxEE			Forward reads with higher than maxEE "expected errors" will be discarded (default = 2).
-	--RmaxEE			Reverse with higher than maxEE "expected errors" will be discarded (default = 2). 
-	--minQ				After truncation, reads contain a quality score less than minQ will be discarded (default = 10).
-	--chimeras			Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
+	--trimLeft [str]		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
+	--trimRigth [str]		The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
+	--FtruncLen [str]		Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--RtruncLen [str]		Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--FmaxEE [str]			Forward reads with higher than maxEE "expected errors" will be discarded (default = 2).
+	--RmaxEE [str]			Reverse with higher than maxEE "expected errors" will be discarded (default = 2). 
+	--minQ [str]			After truncation, reads contain a quality score less than minQ will be discarded (default = 10).
+	--chimeras [str]		Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification. 
 
 	Merge ASVs tables:
-	--dada2merge			Set to true to merge Dada2 ASVs tables.
-	--merge_tabledir		Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
-	--merge_repseqsdir		Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
+	--dada2merge [bool]		Set to true to merge Dada2 ASVs tables.
+	--merge_tabledir [path]		Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
+	--merge_repseqsdir [path]	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
 	Distribution based-clustering:
-	--dbotu3_enable			Distribution based-clustering step. Set to false to deactivate this step. (default = true)
-	--gen_crit			dbotu3 Genetic criterion (default = 0.1).
-	--abund_crit			dbotu3 Abundance criterion (default = 10).
-	--pval_crit			dbotu3 P-value criterion (default = 0.0005).
+	--dbotu3_enable	[bool]		Distribution based-clustering step. Set to false to deactivate this step. (default = true)
+	--gen_crit [str]		dbotu3 Genetic criterion (default = 0.1).
+	--abund_crit [str]		dbotu3 Abundance criterion (default = 10).
+	--pval_crit [str]		dbotu3 P-value criterion (default = 0.0005).
 
 	Taxonomic assignation:
-	--extract_db			Set to true to extract specific region from reference database (default = false)
-	--seqs_db			Path to reference database (required if extract_db = true).
-	--taxo_db			Path to taxonomic reference database (required if extract_db = true).
-	--database			Path to preformatted QIIME2 format database (required if extract_db = false).
-	--confidence			RDP confidence threshold (default = 90).
+	--extract_db [bool]		Set to true to extract specific region from reference database (default = false)
+	--seqs_db [file]		Path to reference database (required if extract_db = true).
+	--taxo_db [file]		Path to taxonomic reference database (required if extract_db = true).
+	--database [file]		Path to preformatted QIIME2 format database (required if extract_db = false).
+	--confidence [str]		RDP confidence threshold (default = 90).
 
 	Decontamination:
-        --microDecon_enable		Sample decontamination step. Set to true to activate this step. (default = false)
-	--control_list			Comma separated list of control samples (e.g : "sample1,sample4,sample7") (required if microDecon_enable = true).
-	--nb_controls			Number of controled samples listed (required if microDecon_enable = true).
-	--nb_samples			Number of samples that are not control samples (required if microDecon_enable = true).
+        --microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
+	--control_list [str]		Comma separated list of control samples (e.g : "sample1,sample4,sample7") (required if microDecon_enable = true).
+	--nb_controls [str]		Number of controled samples listed (required if microDecon_enable = true).
+	--nb_samples [str]		Number of samples that are not control samples (required if microDecon_enable = true).
    
 	Predict functionnal abundance:
-        --picrust2_enable		Set to true to enable functionnal prediction step. (default = false)
-	--method			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
-	--nsti				Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
+        --picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
+	--method [str]			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
+	--nsti [str]			Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences. 
 
 	Differential abundance testing:
-	--ancor_var		        According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis.
+	--ancor_var [str]	        According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis.
 	
 	Statistics:
-	--stats_alpha_enable		Set to false to deactivate Alpha diversity statistics step. (default = true)
-	--stats_beta_enable		Set to false to deactivate Beta diversity statistics steps. (default = true)
-	--stats_desc_comp_enable	Set to false to deactivate Descriptive comparisons steps. (default = true)
+	--stats_alpha_enable [bool]	Set to false to deactivate Alpha diversity statistics step. (default = true)
+	--stats_beta_enable [bool]	Set to false to deactivate Beta diversity statistics steps. (default = true)
+	--stats_desc_comp_enable [bool]	Set to false to deactivate Descriptive comparisons steps. (default = true)
 
-	--kingdom			Kingdom to be displayed in barplots.
-	--taxa_nb			Number of taxa to be displayed in barplots.
-	--alpha_div_group		According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
-	--beta_div_var			According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
-	--sets_analysis_crit		According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs. 
-	--hc_method			Hierarchical clustering method (default = 'ward.D2').
+	--kingdom [str]			Kingdom to be displayed in barplots.
+	--taxa_nb [str]			Number of taxa to be displayed in barplots.
+	--alpha_div_group [str]	 	According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
+	--beta_div_var [str]		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
+	--sets_analysis_crit [str]	According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs. 
+	--hc_method [str]		Hierarchical clustering method (default = 'ward.D2').
 
-	--stats_only			Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
-	--inasv_table			if stats_only is activated, set the path to your own ASV table in tsv format.
-	--innewick			if stats_only is activated, set the path to your own phylogenetic tree in newick format.
+	--stats_only [bool]		Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
+	--inasv_table [file]		if stats_only is activated, set the path to your own ASV table in tsv format.
+	--innewick [file]		if stats_only is activated, set the path to your own phylogenetic tree in newick format.
 	
 	Final analysis report:
-	--report_enable			Set to false to deactivate report creation. (default = true)
+	--report_enable	[bool]		Set to false to deactivate report creation. (default = true)
 
     """.stripIndent()
 }
 
-/**********************************************************
- * SET UP CONFIGURATION VARIABLES
- */
-
 // Show help message
-if (params.help){
+if (params.help) {
     helpMessage()
     exit 0
 }
-println "--------------------------------------------------------------"
-println "Workflow for project : $params.projectName"
-println "Workflow description : $workflow.manifest.description"
-println "Workflow gitLab URL : $workflow.manifest.homePage"
-println "Workflow authors : $workflow.manifest.author"
-println "Workflow source code : $workflow.projectDir"
-println "Cmd line: $workflow.commandLine"
-println "Workflow working/temp directory : $workflow.workDir"
-println "Workflow output/publish directory : $params.outdir"
-if (params.singleEnd) println "Going to process SingleEnd data"
-println "--------------------------------------------------------------"
-println "Optionnal activated steps : "
-if (params.stats_only) {
-   println "- Statistics steps only activated"
-} else {
-   if (params.data_integrity_enable) println "- Data integrity step enabled"
-   if (params.dbotu3_enable) println "- Distribution based-clustering step enabled"
-   if (params.microDecon_enable) println "- Decontamination step enabled"
-   if (params.dada2merge) println "- Dada2 merge step enabled"
-   if (params.picrust2_enable) println "- Picrust2 functionnal prediction step enabled"
+
+/*
+ * SET UP CONFIGURATION VARIABLES
+ */
+
+// Has the run name been specified by the user?
+//  this has the bonus effect of catching both -name and --name
+custom_runName = params.name
+if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
+    custom_runName = workflow.runName
 }
-println "--------------------------------------------------------------"
-println "Activated statistics steps : "
-if (params.stats_alpha_enable) println "- Alpha diversity statistics step enabled"
-if (params.stats_beta_enable) println "- Beta diversity statistics steps enabled"
-if (params.stats_desc_comp_enable) println "- Descriptive comparisons step enabled"
-println "--------------------------------------------------------------"
 
-log.info "Pipeline running in ${workflow.profile} mode"
-
-//Copy base.config file to output directory for each run
-paramsfile = file('conf/base.config')
+//Copy config files to output directory for each run
+paramsfile = file("$baseDir/conf/base.config", checkIfExists: true)
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
-if (!params.input_metadata || params.input_metadata.isEmpty()) {
-   log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
-   exit 1
+if (workflow.profile.contains('test')) {
+   testparamsfile = file("$baseDir/conf/test.config", checkIfExists: true)
+   testparamsfile.copyTo("$params.outdir/conf/test.config")
 }
-Channel.fromPath(params.input_metadata, checkIfExists:true)
-       .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
-
-if (!params.dada2merge && (!params.input_manifest || params.input_manifest.isEmpty())) { 
-   log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
-   exit 1 
-}
-params.dada2merge ? Channel.empty()
-                           .into { manifest ; manifest4integrity }
-                  : Channel.fromPath(params.input_manifest, checkIfExists:true)
-                           .into { manifest ; manifest4integrity }
-
-if (params.dada2merge) {
-   if (!params.merge_tabledir || params.merge_tabledir.isEmpty()) {
-      log.error "Parameter --merge_tabledir cannot be null or empty. Set the path to the folder with ASV tables to merge"
-      exit 1
-   }
-   if (!params.merge_repseqsdir || params.merge_repseqsdir.isEmpty()) {
-       log.error "Parameter --merge_repseqsdir cannot be null or empty. Set the path to the folder with ASV sequences to merge"  
-       exit 1
-   }
-    params.data_integrity_enable = false
-    params.dbotu3_enable = false
-    params.microDecon_enable = false
-    params.picrust2_enable = false
-    params.stats_only = false
-}
-dada2merge_tabledir_ch = params.dada2merge ? Channel.fromPath(params.merge_tabledir, checkIfExists:true)
-                                        : Channel.empty()
-
-dada2merge_repseqsdir_ch = params.dada2merge ? Channel.fromPath(params.merge_repseqsdir, checkIfExists:true)
-                                          : Channel.empty()
-
-if (params.extract_db) {
-   if (!params.seqs_db || params.seqs_db.isEmpty()) {
-      log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
-      exit 1
-   }
-   if (!params.taxo_db || params.taxo_db.isEmpty()) {
-      log.error "Parameter --taxo_db cannot be null or empty. Set the path to the reference taxonomy"
-      exit 1
-   }
-}
-params.extract_db ? Channel.fromPath(params.seqs_db,checkIfExists:true)
-                           .set { seqs_db_ch }
-                  : Channel.value("none").set { seqs_db_ch }
-
-params.extract_db ? Channel.fromPath(params.taxo_db,checkIfExists:true)
-                           .set { taxo_db_ch }
-                  : Channel.value("none").set { taxo_db_ch }
-
-params.extract_db ? Channel.value("none").set { database_ch }
-                  : Channel.fromPath(params.database,checkIfExists:true)
-                           .set { database_ch }
-
-if (params.microDecon_enable && !params.control_list) {
-   println("ERROR : A comma separated list of control samples (--control_list) must be set.");
-   exit 1
+if (workflow.profile.contains('custom')) {
+   customparamsfile = file("$baseDir/conf/custom.config", checkIfExists: true)
+   customparamsfile.copyTo("$params.outdir/conf/custom.config")
 }
 
+//If only running the stats processes of the pipeline
 if (params.stats_only) {
    if (!params.inasv_table || params.inasv_table.isEmpty()) {
       log.error "Parameter --inasv_table cannot be null or empty. Set the path to the ASV count table"
       exit 1
+   } else {
+      inasv_table_ch = Channel.fromPath(params.inasv_table, checkIfExists:true)
+                           .set { tsv_only }
    }
    if (!params.innewick || params.innewick.isEmpty()) {
       log.error "Parameter --innewick cannot be null or empty. Set the path to the newick tree"
       exit 1
+   } else {
+      newick_ch = Channel.fromPath(params.innewick, checkIfExists:true)
+                         .set { newick_only }
    }
+
+   //Force to false other processes options
    params.dada2merge = false
    params.data_integrity_enable = false
    params.dbotu3_enable = false
    params.microDecon_enable = false
    params.picrust2_enable = false
+} else {
+   inasv_table_ch = Channel.empty()
+   newick_ch = Channel.empty()
 }
 
-inasv_table_ch = params.stats_only ? Channel.fromPath(params.inasv_table, checkIfExists:true)
-                                            .set { tsv_only }
-                                   : Channel.empty()
+//If pipeline runs for merging dada2 data
+if (params.dada2merge) {
+   if (!params.merge_tabledir || params.merge_tabledir.isEmpty()) {
+      log.error "Parameter --merge_tabledir cannot be null or empty. Set the path to the folder with ASV tables to merge"
+      exit 1
+   } else {
+      dada2merge_tabledir_ch = Channel.fromPath(params.merge_tabledir, checkIfExists:true)
+   }
+   if (!params.merge_repseqsdir || params.merge_repseqsdir.isEmpty()) {
+      log.error "Parameter --merge_repseqsdir cannot be null or empty. Set the path to the folder with ASV sequences to merge"  
+      exit 1
+   } else {
+      dada2merge_repseqsdir_ch = Channel.fromPath(params.merge_repseqsdir, checkIfExists:true)
+   }
+   //Force to false other processes options
+   params.data_integrity_enable = false
+   params.dbotu3_enable = false
+   params.microDecon_enable = false
+   params.picrust2_enable = false
+   params.stats_only = false
+} else {
+   dada2merge_tabledir_ch = Channel.empty()
+   dada2merge_repseqsdir_ch = Channel.empty()
+}
 
-newick_ch = params.stats_only ? Channel.fromPath(params.innewick, checkIfExists:true)
-                                       .set { newick_only }
-                              : Channel.empty()
-i
+if (!params.stats_only || !params.dada2merge) {
+   // Check if input metadata file exits
+   if (!params.input_metadata || params.input_metadata.isEmpty()) {
+      log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
+      exit 1
+   } else {
+      Channel.fromPath(params.input_metadata, checkIfExists:true)
+             .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+   }
+   if (!params.input_manifest || params.input_manifest.isEmpty()) { 
+      log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
+      exit 1
+   } else {
+      Channel.fromPath(params.input_manifest, checkIfExists:true)
+             .into { manifest ; manifest4integrity }
+   }
+} else {
+   Channel.empty().into { manifest ; manifest4integrity }
+}
+
+//If taxonomy step require to extract primer regions
+if (!params.stats_only && params.extract_db) {
+   if (!params.seqs_db || params.seqs_db.isEmpty()) {
+      log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
+      exit 1
+   } else {
+      seqs_db_ch = Channel.fromPath(params.seqs_db,checkIfExists:true)
+   }
+   if (!params.taxo_db || params.taxo_db.isEmpty()) {
+      log.error "Parameter --taxo_db cannot be null or empty. Set the path to the reference taxonomy"
+      exit 1
+   } else {
+      taxo_db_ch = Channel.fromPath(params.taxo_db,checkIfExists:true)
+   }
+   database_ch = Channel.value("none")
+} else {
+   database_ch = Channel.fromPath(params.database,checkIfExists:true)
+   seqs_db_ch = Channel.value("none")
+   taxo_db_ch = Channel.value("none")
+}
+
+if (params.microDecon_enable && !params.control_list) {
+   log.error "ERROR : A comma separated list of control samples (--control_list) must be set."
+   exit 1
+}
+
+
+/*
+ * PIPELINE INFO
+ */
+
+// Header log info
+log.info nfcoreHeader()
+def summary = [:]
+if (workflow.revision) summary['Pipeline Release'] = workflow.revision
+summary['Run Name']         = custom_runName ?: workflow.runName
+summary['Project Name']     = params.projectName
+summary['Manifest File']    = params.input_manifest
+summary['Metadata File']    = params.input_metadata
+summary['Data Type']        = params.singleEnd ? 'Single-End' : 'Paired-End'
+if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
+summary['Output dir']       = params.outdir
+summary['Launch dir']       = workflow.launchDir
+summary['Working dir']      = workflow.workDir
+summary['Script dir']       = workflow.projectDir
+summary['User']             = workflow.userName
+summary['Config Profile'] = workflow.profile
+
+if (params.stats_only) summary['Statistics only'] = "Pipeline running only statistics processes"
+if (params.data_integrity_enable) summary['Data integrity process'] = "Data integrity checking process enabled"
+if (params.dbotu3_enable) summary['Distribution based-clustering'] = "Distribution based-clustering process enabled"
+if (params.microDecon_enable) summary['Decontamination'] = "Sample decontamination process enabled"
+if (params.dada2merge) summary['Dada2 merge'] = "Dada2 merge process enabled"
+if (params.picrust2_enable) summary['Functionnal prediction'] = "Functionnal prediction process enabled"
+if (params.stats_alpha_enable) summary['Alpha diversity statistics'] = "Alpha diversity indexes process enabled"
+if (params.stats_beta_enable) summary['Beta diversity statistics'] = "Beta diversity statistics processes enabled"
+if (params.stats_desc_comp_enable) summary["Descriptive comparisons"] = "Descriptive comparisons statistics process enabled"
+
+if (params.email || params.email_on_fail) {
+    summary['E-mail Address']    = params.email
+    summary['E-mail on failure'] = params.email_on_fail
+}
+log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
+log.info "-\033[2m--------------------------------------------------\033[0m-"
+
+// Check the hostnames against configured profiles
+checkHostname()
+
+Channel.from(summary.collect{ [it.key, it.value] })
+    .map { k,v -> "<dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }
+    .reduce { a, b -> return [a, b].join("\n            ") }
+    .map { x -> """
+    id: 'nf-core-samba-summary'
+    description: " - this information is collected when the pipeline is started."
+    section_name: 'nf-core/samba Workflow Summary'
+    section_href: 'https://github.com/nf-core/samba'
+    plot_type: 'html'
+    data: |
+        <dl class=\"dl-horizontal\">
+            $x
+        </dl>
+    """.stripIndent() }
+    .set { ch_workflow_summary }
+
+// Check the hostnames against configured profiles
+checkHostname()
+
+/*
+ * STEP 1 - Checking data integrity
+ */
 if (params.data_integrity_enable) {
     /* Check data integrity */
     process data_integrity {
@@ -260,21 +323,24 @@ if (params.data_integrity_enable) {
     	script :
     	"""
     	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
-    	if test -f "data_integrity_control.bad"; then
-    		if test -f "data_integrity.csv"; then
-    			echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
-    			mkdir -p ${params.outdir}/${params.data_integrity_dirname}
-    			cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
-    		else
-    			echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
-    		fi
-    		exit 1
-    	 fi
-             """
+        if test -f "data_integrity_control.bad"; then
+  	   if test -f "data_integrity.csv"; then
+    	      echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
+    	      mkdir -p ${params.outdir}/${params.data_integrity_dirname}
+    	      cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
+    	   else
+    	      echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
+    	   fi
+    	   exit 1
+    	fi
+        """
     }
 }
 
-/* Import metabarcode data */
+
+/*
+ * STEP 2 - Import metabarcoding data into QIIME2 object
+ */
 process q2_import {
 
 	label 'qiime2_env'
@@ -301,7 +367,10 @@ process q2_import {
 	"""
 }
 
-/* Trim metabarcode data with cutadapt */
+
+/*
+ * STEP 3 - Trim metabarcode data with cutadapt
+ */
 process q2_cutadapt {
 
 	label 'qiime2_env'
@@ -328,7 +397,9 @@ process q2_cutadapt {
 	"""
 }
 
-/* Run dada2 */
+/*
+ * STEP 4 - Dada2 ASVs inference
+ */
 process q2_dada2 {
 
 	label 'qiime2_env' 
@@ -360,6 +431,9 @@ process q2_dada2 {
 	"""
 }
 
+/*
+ * STEP 5 - Distribution based-clustering with dbotu3
+ */
 if (params.dbotu3_enable) {
     /* Run dbotu3 */
     process q2_dbotu3 {
@@ -394,8 +468,10 @@ if (params.dbotu3_enable) {
     }
 }
 
+/*
+ * STEP 6 - Use Dada2 merge to merge ASVs tables and sequences
+ */
 if (params.dada2merge) {
-    /* dada2 merge ASV/seqs */
     process q2_dada2_merge {
     
             label 'qiime2_env'
@@ -425,12 +501,14 @@ if (params.dada2merge) {
 
 summaryA = params.dada2merge ? merge_summary : dada2_summary 
 summary_ch = params.dbotu3_enable ? dbotu3_summary : summaryA
-summary_ch.into { summary ; decontam_summary }
+summary_ch.set { decontam_summary }
 
 seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
 seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
 
-/* Run taxonomy assignment */
+/*
+* STEP 7  -  Run taxonomy assignment
+*/
 process q2_taxonomy {
 
 	label 'qiime2_env'
@@ -444,7 +522,7 @@ process q2_taxonomy {
 
 	input :
 		file repseqs_taxo from seqs_taxo
-		file summary from summary
+		file summary from summary_ch
                 file seqs_db from seqs_db_ch
                 file taxo_db from taxo_db_ch
                 file database from database_ch
@@ -466,13 +544,14 @@ process q2_taxonomy {
 	script :
         def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
 	"""
-	q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db &> q2_taxo.log 2>&1
+        q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db &> q2_taxo.log 2>&1
 	""" 
 }
 
+/*
+ * STEP 8 -  Decontaminate samples with MicroDecon
+ */
 if (params.microDecon_enable) {
-
-    /* Run sample decontamination using MicroDecon */
     process microDecon_step1 {
     
     	label 'microdecon_env'
@@ -601,7 +680,9 @@ seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
 seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
 seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
 
-/* Run phylogeny construction */
+/*
+ * STEP 9 -  Run phylogeny construction
+ */
 process q2_phylogeny {
 
 	label 'qiime2_env'
@@ -644,9 +725,11 @@ seqs_picrust2A = params.dada2merge ? merge_seqs_picrust2 : dada2_seqs_picrust2
 seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
 seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
 
+/*
+ * STEP 9 -  Run functional predictions
+ */
 if (params.picrust2_enable) {
     
-    /* Run functional predictions */
     process q2_picrust2_analysis {
     
     	label 'qiime2_2019_env'
@@ -714,7 +797,9 @@ table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
 table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
 table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
 
-/* Differential abundance testing with ANCOM  */
+/*
+ * STEP 10 -  Differential abundance testing with ANCOM
+ */
 process q2_ancom {
 
     label 'qiime2_env'
@@ -743,11 +828,13 @@ process q2_ancom {
     """
 }
 
-
 tsvA= params.microDecon_enable ? decontam_table : biom_tsv
 tsv = params.stats_only ? tsv_only : tsvA
 newick = params.stats_only ? newick_only : newick_phylo
-	
+
+/*
+ * STEP 11 -  Prepare data for statistics steps
+ */
 process prepare_data_for_stats {
     
     label 'r_stats_env'
@@ -771,7 +858,10 @@ process prepare_data_for_stats {
     Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1 
     """
 }
-   
+
+/*
+ * STEP 12 -  Alpha diversity community statistics analysis
+ */
 process stats_alpha {
    
     label 'r_stats_env'
@@ -805,6 +895,9 @@ process stats_alpha {
     """
 }
 
+/*
+ * STEP 13 -  Beta diversity (non normalized) community statistics analysis
+ */
 process stats_beta {
 
     label 'r_stats_env'
@@ -836,6 +929,9 @@ process stats_beta {
     """
 }
 
+/*
+ * STEP 14 -  Beta diversity (rarefied) community statistics analysis
+ */
 process stats_beta_rarefied {
 
     label 'r_stats_env'
@@ -868,6 +964,9 @@ process stats_beta_rarefied {
     """
 }
 
+/*
+ * STEP 15 -  Beta diversity (DESeq2) community statistics analysis
+ */
 process stats_beta_deseq2 {
 
     label 'r_stats_env'
@@ -900,6 +999,9 @@ process stats_beta_deseq2 {
     """
 }
 
+/*
+ * STEP 16 -  Beta diversity (CSS) community statistics analysis
+ */
 process stats_beta_css {
 
     label 'r_stats_env'
@@ -923,7 +1025,6 @@ process stats_beta_css {
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
         file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
 
-
     when :
         params.stats_beta_enable
 
@@ -933,6 +1034,9 @@ process stats_beta_css {
     """
 }
 
+/*
+ * STEP 17 -  Descriptive comparisons statistics analysis
+ */
 process stats_desc_comp {
 
     label 'r_stats_env'
@@ -957,6 +1061,9 @@ process stats_desc_comp {
 reportHTML_ch = params.report_enable ? Channel.fromPath(params.reportHTML, checkIfExists:true) : Channel.empty()
 reportMD_ch = params.report_enable ? Channel.fromPath(params.reportMD, checkIfExists:true) : Channel.empty()
 
+/*
+ * STEP 18 -  Generate analyse report
+ */
 if (params.report_enable) {
     process report {
     
@@ -980,18 +1087,117 @@ if (params.report_enable) {
     }
 }
 
+/*
+ * Completion e-mail notification
+ */
+workflow.onComplete {
+
+    // Set up the e-mail variables
+    def subject = "[nf-core/samba] Successful: $workflow.runName"
+    if (!workflow.success) {
+        subject = "[nf-core/samba] FAILED: $workflow.runName"
+    }
+    def email_fields = [:]
+    email_fields['version'] = workflow.manifest.version
+    email_fields['runName'] = custom_runName ?: workflow.runName
+    email_fields['success'] = workflow.success
+    email_fields['dateComplete'] = workflow.complete
+    email_fields['duration'] = workflow.duration
+    email_fields['exitStatus'] = workflow.exitStatus
+    email_fields['errorMessage'] = (workflow.errorMessage ?: 'None')
+    email_fields['errorReport'] = (workflow.errorReport ?: 'None')
+    email_fields['commandLine'] = workflow.commandLine
+    email_fields['projectDir'] = workflow.projectDir
+    email_fields['summary'] = summary
+    email_fields['summary']['Date Started'] = workflow.start
+    email_fields['summary']['Date Completed'] = workflow.complete
+    email_fields['summary']['Pipeline script file path'] = workflow.scriptFile
+    email_fields['summary']['Pipeline script hash ID'] = workflow.scriptId
+    if (workflow.repository) email_fields['summary']['Pipeline repository Git URL'] = workflow.repository
+    if (workflow.commitId) email_fields['summary']['Pipeline repository Git Commit'] = workflow.commitId
+    if (workflow.revision) email_fields['summary']['Pipeline Git branch/tag'] = workflow.revision
+    email_fields['summary']['Nextflow Version'] = workflow.nextflow.version
+    email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
+    email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
+
+    // Check if we are only sending emails on failure
+    email_address = params.email
+    if (!params.email && params.email_on_fail && !workflow.success) {
+        email_address = params.email_on_fail
+    }
+
+    // Render the TXT template
+    def engine = new groovy.text.GStringTemplateEngine()
+    def tf = new File("$baseDir/assets/email_template.txt")
+    def txt_template = engine.createTemplate(tf).make(email_fields)
+    def email_txt = txt_template.toString()
+
+    // Render the HTML template
+    def hf = new File("$baseDir/assets/email_template.html")
+    def html_template = engine.createTemplate(hf).make(email_fields)
+    def email_html = html_template.toString()
+
+    // Render the sendmail template
+    def smail_fields = [ email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir", mqcFile: mqc_report ]
+    def sf = new File("$baseDir/assets/sendmail_template.txt")
+    def sendmail_template = engine.createTemplate(sf).make(smail_fields)
+    def sendmail_html = sendmail_template.toString()
+
+    // Send the HTML e-mail
+    if (email_address) {
+        try {
+            if (params.plaintext_email) { throw GroovyException('Send plaintext e-mail, not HTML') }
+            // Try to send HTML e-mail using sendmail
+            [ 'sendmail', '-t' ].execute() << sendmail_html
+            log.info "[nf-core/samba] Sent summary e-mail to $email_address (sendmail)"
+        } catch (all) {
+            // Catch failures and try with plaintext
+            [ 'mail', '-s', subject, email_address ].execute() << email_txt
+            log.info "[nf-core/samba] Sent summary e-mail to $email_address (mail)"
+        }
+    }
+
+    // Write summary e-mail HTML to a file
+    def output_d = new File("${params.outdir}/pipeline_info/")
+    if (!output_d.exists()) {
+        output_d.mkdirs()
+    }
+    def output_hf = new File(output_d, "pipeline_report.html")
+    output_hf.withWriter { w -> w << email_html }
+    def output_tf = new File(output_d, "pipeline_report.txt")
+    output_tf.withWriter { w -> w << email_txt }
+
+    c_green = params.monochrome_logs ? '' : "\033[0;32m";
+    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
+    c_red = params.monochrome_logs ? '' : "\033[0;31m";
+    c_reset = params.monochrome_logs ? '' : "\033[0m";
+
+    if (workflow.stats.ignoredCount > 0 && workflow.success) {
+        log.info "-${c_purple}Warning, pipeline completed, but with errored process(es) ${c_reset}-"
+        log.info "-${c_red}Number of ignored errored process(es) : ${workflow.stats.ignoredCount} ${c_reset}-"
+        log.info "-${c_green}Number of successfully ran process(es) : ${workflow.stats.succeedCount} ${c_reset}-"
+    }
+
+    if (workflow.success) {
+        log.info "-${c_purple}[nf-core/samba]${c_green} Pipeline completed successfully${c_reset}-"
+    } else {
+        checkHostname()
+        log.info "-${c_purple}[nf-core/samba]${c_red} Pipeline completed with errors${c_reset}-"
+    }
+}
+
 /* Other functions */
 def nfcoreHeader() {
     // Log colors ANSI codes
-    c_reset = params.monochrome_logs ? '' : "\033[0m";
-    c_dim = params.monochrome_logs ? '' : "\033[2m";
     c_black = params.monochrome_logs ? '' : "\033[0;30m";
-    c_green = params.monochrome_logs ? '' : "\033[0;32m";
-    c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
     c_blue = params.monochrome_logs ? '' : "\033[0;34m";
-    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
     c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
+    c_dim = params.monochrome_logs ? '' : "\033[2m";
+    c_green = params.monochrome_logs ? '' : "\033[0;32m";
+    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
+    c_reset = params.monochrome_logs ? '' : "\033[0m";
     c_white = params.monochrome_logs ? '' : "\033[0;37m";
+    c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
 
     return """    -${c_dim}--------------------------------------------------${c_reset}-
                                             ${c_green},--.${c_black}/${c_green},-.${c_reset}
@@ -1004,3 +1210,23 @@ def nfcoreHeader() {
     """.stripIndent()
 }
 
+def checkHostname() {
+    def c_reset = params.monochrome_logs ? '' : "\033[0m"
+    def c_white = params.monochrome_logs ? '' : "\033[0;37m"
+    def c_red = params.monochrome_logs ? '' : "\033[1;91m"
+    def c_yellow_bold = params.monochrome_logs ? '' : "\033[1;93m"
+    if (params.hostnames) {
+        def hostname = "hostname".execute().text.trim()
+        params.hostnames.each { prof, hnames ->
+            hnames.each { hname ->
+                if (hostname.contains(hname) && !workflow.profile.contains(prof)) {
+                    log.error "====================================================\n" +
+                            "  ${c_red}WARNING!${c_reset} You are running with `-profile $workflow.profile`\n" +
+                            "  but your machine hostname is ${c_white}'$hostname'${c_reset}\n" +
+                            "  ${c_yellow_bold}It's highly recommended that you use `-profile $prof${c_reset}`\n" +
+                            "============================================================"
+                }
+            }
+        }
+    }
+}

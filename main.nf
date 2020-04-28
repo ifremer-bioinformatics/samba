@@ -262,15 +262,15 @@ summary['Script dir']       = workflow.projectDir
 summary['User']             = workflow.userName
 summary['Config Profile'] = workflow.profile
 
-if (params.stats_only) summary['Statistics only'] = "Pipeline running only statistics processes"
-if (params.data_integrity_enable) summary['Data integrity process'] = "Data integrity checking process enabled"
-if (params.dbotu3_enable) summary['Distribution based-clustering'] = "Distribution based-clustering process enabled"
+if (params.stats_only) summary['Stats only'] = "Pipeline running only statistics processes"
+if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
+if (params.dbotu3_enable) summary['Clustering'] = "Distribution based-clustering process enabled"
 if (params.microDecon_enable) summary['Decontamination'] = "Sample decontamination process enabled"
 if (params.dada2merge) summary['Dada2 merge'] = "Dada2 merge process enabled"
-if (params.picrust2_enable) summary['Functionnal prediction'] = "Functionnal prediction process enabled"
-if (params.stats_alpha_enable) summary['Alpha diversity statistics'] = "Alpha diversity indexes process enabled"
-if (params.stats_beta_enable) summary['Beta diversity statistics'] = "Beta diversity statistics processes enabled"
-if (params.stats_desc_comp_enable) summary["Descriptive comparisons"] = "Descriptive comparisons statistics process enabled"
+if (params.picrust2_enable) summary['Prediction'] = "Functionnal prediction process enabled"
+if (params.stats_alpha_enable) summary['Alpha div'] = "Alpha diversity indexes process enabled"
+if (params.stats_beta_enable) summary['Beta div'] = "Beta diversity statistics processes enabled"
+if (params.stats_desc_comp_enable) summary["Desc comp"] = "Descriptive comparisons statistics process enabled"
 
 if (params.email || params.email_on_fail) {
     summary['E-mail Address']    = params.email

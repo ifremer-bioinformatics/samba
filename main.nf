@@ -355,7 +355,7 @@ process q2_import {
 	output : 
 		file 'data.qza' into imported_data
 		file 'data.qzv' into imported_visu
-		file 'import_output' into imported_summary
+		file 'import_output' into imported_output
 		file 'completecmd' into complete_cmd_import
 
 	when :
@@ -385,7 +385,7 @@ process q2_cutadapt {
 	output :
 		file 'data_trimmed.qza' into trimmed_data
 		file 'data_trimmed.qzv' into trimmed_visu
-		file 'trimmed_output' into trimmed_summary
+		file 'trimmed_output' into trimmed_output
 		file 'completecmd' into complete_cmd_cutadapt
 
 	when :
@@ -419,7 +419,7 @@ process q2_dada2 {
 		file 'table.qzv' into visu_table
 		file 'stats.qza' into stats_table
 		file 'stats.qzv' into visu_stats
-		file 'dada2_output' into dada2_summary
+		file 'dada2_output' into dada2_output
 		file 'completecmd' into complete_cmd_dada2
 
 	when :
@@ -455,7 +455,7 @@ if (params.dbotu3_enable) {
     		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
     		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
     		file 'dbotu3_table.qzv' into dbotu3_table_visu
-    		file 'dbotu3_output' into dbotu3_summary
+    		file 'dbotu3_output' into dbotu3_output
     		file 'completecmd' into complete_cmd_dbotu3
     
     	when :
@@ -486,7 +486,7 @@ if (params.dada2merge) {
             output :
                     file 'merged_table.qza' into merge_table_picrust2, merge_table_ancom
                     file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merge_seqs_ancom
-                    file 'merge_output' into merge_summary
+                    file 'merge_output' into merge_output
                     file 'completecmd' into complete_cmd_dada2merge
     
             when :
@@ -499,9 +499,9 @@ if (params.dada2merge) {
     }
 }
 
-summaryA = params.dada2merge ? merge_summary : dada2_summary 
-summary_ch = params.dbotu3_enable ? dbotu3_summary : summaryA
-summary_ch.set { decontam_summary }
+outputA = params.dada2merge ? merge_output : dada2_output
+output_ch = params.dbotu3_enable ? dbotu3_output : outputA
+output_ch.set { decontam_output }
 
 seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
 seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
@@ -522,7 +522,7 @@ process q2_taxonomy {
 
 	input :
 		file repseqs_taxo from seqs_taxo
-		file summary from summary_ch
+		file summary_output from output_ch
                 file seqs_db from seqs_db_ch
                 file taxo_db from taxo_db_ch
                 file database from database_ch
@@ -531,7 +531,7 @@ process q2_taxonomy {
 		file 'taxonomy.qza' into data_taxonomy
 		file 'taxonomy.qzv' into visu_taxonomy
 		file 'ASV_taxonomy.tsv' into taxonomy_tsv
-		file 'taxo_output' into taxo_summary
+		file 'taxo_output' into taxo_output
 		file 'ASV_table_with_taxonomy.biom' into biom
 		file 'ASV_table_with_taxonomy.tsv' into biom_tsv, biom_tsv_decontam
 		file 'taxonomic_database.qza' optional true into trained_database
@@ -544,7 +544,7 @@ process q2_taxonomy {
 	script :
         def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
 	"""
-        q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db &> q2_taxo.log 2>&1
+        q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db &> q2_taxo.log 2>&1
 	""" 
 }
 
@@ -621,7 +621,7 @@ if (params.microDecon_enable) {
     
     	input :
     		file decontam_table from decontam_table_step3
-    		file dada2_summary from decontam_summary
+    		file dada2_output from decontam_output
     
     	output :
     		file 'decontaminated_ASV_ID.txt' into decontam_ASV_ID
@@ -633,7 +633,7 @@ if (params.microDecon_enable) {
     	shell :
     	"""
     	cut -d \$'\t' -f1 ${decontam_table} | sed '1d' > decontaminated_ASV_ID.txt
-    	seqtk subseq ${dada2_summary}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
+    	seqtk subseq ${dada2_output}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
     	"""
     }
     

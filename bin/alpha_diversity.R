@@ -55,8 +55,8 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     plot2_alpha = plot_alpha_global %+% subset(df2 , Measure == "Shannon" | Measure == "Pielou")
     
     final_alpha_plot = arrangeGrob(grobs=lapply(list(plot1_alpha,plot2_alpha),set_panel_size,width=unit(10,"cm"),height=unit(10,"cm")))
-    ggsave(filename=paste(alpha_div_plots,"_",group,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
-    ggsave(filename=paste(alpha_div_plots,"_",group,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
+    ggsave(filename=paste(alpha_div_plots,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
+    ggsave(filename=paste(alpha_div_plots,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
 
     ## Rarefaction curve ####
     rarec <- function (x, step = 1, sample, xlab = "Sample Size", ylab = "Species", 

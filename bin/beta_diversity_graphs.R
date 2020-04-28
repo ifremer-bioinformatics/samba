@@ -21,8 +21,8 @@ plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result
       labs(caption = paste("Stress:",round(ord_nmds$stress,4),
                            "\nAdonis statistic R:",round(adonis_result$aov.tab$R2[1]*100,2),
                      paste("\nAdonis based on ", criteria,": p-value"),adonis_result$aov.tab$`Pr(>F)`[1],sep=" "))
-    ggsave(filename=paste(nmds,distance,".svg",sep=""), device="svg", width = width, height = height)
-    ggsave(filename=paste(nmds,distance,".png",sep=""), device="png", width = width, height = height)
+    ggsave(filename=paste(nmds,distance,"_",criteria,".svg",sep=""), device="svg", width = width, height = height)
+    ggsave(filename=paste(nmds,distance,"_",criteria,".png",sep=""), device="png", width = width, height = height)
 }
 
 plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, width, height, graph_title) {
@@ -40,19 +40,19 @@ plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result
       stat_ellipse(geom="polygon",alpha=0.1,type="t",aes_string(fill=criteria)) +
       labs(caption = paste("\nAdonis statistic R:",round(adonis_result$aov.tab$R2[1]*100,2),
                      paste("\nAdonis based on ", criteria,": p-value"),adonis_result$aov.tab$`Pr(>F)`[1],sep=" "))
-    ggsave(filename=paste(pcoa,distance,".svg",sep=""), device="svg", width = width, height = height)
-    ggsave(filename=paste(pcoa,distance,".png",sep=""), device="png", width = width, height = height)
+    ggsave(filename=paste(pcoa,distance,"_",criteria,".svg",sep=""), device="svg", width = width, height = height)
+    ggsave(filename=paste(pcoa,distance,"_",criteria,".png",sep=""), device="png", width = width, height = height)
 }
 
 plot.hc <- function(dendro, group, cols, col_group, method_hc, plot_hc, distance, width, height) {
     ## Sort GROUP color palette according to dend ####
     color = col_group[order.dendrogram(dendro)]
     ## Plot dendrogram ####
-    svglite(paste(plot_hc,distance,".svg",sep=""), width = width, height = height)
+    svglite(paste(plot_hc,distance,"_",criteria,".svg",sep=""), width = width, height = height)
     plot = dendro %>% set("labels_colors", color) %>% plot(main = paste("Hierarchical clustering with the", method_hc, "method", "based on", distance, "distance", sep=" "))
     legend("topright", legend = levels(group), fill = cols, cex = 0.8, horiz=FALSE, border="white",box.lty=0)
     dev.off()
-    png(filename=paste(plot_hc,distance,".png",sep=""), res=150, width = 2000, height = 1200)
+    png(filename=paste(plot_hc,distance,"_",criteria,".png",sep=""), res=150, width = 2000, height = 1200)
     plot = dendro %>% set("labels_colors", color) %>% plot(main = paste("Hierarchical clustering with the", method_hc, "method", "based on", distance, "distance", sep=" "))
     legend("topright", legend = levels(group), fill = cols, cex = 0.8, horiz=FALSE, border="white", box.lty=0)
     dev.off()

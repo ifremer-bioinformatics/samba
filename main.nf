@@ -869,7 +869,7 @@ process stats_alpha {
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt' 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots", mode: 'copy', pattern : 'barplot_*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots/${params.alpha_div_group}", mode: 'copy', pattern : 'barplot_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'rarefaction_curve*'
     
     input :
@@ -1037,7 +1037,7 @@ process stats_desc_comp {
 
     label 'r_stats_env'
 
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/", mode: 'copy', pattern : 'upset_plot*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/descriptive_comparison", mode: 'copy', pattern : 'upset_plot*'
 
     input :
         file phyloseq_rds from phyloseq_rds_set

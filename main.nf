@@ -877,9 +877,9 @@ process stats_alpha {
 
     output :
         file 'alpha_div_values.txt' into alpha_div_values
-        file 'alpha_div_plots*' into alpha_div_plots
+        file "alpha_div_plots_${params.alpha_div_group}*" into alpha_div_plots
         file 'index_significance_tests.txt' into index_significance_tests
-        file 'barplot_*'into barplots
+        file "barplot_*_${params.alpha_div_group}*" into barplots
         file 'rarefaction_curve*' into rarefaction_curve
 
     when :
@@ -910,9 +910,9 @@ process stats_beta {
         file metadata from metadata_beta
  
     output :
-        file 'NMDS_*' into NMDS
-        file 'PCoA_*' into PCoA
-        file 'hclustering_*' into hclustering
+        file "NMDS_${params.beta_div_var}*" into NMDS
+        file "PCoA_${params.beta_div_var}*" into PCoA
+        file "hclustering_${params.beta_div_var}*" into hclustering
         file 'variance_significance_tests_*' into variance_significance_tests
         file 'pie_ExpVar_*' into pie_ExpVar
 
@@ -945,9 +945,9 @@ process stats_beta_rarefied {
      
     output :
         file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
-        file 'NMDS_rarefied_*' into NMDS_rarefied
-        file 'PCoA_rarefied_*' into PCoA_rarefied
-        file 'hclustering_rarefied_*' into hclustering_rarefied
+        file "NMDS_rarefied_${params.beta_div_var}*" into NMDS_rarefied
+        file "PCoA_rarefied_${params.beta_div_var}*" into PCoA_rarefied
+        file "hclustering_rarefied_${params.beta_div_var}*" into hclustering_rarefied
         file 'variance_significance_tests_rarefied_*' into variance_significance_tests_rarefied
         file 'pie_ExpVar_rarefied_*' into pie_ExpVar_rarefied
 
@@ -980,9 +980,9 @@ process stats_beta_deseq2 {
 
     output :
         file 'Final_DESeq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        file 'NMDS_DESeq2_*' into NMDS_deseq2
-        file 'PCoA_DESeq2_*' into PCoA_deseq2
-        file 'hclustering_DESeq2_*' into hclustering_deseq2
+        file "NMDS_DESeq2_${params.beta_div_var}*" into NMDS_deseq2
+        file "PCoA_DESeq2_${params.beta_div_var}*" into PCoA_deseq2
+        file "hclustering_DESeq2_${params.beta_div_var}*" into hclustering_deseq2
         file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
         file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
         
@@ -1015,9 +1015,9 @@ process stats_beta_css {
 
     output :
         file 'Final_CSS_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        file 'NMDS_CSS_*' into NMDS_css
-        file 'PCoA_CSS_*' into PCoA_css
-        file 'hclustering_CSS_*' into hclustering_css
+        file "NMDS_CSS_${params.beta_div_var}*" into NMDS_css
+        file "PCoA_CSS_${params.beta_div_var}*" into PCoA_css
+        file "hclustering_CSS_${params.beta_div_var}*" into hclustering_css
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
         file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
 
@@ -1043,7 +1043,7 @@ process stats_desc_comp {
         file phyloseq_rds from phyloseq_rds_set
 
     output :
-        file 'upset_plot*' into upset_plot
+        file "upset_plot_${params.desc_comp_crit}*" into upset_plot
 
     when :
         params.stats_desc_comp_enable

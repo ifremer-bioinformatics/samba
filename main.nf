@@ -316,7 +316,7 @@ Channel.from(summary.collect{ [it.key, it.value] })
 checkHostname()
 
 /* 
- * STEP 0 - Get tests data if running in test profile
+ * STEP 0 - Get test data if running in test profile
 */
 if (workflow.profile.contains('test')) {
    process get_test_data {

@@ -200,15 +200,25 @@ if (!params.stats_only || !params.dada2merge) {
       log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
       exit 1
    } else {
-      Channel.fromPath(params.input_metadata, checkIfExists:true)
-             .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      if (workflow.profile.contains('test')) {
+         Channel.fromPath(params.input_metadata)
+                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      } else {
+         Channel.fromPath(params.input_metadata, checkIfExists:true)
+                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      }
    }
    if (!params.input_manifest || params.input_manifest.isEmpty()) {
       log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
       exit 1
    } else {
-      Channel.fromPath(params.input_manifest, checkIfExists:true)
-             .into { manifest ; manifest4integrity }
+      if (workflow.profile.contains('test')) {
+         Channel.fromPath(params.input_manifest)
+                .into { manifest ; manifest4integrity }
+      } else {
+         Channel.fromPath(params.input_manifest, checkIfExists:true)
+                .into { manifest ; manifest4integrity }
+      }
    }
 } else {
    Channel.empty().into { manifest ; manifest4integrity }
@@ -230,7 +240,11 @@ if (!params.stats_only && params.extract_db) {
    }
    database_ch = Channel.value("none")
 } else {
-   database_ch = Channel.fromPath(params.database,checkIfExists:true)
+      if (workflow.profile.contains('test')) {
+         database_ch = Channel.fromPath(params.database)
+      } else {
+         database_ch = Channel.fromPath(params.database,checkIfExists:true)
+      }
    seqs_db_ch = Channel.value("none")
    taxo_db_ch = Channel.value("none")
 }
@@ -301,6 +315,26 @@ Channel.from(summary.collect{ [it.key, it.value] })
 // Check the hostnames against configured profiles
 checkHostname()
 
+/* 
+ * STEP 0 - Get tests data if running in test profile
+*/
+if (workflow.profile.contains('test')) {
+   process get_test_data {
+      label 'test_data'
+      output :
+         file 'data_is_ready' into ready_integrity, ready_import
+       when :
+         !params.stats_only && !params.dada2merge && workflow.profile.contains('test')
+      script :
+      """
+      get_test_data.sh ${baseDir} 'data_is_ready' &> get_test_data.log 2>&1
+      """
+  }
+} else {
+   data_ready = Channel.value("none")
+   data_ready.into { ready_integrity ; ready_import }
+}
+
 /*
  * STEP 1 - Checking data integrity
  */
@@ -313,6 +347,7 @@ if (params.data_integrity_enable) {
     	input :
     		file manifest from manifest4integrity
     		file metadata from metadata4integrity
+                file ready from ready_integrity
 
     	output :
     		file 'data_integrity.csv'
@@ -351,6 +386,7 @@ process q2_import {
 
 	input :
 		file q2_manifest from manifest
+                file ready from ready_import
 
 	output :
 		file 'data.qza' into imported_data

@@ -8,7 +8,7 @@
 args=("$@")
 BASEDIR=${args[0]}
 ready=${args[1]}
-if [ ! -d "$BASEDIR/training_dataset" ]
+if [ ! -d "$BASEDIR/training_dataset" ] || ([ -d "$BASEDIR/training_dataset" ] && [ ! "$(ls -A $BASEDIR/training_dataset)" ])
   then 
      mkdir -p $BASEDIR/training_dataset
      wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/q2* -P $BASEDIR/training_dataset
@@ -23,4 +23,7 @@ if [ ! -f "$DB" ]
     mkdir -p $BASEDIR/tax.databases.test
     wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2020.02/SILVA_v132/DATABASE_silva_132_99_16S.qza -O $BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza
 fi
-touch $ready
+if ([ -f "$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza" ] && [ -f "$BASEDIR/training_dataset/q2_manifest" ])
+then
+   touch $ready
+fi

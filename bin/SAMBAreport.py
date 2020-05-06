@@ -128,7 +128,7 @@ def main(args):
     dbotu3_fasta = os.path.join(args.path,structure['dbotu3']['fasta'])
     results['dbotu3']['asv_count'] = count_seq_fasta(dbotu3_fasta)
     results['dbotu3']['clustering'] = results['dada2']['asv_count'] - results['dbotu3']['asv_count']
-    results['dbotu3']['clustering_perc'] = round(results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count'], 2)
+    results['dbotu3']['clustering_perc'] = round(100 - (results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count']), 2)
 
     # _____________________________________________________________
     ## MicroDecon

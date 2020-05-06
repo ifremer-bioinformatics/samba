@@ -791,6 +791,7 @@ if (params.picrust2_enable) {
     		file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
     		file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
     		file 'complete_picrust2_cmd' into complete_picrust2_cmd
+                
 
     	when :
     		!params.stats_only
@@ -917,6 +918,8 @@ process stats_alpha {
         file 'index_significance_tests.txt' into index_significance_tests
         file "barplot_*_${params.alpha_div_group}*" into barplots
         file 'rarefaction_curve*' into rarefaction_curve
+        file 'process_alpha_report.ok' into process_alpha_report
+
 
     when :
         params.stats_alpha_enable
@@ -924,6 +927,7 @@ process stats_alpha {
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/alpha_diversity.R phyloseq.rds alpha_div_values.txt alpha_div_plots_${params.alpha_div_group} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${params.alpha_div_group} barplot_class_${params.alpha_div_group} barplot_order_${params.alpha_div_group} barplot_family_${params.alpha_div_group} barplot_genus_${params.alpha_div_group} ${params.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    touch process_alpha_report.ok
     """
 }
 
@@ -951,6 +955,7 @@ process stats_beta {
         file "hclustering_${params.beta_div_var}*" into hclustering
         file 'variance_significance_tests_*' into variance_significance_tests
         file 'pie_ExpVar_*' into pie_ExpVar
+        file 'process_beta_report.ok' into process_beta_report
 
     when :
         params.stats_beta_enable
@@ -958,6 +963,7 @@ process stats_beta {
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_${params.beta_div_var}_ PCoA_${params.beta_div_var}_ ${params.hc_method} hclustering_${params.beta_div_var}_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    touch process_beta_report.ok
     """
 }
 
@@ -1080,6 +1086,7 @@ process stats_desc_comp {
 
     output :
         file "upset_plot_${params.desc_comp_crit}*" into upset_plot
+        file 'process_desc_comp_report.ok' into process_desc_comp_report
 
     when :
         params.stats_desc_comp_enable
@@ -1087,118 +1094,141 @@ process stats_desc_comp {
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${params.desc_comp_crit} upset_plot_${params.desc_comp_crit} &> stats_desc_comp.log 2>&1
+    touch process_desc_comp_report.ok
     """
 }
 
-reportHTML_ch = params.report_enable ? Channel.fromPath(params.reportHTML, checkIfExists:true) : Channel.empty()
-reportMD_ch = params.report_enable ? Channel.fromPath(params.reportMD, checkIfExists:true) : Channel.empty()
+/*
+ * STEP 18 -  Save user parameters of the workflow
+ */
+process workflow_params {
+
+    publishDir "${params.outdir}/conf", mode: 'copy', pattern : 'data.json'
+
+    output :
+        file 'data.json' into data_json
+
+    when :
+       params.report_enable
+
+    script :
+    """
+    #!/usr/bin/env python
+    import json
+    from shutil import copyfile
+
+    data = {}
+    data["projectName"] = '$params.projectName'
+    data["singleEnd"] = '$params.singleEnd'
+    data["manifest"] = '$params.input_manifest'
+    data["metadata"] = '$params.input_metadata'
+    data["outdir"] = '$params.outdir'
+    data["steps"] = {}
+    data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
+    data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
+    data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
+    data["steps"]["picrust2_enable"] = '$params.picrust2_enable'
+    data["steps"]["stats_alpha_enable"] = '$params.stats_alpha_enable'
+    data["steps"]["stats_beta_enable"] = '$params.stats_beta_enable'
+    data["steps"]["stats_desc_comp_enable"] = '$params.stats_desc_comp_enable'
+    data["steps"]["report_enable"] = '$params.report_enable'
+    data["steps"]["stats_only"] = '$params.stats_only'
+    data["steps"]["dada2merge"] = '$params.dada2merge'
+
+    data["integrity"] = {}
+    data["integrity"]["barcode_filter"] = '$params.barcode_filter'
+    data["integrity"]["primer_filter"] = '$params.primer_filter'
+
+    data["cutadapt"] = {}
+    data["cutadapt"]["primerF"] = '$params.primerF'
+    data["cutadapt"]["primerR"] = '$params.primerR'
+    data["cutadapt"]["errorRate"] = '$params.errorRate'
+    data["cutadapt"]["overlap"] = '$params.overlap'
+ 
+    data["dada2"] = {}
+    data["dada2"]["trimLeft"] = '$params.trimLeft'
+    data["dada2"]["trimRigth"] = '$params.trimRigth'
+    data["dada2"]["FtruncLen"] = '$params.FtruncLen'
+    data["dada2"]["RtruncLen"] = '$params.RtruncLen'
+    data["dada2"]["FmaxEE"] = '$params.FmaxEE'
+    data["dada2"]["RmaxEE"] = '$params.RmaxEE'
+    data["dada2"]["minQ"] = '$params.minQ'
+    data["dada2"]["chimeras"] = '$params.chimeras'
+
+    data["dada2merge"] = {}
+    data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir'
+    data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir'
+
+    data["dbotu3"] = {}
+    data["dbotu3"]["gen_crit"] = '$params.gen_crit'
+    data["dbotu3"]["abund_crit"] = '$params.abund_crit'
+    data["dbotu3"]["pval_crit"] = '$params.pval_crit'
+
+    data["taxonomy"] = {}
+    data["taxonomy"]["database"] = '$params.database'
+    data["taxonomy"]["seqs_db"] = '$params.seqs_db'
+    data["taxonomy"]["taxo_db"] = '$params.taxo_db'
+    data["taxonomy"]["extract_db"] = '$params.extract_db'
+    data["taxonomy"]["confidence"] = '$params.confidence'
+
+    data["picrust2"] = {}
+    data["picrust2"]["method"] = '$params.method'
+    data["picrust2"]["nsti"] = '$params.nsti'
+
+    data["microdecon"] = {}
+    data["microdecon"]["control_list"] = '$params.control_list'
+    data["microdecon"]["nb_controls"] = '$params.nb_controls'
+    data["microdecon"]["nb_samples"] = '$params.nb_samples'
+
+    data["stats"] = {}
+    data["stats"]["ancom_var"] = '$params.ancom_var'
+    data["stats"]["kingdom"] = '$params.kingdom'
+    data["stats"]["taxa_nb"] = '$params.taxa_nb'
+    data["stats"]["hc_method"] = '$params.hc_method'
+    data["stats"]["alpha_div_group"] = '$params.alpha_div_group'
+    data["stats"]["beta_div_var"] = '$params.beta_div_var'
+    data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit'
+    data["stats"]["inasv_table"] = '$params.inasv_table'
+    data["stats"]["innewick"] = '$params.innewick'
+
+    with open('data.json', 'w') as outfile:
+       json.dump(data, outfile, sort_keys=True, indent=4)
+    """
+}
+
+SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate, checkIfExists:true) : Channel.empty()
+SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfExists:true) : Channel.empty()
 
 /*
- * STEP 18 -  Generate analyse report
+ * STEP 19 -  Generate analyse report
  */
-if (params.report_enable) {
+if (params.report_enable) {    
     process report {
 
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'Report_*'
-        publishDir "${params.outdir}/${params.report_dirname}/cmd", mode: 'copy', pattern : 'data.json'
+        label 'jinja2_env'
 
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'SAMBA_report.html'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'style.css'
 
         input :
-            file reportHTML from reportHTML_ch
-            file reportMD from reportMD_ch
+            file SAMBAtemplate from SAMBAtemplate_ch
+            file SAMBAcss from SAMBAcss_ch
+            file json from data_json
+            file process_picrust2 from complete_picrust2_stats_cmd
+            file process_alpha from process_alpha_report
+            file process_beta from process_beta_report
+            file process_desc_comp from process_desc_comp_report
 
         output :
-            file 'Report_*' into Reports
-            file 'data.json' into report_data
+            file 'style.css' into SAMBA_css_output
+            file 'SAMBA_report.html' into Report
 
         when :
            params.report_enable
 
-        script :
+        shell :
         """
-        #!/usr/bin/env python
-        import json
-        from shutil import copyfile
-
-        data = {}
-        data["projectName"] = '$params.projectName'
-        data["singleEnd"] = '$params.singleEnd'
-        data["manifest"] = '$params.input_manifest'
-        data["metadata"] = '$params.input_metadata'
-        data["outdir"] = '$params.outdir'
-        data["steps"] = {}
-        data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
-        data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
-        data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
-        data["steps"]["picrust2_enable"] = '$params.picrust2_enable'
-        data["steps"]["stats_alpha_enable"] = '$params.stats_alpha_enable'
-        data["steps"]["stats_beta_enable"] = '$params.stats_beta_enable'
-        data["steps"]["stats_desc_comp_enable"] = '$params.stats_desc_comp_enable'
-        data["steps"]["report_enable"] = '$params.report_enable'
-        data["steps"]["stats_only"] = '$params.stats_only'
-        data["steps"]["dada2merge"] = '$params.dada2merge'
-
-        data["integrity"] = {}
-        data["integrity"]["barcode_filter"] = '$params.barcode_filter'
-        data["integrity"]["primer_filter"] = '$params.primer_filter'
-
-        data["cutadapt"] = {}
-        data["cutadapt"]["primerF"] = '$params.primerF'
-        data["cutadapt"]["primerR"] = '$params.primerR'
-        data["cutadapt"]["errorRate"] = '$params.errorRate'
-        data["cutadapt"]["overlap"] = '$params.overlap'
-
-        data["dada2"] = {}
-        data["dada2"]["trimLeft"] = '$params.trimLeft'
-        data["dada2"]["trimRigth"] = '$params.trimRigth'
-        data["dada2"]["FtruncLen"] = '$params.FtruncLen'
-        data["dada2"]["RtruncLen"] = '$params.RtruncLen'
-        data["dada2"]["FmaxEE"] = '$params.FmaxEE'
-        data["dada2"]["RmaxEE"] = '$params.RmaxEE'
-        data["dada2"]["minQ"] = '$params.minQ'
-        data["dada2"]["chimeras"] = '$params.chimeras'
-
-        data["dada2merge"] = {}
-        data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir'
-        data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir'
-
-        data["dbotu3"] = {}
-        data["dbotu3"]["gen_crit"] = '$params.gen_crit'
-        data["dbotu3"]["abund_crit"] = '$params.abund_crit'
-        data["dbotu3"]["pval_crit"] = '$params.pval_crit'
-
-        data["taxonomy"] = {}
-        data["taxonomy"]["database"] = '$params.database'
-        data["taxonomy"]["seqs_db"] = '$params.seqs_db'
-        data["taxonomy"]["taxo_db"] = '$params.taxo_db'
-        data["taxonomy"]["extract_db"] = '$params.extract_db'
-        data["taxonomy"]["confidence"] = '$params.confidence'
-
-        data["picrust2"] = {}
-        data["picrust2"]["method"] = '$params.method'
-        data["picrust2"]["nsti"] = '$params.nsti'
-
-        data["microdecon"] = {}
-        data["microdecon"]["control_list"] = '$params.control_list'
-        data["microdecon"]["nb_controls"] = '$params.nb_controls'
-        data["microdecon"]["nb_samples"] = '$params.nb_samples'
-
-        data["stats"] = {}
-        data["stats"]["ancom_var"] = '$params.ancom_var'
-        data["stats"]["kingdom"] = '$params.kingdom'
-        data["stats"]["taxa_nb"] = '$params.taxa_nb'
-        data["stats"]["hc_method"] = '$params.hc_method'
-        data["stats"]["alpha_div_group"] = '$params.alpha_div_group'
-        data["stats"]["beta_div_var"] = '$params.beta_div_var'
-        data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit'
-        data["stats"]["inasv_table"] = '$params.inasv_table'
-        data["stats"]["innewick"] = '$params.innewick'
-
-        with open('data.json', 'w') as outfile:
-           json.dump(data, outfile, sort_keys=True, indent=4)
-
-        copyfile("${reportHTML}", "Report_${params.projectName}.html")
-        copyfile("${reportMD}", "Report_${params.projectName}.md")
+        ${baseDir}/bin/SAMBAreport.py -t ${SAMBAtemplate} -p ${params.outdir}/${params.report_dirname} -c ${json}
         """
     }
 }

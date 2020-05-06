@@ -254,7 +254,6 @@ if (params.microDecon_enable && !params.control_list) {
    exit 1
 }
 
-
 /*
  * PIPELINE INFO
  */
@@ -1198,6 +1197,12 @@ process workflow_params {
 
 SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate, checkIfExists:true) : Channel.empty()
 SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfExists:true) : Channel.empty()
+data_json.into { json ; SAMBAreport_okA }
+SAMBAreport_okB = params.stats_alpha_enable ? process_alpha_report : SAMBAreport_okA
+SAMBAreport_okC = params.stats_beta_enable ? process_beta_report : SAMBAreport_okB
+SAMBAreport_okD = params.dbotu3_enable ? process_desc_comp_report : SAMBAreport_okC
+SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okB
+
 
 /*
  * STEP 19 -  Generate analyse report
@@ -1213,11 +1218,8 @@ if (params.report_enable) {
         input :
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
-            file json from data_json
-            file process_picrust2 from complete_picrust2_stats_cmd
-            file process_alpha from process_alpha_report
-            file process_beta from process_beta_report
-            file process_desc_comp from process_desc_comp_report
+            file json from json
+            file SAMBAreport_ok from SAMBAreport_ok
 
         output :
             file 'style.css' into SAMBA_css_output

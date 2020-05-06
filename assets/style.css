@@ -44,11 +44,24 @@ h5{
   text-align: center;
 }
 
-hr {
+hr.title {
     border: 0;
     height: 1.5px;
     background: #333;
     background-image: linear-gradient(to right, #757575, #fbfbfb);
+}
+hr.results {
+    border: 0;
+    height: 1.0px;
+    margin-left: 10px;
+    background: #333;
+    background-image: linear-gradient(to right, #22ae63, #fbfbfb);
+}
+
+div.results {
+    color:#22ae63;
+    margin-left: 10px;
+    font-size: 1.4rem;
 }
 
 /* .navbar {
@@ -86,7 +99,17 @@ hr {
   display: table;
 }
 
+a.link {
+    color: #007bff
+}
 
+span.highlight {
+    color: mediumvioletred
+}
+p.highlight {
+    color: mediumvioletred;
+    text-align: center;
+}
 
 /* ---------------------------------------------------
     SIDEBAR STYLE
@@ -292,7 +315,7 @@ tt {
   border-radius: 0px;
   border-width: 0px;
   background: 0px 0px;
-  font-family: inherit;
+  font-family: "Lucida Console";
   font-size: inherit;
   margin: 0px;
   margin-left: 10px;

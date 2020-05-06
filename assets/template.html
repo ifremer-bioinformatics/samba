@@ -19,6 +19,10 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <!-- jQuery Custom Scroller CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+    <!--  Font Awesome JS  -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -43,7 +47,8 @@
     <!-- Sidebar  -->
     <nav id="sidebar">
         <div class="sidebar-header" style="text-align: center;">
-            <p class="sidebar-title"><b>SAMBA</b></p>
+
+            <i class="fas fa-home fa-2x"></i><a href="#home" style="font-weight: bold; font-size: 2.0rem"> Home</a>
         </div>
         <ul class="list-unstyled components">
             <li><a href="#introduction">Introduction</a></li>
@@ -77,9 +82,9 @@
         <!-- Page Content  -->
     <div id="content">
 
-        <h1 style="font-size: 6.0rem; font-weight: bold">SAMBA</h1>
+        <h1 style="font-size: 6.0rem; font-weight: bold" id="home">SAMBA</h1>
         <p style="font-size: 2.0rem; color: #22ae63">Standardized and Automated MetaBarcoding Analyses workflow</p>
-        <hr>
+        <hr class="title">
         <br>
         <h1 id="introduction">Report introduction</h1>
         <br>
@@ -121,9 +126,9 @@
             <b>This step is carried out by a <font color="#007bff">homemade script</font></b>
         </div>
         <br>
-        <div style="background-color:#22ae63;color:white;text-align:center"><b>RESULTS</b></div>
-        <br>
-        <ul style="margin: 0 ; padding: 1 ;"><li>All data integrity verification are summarized in <a href="./data_integrity.csv"><div style="display:inline-block;color:#007bff;">this csv file</div></a></li></ul>
+        <div class="results">Results</div>
+        <hr class="results">
+        <ul style="margin: 0 ; padding: 1 ;"><li>All data integrity verification are summarized in <a class="link" href="./data_integrity.csv">this csv file</a></li></ul>
         <br>
         <h3 id="importing-raw-data">2 - Importing raw data</h3>
         <br>
@@ -159,17 +164,18 @@
             <pre><span class="cm-attribute">--output-path</span> import_output</pre>
         </div>
         <br>
-        <div style="background-color:#22ae63">
-            <b><center><font color=white>OUTPUT FOLDER: </font><a href="./import_output"><div style="display:inline-block;color:white;">import_output</div></a></center></b>
-        </div>
-        <br>
-        <div style="background-color:#22ae63"><center><b><font color=white>RESULTS</font></b></center></div>
-        <br>
-        <ul style="margin: 0 ; padding: 1 ;"><li>Sample repartition according to the sequence count</li></ul>
-        <p align="center"> <img src="./import_output/demultiplex-summary.png" width="600"><br></p>
-        <ul style="margin: 0 ; padding: 1 ;"><li>All descriptive statistics of your samples are available <a href="./import_output/overview.html"><div style="display:inline-block;color:#007bff;">here</div></a> (html output)</li></ul>
+        <div class="results">Results</div>
+        <hr class="results">
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li><a class="link" target="_blank" href="./import_output">Output folder</a></li>
+            <br>
+            <li>Sample repartition according to the sequence count</li>
+        </ul>
+        <p align="center"> <img src="./import_output/demultiplex-summary.png" width="600"></p>
+        <ul style="margin: 0 ; padding: 1 ;"><li>All descriptive statistics of your samples are available <a class="link" href="./import_output/overview.html">here</a> (html output)</li></ul>
         <br>
         <h3 id="primers-removal">3 - Primers removal</h3>
+        <br>
         <div style="text-align: justify">
            The third step is to remove the primers using <b>the cutadapt plugin</b> available in
            QIIME 2. In addition, <b>descriptive statistics of your data are generated</b>.
@@ -215,16 +221,17 @@
             <pre><span class="cm-attribute">--output-path</span> trimmed_output</pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./trimmed_output"><div style="display:inline-block;color:white;">trimmed_output</div>
-        </a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
-        <ul style="margin: 0 ; padding: 1 ;"><li>Sample repartition according to the sequence count</li></ul>
+        <div class="results">Results</div>
+        <hr class="results">
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li><a class="link" target="_blank" href="./trimmed_output">Output folder</a></li>
+            <br>
+            <li>Sample repartition according to the sequence count</li>
+        </ul>
         <p align="center"> <img src="./trimmed_output/demultiplex-summary.png" width="600"><br></p>
         <ul style="margin:0 ; padding: 1 ;">
-            <li>All descriptive statistics of your samples after the trimming are available <a href="./trimmed_output/overview.html"><div style="display:inline-block;color:#007bff;">here</div></a> (html output)</li>
-            <li>The quality of your data before any quality filtering step is viewable <a href="./trimmed_output/quality-plot.html"><div style="display:inline-block;color:#007bff;">here</div></a> (html output)</li>
+            <li>All descriptive statistics of your samples after the trimming are available <a class="link" href="./trimmed_output/overview.html">here</a> (html output)</li>
+            <li>The quality of your data before any quality filtering step is viewable <a class="link" href="./trimmed_output/quality-plot.html">here</a> (html output)</li>
         </ul>
         <br>
         <!--  -->
@@ -312,17 +319,18 @@
             <pre><span class="cm-attribute">--output-path</span> dada2_output</pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./dada2_output"><div style="display:inline-block;color:white;">dada2_output</div></a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li>The dynamics of the different step of filtering can be visualized in this <a href="./dada2_output/index.html"><div style="display:inline-block;color:blue;">html file</div></a> and are also available in a <a href="./dada2_output/metadata.tsv"><div style="display:inline-block;color:blue;">tabulated file</div></a></li>
+            <li><a class="link" target="_blank" href="./dada2_output">Output folder</a></li>
+            <br>
+            <li>The dynamics of the different step of filtering can be visualized in this <a class="link" href="./dada2_output/index.html">html file</a> and
+                are also available in a <a class="link" href="./dada2_output/metadata.tsv">tabulated file</a></li>
             <li>Distribution of sequences in samples</li>
             <p align="center"><img src="./dada2_output/sample-frequencies.png" width="600"><br></p>
-            <li>Feature details are available <a href="./dada2_output/feature-frequency-detail.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
-            <li>Details about the samples can be found by going to <a href="./dada2_output/sample-frequency-detail.html"><div style="display:inline-block;color:blue;">this interactive html page</div></a></li>
-            <li>Finally, you can retrieved the reference sequences of your ASVs in <a href="./dada2_output/sequences.fasta"><div style="display:inline-block;color:blue;">this fasta</div></a></li>
+            <li>Feature details are available <a class="link" href="./dada2_output/feature-frequency-detail.html">here</a> (html output)</li>
+            <li>Details about the samples can be found by going to <a class="link" href="./dada2_output/sample-frequency-detail.html">this interactive html page</a></li>
+            <li>Finally, you can retrieved the reference sequences of your ASVs in <a class="link" href="./dada2_output/sequences.fasta">this fasta</a></li>
             <br>
             <font color="red"><b>A total of {{ r.dada2.asv_count }} ASVs was obtained at this step</b></font>
         </ul>
@@ -383,15 +391,15 @@
             <pre><span class="cm-attribute">--output-path</span> dbotu3_output</pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./dbotu3_output"><div style="display:inline-block;color:white;">dbotu3_output</div></a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li>Overview of the results available <a href="./dbotu3_output/index.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
-            <li>Feature details are available <a href="./dbotu3_output/feature-frequency-detail.html"><div style="display:inline-block;color:blue;">here</div></a> (html output)</li>
-            <li>Details about the samples can be found by going to <a href="./dbotu3_output/sample-frequency-detail.html"><div style="display:inline-block;color:blue;">this interactive html page</div></a></li>
-            <li>Finally, you can retrieved the reference sequences of your ASVs in <a href="./dbotu3_output/sequences.fasta"><div style="display:inline-block;color:blue;">this fasta</div></a></li>
+            <li><a class="link" target="_blank" href="./dbotu3_output">Output folder</a></li>
+            <br>
+            <li>Overview of the results available <a class="link" href="./dbotu3_output/index.html">here</a> (html output)</li>
+            <li>Feature details are available <a class="link" href="./dbotu3_output/feature-frequency-detail.html">here</a> (html output)</li>
+            <li>Details about the samples can be found by going to <a class="link" href="./dbotu3_output/sample-frequency-detail.html">this interactive html page</a></li>
+            <li>Finally, you can retrieved the reference sequences of your ASVs in <a class="link" href="./dbotu3_output/sequences.fasta">this fasta</a></li>
             <br>
             <font color="red"><b>A total of {{ r.dbotu3.asv_count }} ASVs remain after this step. dbOTU3 allowed to cluster {{ r.dbotu3.clustering }} ASVs with others ASVs (i.e. about {{ r.dbotu3.clustering_perc }}% clustering). </b></font>
         </ul>
@@ -433,12 +441,13 @@
             <pre><span class="cm-builtin">sed</span> <span class="cm-attribute">-i</span> <span class="cm-string">'1 i\#OTUID\ttaxonomy\tconfidence'</span> ASV_taxonomy.tsv</pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./taxo_output"><div style="display:inline-block;color:white;">taxo_output</div></a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li>The result of the taxonomic affiliation is available in <a href="./taxo_output/index.html"><div style="display:inline-block;color:blue;">html</div></a> and <a href="./taxo_output/ASV_taxonomy.tsv"><div style="display:inline-block;color:blue;">tabulated</div></a> formats</li>
+            <li><a class="link" target="_blank" href="./taxo_output">Output folder</a></li>
+            <br>
+            <li>The result of the taxonomic affiliation is available in <a class="link" href="./taxo_output/index.html">html</a> and
+                <a class="link" href="./taxo_output/ASV_taxonomy.tsv">tabulated</a> formats</li>
         </ul>
         <br>
         <!--  if microdecon  -->
@@ -459,15 +468,15 @@
             <pre>decon(TABLE_control, numb.blanks=<span class="cm-def">{{d.microdecon.nb_controls}}</span>, numb.ind=<span class="cm-def">{{d.microdecon.nb_samples}}</span>, taxa=TRUE, runs=2, thresh=1) </pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./microDecon"><div style="display:inline-block;color:white;">microDecon</div></a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li>New ASV table: <a href="./microDecon/decontaminated_ASV_table.tsv"><div style="display:inline-block;color:blue;">decontaminated table</div></a></li>
-            <li>Representative sequence: <a href="./microDecon/decontaminated_ASV.fasta"><div style="display:inline-block;color:blue;">decontaminated ASV sequence</div></a></li>
-            <li>All ASVs listed <a href="./microDecon/ASV_removed.txt"><div style="display:inline-block;color:blue;">here</div></a> were removed because they were in the majority in the control samples         </li>
-            <li>For all ASVs listed <a href="./microDecon/abundance_removed.txt"><div style="display:inline-block;color:blue;">here</div></a>, a proportion of sequences were removed in each sample. Note that this file also contains the ASVs unique to the controls which have therefore been removed.</li>
+            <li><a class="link" target="_blank" href="./microDecon">Output folder</a></li>
+            <br>
+            <li>New ASV table: <a class="link" href="./microDecon/decontaminated_ASV_table.tsv">decontaminated table</a></li>
+            <li>Representative sequence: <a class="link" href="./microDecon/decontaminated_ASV.fasta">decontaminated ASV sequence</a></li>
+            <li>All ASVs listed <a class="link" href="./microDecon/ASV_removed.txt">here</a> were removed because they were in the majority in the control samples         </li>
+            <li>For all ASVs listed <a class="link" href="./microDecon/abundance_removed.txt">here</a>, a proportion of sequences were removed in each sample. Note that this file also contains the ASVs unique to the controls which have therefore been removed.</li>
             <br>
             <font color="red"><b>A total of {{ r.microdecon.asv_count }} ASVs remain after this step. MicroDecon removed {{ r.microdecon.asv_rm }} ASVs essentially ASVs unique to controls ({{ r.microdecon.asv_rm_ctrl }} of {{ r.microdecon.asv_rm }}).</b></font>
         </ul>
@@ -498,42 +507,42 @@
             <pre><span class="cm-attribute">--p-highly-verbose --verbose </span></pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./picrust2_output"><div style="display:inline-block;color:white;">picrust2_output</div></a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
+            <li><a class="link" target="_blank" href="./picrust2_output">Output folder</a></li>
+            <br>
             <!--  EC predictions  -->
-            <li>EC predictions: <a href="./picrust2_output/q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions_with-descriptions.tsv"><div style="display:inline-block;color:blue;">EC metagenome predictions</div></a></li>
+            <li>EC predictions: <a target="_blank" class="link" href="./picrust2_output/q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions_with-descriptions.tsv">EC metagenome predictions</a></li>
             <div class="row">
                 {% for ec in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
-                    <span style="color:mediumvioletred">{{ec}}</span>
-                    <a href="picrust2_output/EC_functional_predictions_NMDS_{{ec}}.png">
+                    <span class="highlight">{{ec}}</span>
+                    <a target="_blank" href="picrust2_output/EC_functional_predictions_NMDS_{{ec}}.png">
                         <img src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}.png" style="width:100%">
                     </a>
                 </div>
                 {% endfor %}
             </div>
             <!--  KO predictions  -->
-            <li>KO predictions: <a href="./picrust2_output/q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions_with-descriptions.tsv"><div style="display:inline-block;color:blue;">KO metagenome predictions</div></a></li>
+            <li>KO predictions: <a target="_blank" class="link" href="./picrust2_output/q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions_with-descriptions.tsv">KO metagenome predictions</a></li>
             <div class="row">
                 {% for ko in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
-                    <span style="color:mediumvioletred">{{ko}}</span>
-                    <a href="picrust2_output/KO_functional_predictions_NMDS_{{ko}}.png">
+                    <span class="highlight">{{ko}}</span>
+                    <a target="_blank" href="picrust2_output/KO_functional_predictions_NMDS_{{ko}}.png">
                         <img src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}.png" style="width:100%">
                     </a>
                 </div>
                 {% endfor %}
             </div>
             <!--  METACYC predictions  -->
-            <li>METACYC predictions: <a href="./picrust2_output/q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions_with-descriptions.tsv"><div style="display:inline-block;color:blue;">METACYC abundance predictions</div></a></li>
+            <li>METACYC predictions: <a target="_blank" class="link" href="./picrust2_output/q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions_with-descriptions.tsv">METACYC abundance predictions</a></li>
             <div class="row">
                 {% for metacyc in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
-                    <span style="color:mediumvioletred">{{metacyc}}</span>
-                    <a href="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}.png">
+                    <span class="highlight">{{metacyc}}</span>
+                    <a target="_blank" href="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}.png">
                         <img src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}.png" style="width:100%">
                     </a>
                 </div>
@@ -619,39 +628,40 @@
             <pre><span class="cm-attribute">--output_path</span> export_ancom_<span class="cm-def">{{d.stats.ancom_var}}_genus</span></pre>
         </div>
         <br>
-        <div style="background-color:#22ae63"><b><center><font color=white>OUTPUT FOLDER: </font><a href="./ancom_output"><div style="display:inline-block;color:white;">ancom_output</div></a></center></b></div>
-        <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
+        <ul>
+            <li><a class="link" target="_blank" href="./ancom_output">Output folder</a></li>
+        </ul>
         <div style="text-align: justify">
             List of all tested variables :
         </div>
         <ul>
             {% for v in r.ancom.var %}
-            <li><span style="color:mediumvioletred">{{ v }}</span></li>
+            <li><span class="highlight">{{ v }}</span></li>
             {% endfor %}
         </ul>
         <br>
         {% for v in r.ancom.var %}
         <div style="text-align: justify">
-            <b>ANCOM analysis based on the <span style="color:mediumvioletred">{{ v }}</span> variable :</b>
+            <b>ANCOM analysis based on the <span class="highlight">{{ v }}</span> variable :</b>
         </div>
         <ul>
             - The full analysis is available in the following directories:
-            <a href="./ancom_output/export_ancom_{{v}}">
-                <div style="display:inline-block;color:blue;">ASV level</div></a> ;
-            <a href="./ancom_output/export_ancom_{{v}}_family">
-                <div style="display:inline-block;color:blue;">family level</div></a> ;
-            <a href="./ancom_output/export_ancom_{{v}}_genus">
-                <div style="display:inline-block;color:blue;">genus level</div></a>
+            <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}">ASV level</a> ;
+            <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_family">family level</a> ;
+            <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_genus">genus level</a>
             <br>
-            - The reports generated by QIIME 2 are available by following the following links: <a href="./ancom_output/export_ancom_{{d.stats.ancom_var}}/index.html"><div style="display:inline-block;color:blue;">ASV level</div></a> ; <a href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_family/index.html"><div style="display:inline-block;color:blue;">family level</div></a> ; <a href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_genus/index.html"><div style="display:inline-block;color:blue;">genus level</div></a>
+            - The reports generated by QIIME 2 are available by following the following links:
+            <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}/index.html">ASV level</a> ;
+            <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_family/index.html">family level</a> ;
+            <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_genus/index.html">genus level</a>
             <br>
             {% if r.ancom[v].base|length > 0 %}
             - Significantly differentially abundant ASVs are:
             {% for asv in r.ancom[v].base %}
             <ul>
-                <li>{{ asv }}</li>
+                <li><span class="highlight">{{ asv }}</span></li>
             </ul>
             {% endfor %}
             {% else %}
@@ -662,7 +672,7 @@
             - Significantly differentially abundant family are:
             {% for asv in r.ancom[v].family %}
             <ul>
-                <li>{{ asv }}</li>
+                <li><span class="highlight">{{ asv }}</span></li>
             </ul>
             {% endfor %}
             {% else %}
@@ -673,7 +683,7 @@
            - Significantly differentially abundant genus are:
             {% for asv in r.ancom[v].genus %}
             <ul>
-                <li>{{ asv }}</li>
+                <li><span class="highlight">{{ asv }}</span></li>
             </ul>
             {% endfor %}
             {% else %}
@@ -708,10 +718,11 @@
             <pre><span class="cm-attribute">--header-key</span> taxonomy</pre>
         </div>
         <br>
-        <div style="background-color:#22ae63" ;=""><b><center><font color=white>RESULTS</font></center></b></div>
-        <br>
+        <div class="results">Results</div>
+        <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li>The final ASV table can be viewed <a href="./ASV_table_with_taxonomy.tsv"><div style="display:inline-block;color:blue;">here</div></a>. A biom file is available <a href="./ASV_table_with_taxonomy.biom"><div style="display:inline-block;color:blue;">here</div></a> formats</li>
+            <li>The final ASV table can be viewed <a class="link" target="_blank" href="./ASV_table_with_taxonomy.tsv">here</a>.
+                A biom file is available <a class="link" target="_blank" href="./ASV_table_with_taxonomy.biom">here</a> formats</li>
         </ul>
         <br>
         <!--  -->
@@ -725,7 +736,7 @@
             <li>Tested variables :</li>
             <ul>
                 {% for var in r.alpha_div.var_tested %}
-                <li><span style="color:mediumvioletred">{{ var }}</span></li>
+                <li><span class="highlight">{{ var }}</span></li>
                 {% endfor %}
             </ul>
             <li>Diversity index used : "Observed richness / Chao1 / Shannon / InvSimpson / Pielou"</li>
@@ -737,23 +748,42 @@
         <h4>a - Diversity indices</h4>
         <br>
         {% for var in r.alpha_div.var_tested %}
-        <p align="center" style="color:mediumvioletred">{{var}}</p>
-        <p align="center"> <img src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}.png" width="1000"><br></p>
+        <p class="highlight" >{{var}}</p>
+        <p align="center">
+            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}.png">
+                <img src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}.png" width="1000">
+            </a>
+            <br>
+        </p>
         {% endfor %}
         <h4>b - Rarefaction curve</h4>
         <br>
-        <p align="center"> <img src="R/FIGURES/alpha_diversity/rarefaction_curve.png" width="1000"><br></p>
+        <p align="center">
+            <a target="_blank" href="R/FIGURES/alpha_diversity/rarefaction_curve.png">
+                <img src="R/FIGURES/alpha_diversity/rarefaction_curve.png" width="1000">
+            </a>
+            <br>
+        </p>
         <h4>c - Taxonomic diversity</h4>
         <br>
         {% for var in r.alpha_div.var_tested %}
         <ul>
-            <li>Taxonomic barplots group by <span style="color:mediumvioletred">{{var}} :</span></li><br>
-            <a href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_phylum_{{var}}.png"><div style="display:inline-block;color:blue;">Barplot at the phylum level</div></a> ;  <a href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_class_{{var}}.png"><div style="display:inline-block;color:blue;">Barplot at the class level</div></a> ;  <a href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_order_{{var}}.png"><div style="display:inline-block;color:blue;">Barplot at the order level</div></a> ;  <a href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_family_{{var}}.png"><div style="display:inline-block;color:blue;">Barplot at the family level</div></a><br>
+            <li>Taxonomic barplots group by <span class="highlight">{{var}} :</span></li><br>
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_phylum_{{var}}.png">Barplot at the phylum level</a> ;
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_class_{{var}}.png">Barplot at the class level</a> ;
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_order_{{var}}.png">Barplot at the order level</a> ;
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_family_{{var}}.png">Barplot at the family level</a>
+            <br>
         </ul>
-        <p align="center"> <img src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}.png" width="1000"><br></p>
+        <p align="center">
+            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}.png">
+                <img src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}.png" width="1000">
+            </a>
+            <br>
+        </p>
         {% endfor %}
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li>The results of the significance tests carried out for each variable on each diversity indexes can be viewed <a href="./R/FIGURES/alpha_diversity/index_significance_tests.txt"><div style="display:inline-block;color:blue;">here</div></a></li>
+            <li>The results of the significance tests carried out for each variable on each diversity indexes can be viewed <a class="link" target="_blank" href="./R/FIGURES/alpha_diversity/index_significance_tests.txt">here</a></li>
         </ul>
         <br>
         <!--  end alpha div  -->
@@ -764,22 +794,33 @@
         <br>
         <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
             <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
-            <li>Normalization method : "<a href="./R/FIGURES/beta_diversity_non_normalized"><div style="display:inline-block;color:blue;">None</div></a> / <a href="./R/FIGURES/beta_diversity_rarefied"><div style="display:inline-block;color:blue;">Rarefaction</div></a>  / <a href="./R/FIGURES/beta_diversity_DESeq2"><div style="display:inline-block;color:blue;">DESeq2</div></a> / <a href="./R/FIGURES/beta_diversity_CSS"><div style="display:inline-block;color:blue;">CSS</div></a>"</li>
-            <li>Tested variables : {{d.stats.beta_var}}</li>
+            <li>Normalization method : "
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">None</a> /
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied">Rarefaction</a>  /
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2">DESeq2</a> /
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS">CSS</a>"
+            </li>
+            <li>Tested variables :</li>
             <ul>
                 {% for v in r.beta_div.var_tested %}
-                <li><span style="color:mediumvioletred">{{ v }}</span></li>
+                <li><span class="highlight">{{ v }}</span></li>
                 {% endfor %}
             </ul>
-            <!-- Liste des variables obtenue à partir des noms des fichiers du dossier R/FIGURES/beta_diversity_non_normalized/NMDS/NMDS_*_bray.png -->
             <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
         </ul>
         <br>
         <div style="text-align: justify">
-            <font color="red"><b>NOTE 1: Raw results without any data normalization are available <a href="./R/FIGURES/beta_diversity_non_normalized"><div style="display:inline-block;color:blue;">here</div></a>. However, we do not recommend using them because from a statistical point of view, these results are very questionable.</b></font>
+            <font color="red"><b>NOTE 1: Raw results without any data normalization are available
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">here</a>.
+                However, we do not recommend using them because from a statistical point of view,
+                these results are very questionable.</b></font>
             <br>
             <font color="red"><b>
-                NOTE 2: For the beta diversity, SAMBA calculates 4 different distance matrices with jaccard, bray-curtis, UniFrac and weighted UniFrac indices. To facilitate the reading of this report, we have displayed the results of the bray-curtis and weighted UniFrac matrice analyses. All results are available in each normalization folder <a href="./R/FIGURES/"><div style="display:inline-block;color:blue;">here</div></a></b>
+                NOTE 2: For the beta diversity, SAMBA calculates 4 different distance matrices with
+                jaccard, bray-curtis, UniFrac and weighted UniFrac indices. To facilitate the reading
+                of this report, we have displayed the results of the bray-curtis and weighted UniFrac
+                matrice analyses. All results are available in each normalization
+                folder <a class="link" target="_blank" href="./R/FIGURES/">here</a></b>
             </font>
         </div>
         <br>
@@ -788,182 +829,243 @@
         <h5>PCoA ordination</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>PCoA ordination with sample grouped by <span style="color:mediumvioletred">{{ var }}</span></li>
+        <li>PCoA ordination with sample grouped by <span class="highlight">{{ var }}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_bray.png">
+                <a class="link" target="_blank" href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_bray.png">
                     <img src="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_bray.png" alt="rarefied_pcoa_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_wunifrac.png">
                     <img src="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_wunifrac.png" alt="rarefied_pcoa_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        <p> Other available PCoA : <a href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <br>
+        <div style="text-align: justify" > Other available PCoA :
+            <a class="link" target="_blank" href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="R/FIGURES/beta_diversity_rarefied/PCoA/PCoA_rarefied_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
         {% endfor %}
+        <br>
         <h5>NMDS ordination</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>NMDS ordination with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>NMDS ordination with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_bray.png" alt="rarefied_nmds_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_wunifrac.png" alt="rarefied_nmds_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
         <br>
-        <p> Other available NMDS : <a href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" > Other available NMDS :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/NMDS/NMDS_rarefied_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
         {% endfor %}
+        <br>
         <h5>Hierarchical clustering</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>Hierarchical clustering with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>Hierarchical clustering with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_bray.png" alt="rarefied_hc_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_wunifrac.png" alt="rarefied_hc_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available hierarchical clustering : <a href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" >Other available hierarchical clustering :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering/hclustering_rarefied_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h4>b - DESeq2 normalized data</h4>
         <br>
         <h5>PCoA ordination</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>PCoA ordination with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>PCoA ordination with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_bray.png" alt="deseq2_pcoa_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_wunifrac.png" alt="deseq2_pcoa_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available PCoA : <a href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" >Other available PCoA :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/PCoA/PCoA_DESeq2_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h5>NMDS ordination</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
         <li>NMDS ordination with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_bray.png" alt="deseq2_nmds_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_wunifrac.png" alt="deseq2_nmds_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available NMDS : <a href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" > Other available NMDS :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/NMDS/NMDS_DESeq2_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h5>Hierarchical clustering</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>Hierarchical clustering with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>Hierarchical clustering with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_bray.png" alt="deseq2_hc_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_wunifrac.png" alt="deseq2_hc_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available hierarchical clustering : <a href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Other available hierarchical clustering :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering/hclustering_DESeq2_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h4>c - CSS normalized data</h4>
         <br>
         <h5>PCoA ordination</h5>
         {% for var in r.beta_div.var_tested %}
-        <li>PCoA ordination with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>PCoA ordination with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_bray.png" alt="css_pcoa_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_wunifrac.png" alt="css_pcoa_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available PCoA : <a href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Other available PCoA :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/PCoA/PCoA_CSS_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h5>NMDS ordination</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>NMDS ordination with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>NMDS ordination with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_bray.png" alt="css_nmds_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_wunifrac.png" alt="css_nmds_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available NMDS : <a href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Other available NMDS :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/NMDS/NMDS_CSS_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h5>Hierarchical clustering</h5>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <li>Hierarchical clustering with sample grouped by <span style="color:mediumvioletred">{{var}}</span></li>
+        <li>Hierarchical clustering with sample grouped by <span class="highlight">{{var}}</span></li>
+        <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_bray.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_bray.png" alt="css_hc_bray_{{var}}" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_wunifrac.png" alt="css_hc_wunifrac_{{var}}" style="width:100%">
                 </a>
             </div>
         </div>
-        {% endfor %}
         <br>
-        <p> Other available hierarchical clustering : <a href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_jaccard.png"><div style="display:inline-block;color:blue;">based on Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_unifrac.png"><div style="display:inline-block;color:blue;">based on UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Other available hierarchical clustering :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_jaccard.png">based on Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering/hclustering_CSS_{{var}}_unifrac.png">based on UniFrac distances</a>
+        </div>
+        <br>
+        {% endfor %}
         <br>
         <h4>d - Explained variance</h4>
         <br>
@@ -971,52 +1073,67 @@
         <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_bray.png">
                     <img src="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_bray.png" alt="rarefied_ExpVar_bray" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_wunifrac.png" alt="rarefied_ExpVar_wunifrac" style="width:100%">
                 </a>
             </div>
         </div>
         <br>
-        <p> Explained variance by all variables of the metadata file for : <a href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_jaccard.png"><div style="display:inline-block;color:blue;">Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_unifrac.png"><div style="display:inline-block;color:blue;">UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Explained variance by all variables of the metadata file for :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_jaccard.png">Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied/ExpVar/pie_ExpVar_rarefied_unifrac.png">UniFrac distances</a>
+        </div>
         <br>
         <h5>DESeq2 normalized data</h5>
         <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_bray.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_bray.png" alt="deseq2_ExpVar_bray" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_wunifrac.png" alt="deseq2_ExpVar_wunifrac" style="width:100%">
                 </a>
             </div>
         </div>
         <br>
-        <p> Explained variance by all variables of the metadata file for : <a href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_jaccard.png"><div style="display:inline-block;color:blue;">Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_unifrac.png"><div style="display:inline-block;color:blue;">UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Explained variance by all variables of the metadata file for :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_jaccard.png">Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2/ExpVar/pie_ExpVar_DESeq2_unifrac.png">UniFrac distances</a>
+        </div>
         <br>
         <h5>CSS normalized data</h5>
         <br>
         <div class="row">
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_bray.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_bray.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_bray.png" alt="css_ExpVar_bray" style="width:100%">
                 </a>
             </div>
             <div class="column">
-                <a href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_wunifrac.png">
+                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_wunifrac.png">
                     <img src="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_wunifrac.png" alt="css_ExpVar_wunifrac" style="width:100%">
                 </a>
             </div>
         </div>
         <br>
-        <p> Explained variance by all variables of the metadata file for : <a href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_jaccard.png"><div style="display:inline-block;color:blue;">Jaccard distances</div></a> & <a href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_unifrac.png"><div style="display:inline-block;color:blue;">UniFrac distances</div></a><p>
+        <div style="text-align: justify" >
+            Explained variance by all variables of the metadata file for :
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_jaccard.png">Jaccard distances</a>
+            &
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_unifrac.png">UniFrac distances</a>
+        </div>
         <br>
         <!--  end beta div  -->
         <!--  -->
@@ -1029,25 +1146,30 @@
             <li>Tested variables :</li>
             <ul>
                 {% for var in r.descriptive_comparison.var_tested %}
-                <li><span style="color:mediumvioletred">{{ var }}</span></li>
+                <li><span class="highlight">{{ var }}</span></li>
                 {% endfor %}
             </ul>
         </ul>
         <br>
         {% for var in r.descriptive_comparison.var_tested %}
-        <li>Repartition of ASVs in the samples grouped by <span style="color:mediumvioletred">{{var}}:</span></li>
+        <li>Repartition of ASVs in the samples grouped by <span class="highlight">{{var}}:</span></li>
+        <br>
         <p align="center">
-            <img src="R/FIGURES/descriptive_comparison/upset_plot_{{var}}.png" style="width:100%">
+            <a class="link" target="_blank" href="R/FIGURES/descriptive_comparison/upset_plot_{{var}}.png">
+                <img src="R/FIGURES/descriptive_comparison/upset_plot_{{var}}.png" style="width:75%">
+            </a>
         </p>
+        <br>
         {% endfor %}
         <br>
         <h2 id="about">About</h2>
         <div style="text-align: justify">
-            SAMBA is developped by Laure QUINTRIC, Cyril NOËL and Alexandre CORMIER, bioinformatics engineers from SeBiMER plateform at Ifremer.
-            For any concerns/problems or suggestions, do not hesitate to contact us
+            SAMBA is developped by Laure QUINTRIC, Cyril NOËL and Alexandre CORMIER, bioinformatics engineers from
+            <a style="color: #007bff" href="https://bioinfo.ifremer.fr" target="_blank">SeBiMER</a>
+            plateform at <a style="color: #007bff" href="https://wwz.ifremer.fr/en" target="_blank">Ifremer</a>
+            (French Research Institute for Exploitation of the Sea). For any concerns/problems or suggestions, do not
+            hesitate to <a style="color: #007bff" href="mailto: samba-sebimer@ifremer.fr">contact us</a>.
         </div>
-<!--        <p><u><strong>Authors:</strong></u> Laure QUINTRIC, Cyril NOËL &amp; Alexandre CORMIER - Bioinformatics engineers - SeBiMER (Ifremer)</p>-->
-<!--        <p><u><strong>Contact:</strong></u> <i>samba-sebimer@ifremer.fr</i></p>-->
     </div>
 </div>
 </body>

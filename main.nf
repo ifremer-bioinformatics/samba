@@ -1201,7 +1201,7 @@ data_json.into { json ; SAMBAreport_okA }
 SAMBAreport_okB = params.stats_alpha_enable ? process_alpha_report : SAMBAreport_okA
 SAMBAreport_okC = params.stats_beta_enable ? process_beta_report : SAMBAreport_okB
 SAMBAreport_okD = params.dbotu3_enable ? process_desc_comp_report : SAMBAreport_okC
-SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okB
+SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okD
 
 
 /*

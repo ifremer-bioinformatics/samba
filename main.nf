@@ -1197,6 +1197,7 @@ process workflow_params {
 
 SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate, checkIfExists:true) : Channel.empty()
 SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfExists:true) : Channel.empty()
+SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIfExists:true) : Channel.empty()
 data_json.into { json ; SAMBAreport_okA }
 SAMBAreport_okB = params.stats_alpha_enable ? process_alpha_report : SAMBAreport_okA
 SAMBAreport_okC = params.stats_beta_enable ? process_beta_report : SAMBAreport_okB
@@ -1214,16 +1215,19 @@ if (params.report_enable) {
 
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'SAMBA_report.html'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'style.css'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'nfcore-samba_logo.png'
 
         input :
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
             file json from json
             file SAMBAreport_ok from SAMBAreport_ok
+            file logo from SAMBAlogo_ch 
 
         output :
             file 'style.css' into SAMBA_css_output
             file 'SAMBA_report.html' into Report
+            file 'nfcore-samba_logo.png' into SAMBAlogo_output
 
         when :
            params.report_enable

@@ -1,4 +1,4 @@
-# ![nf-core/samba](docs/images/nf-core-samba_logo.png)
+# ![nf-core/samba](./docs/images/nfcore-samba_logo.png)
 
 **Standardized and Automated MetaBarcoding Analyses workflow (Ifremer SeBiMER)**.
 

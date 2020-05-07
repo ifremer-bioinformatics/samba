@@ -125,33 +125,36 @@ def main(args):
 
     # _____________________________________________________________
     ## DBOTU 3
-    dbotu3_fasta = os.path.join(args.path,structure['dbotu3']['fasta'])
-    results['dbotu3']['asv_count'] = count_seq_fasta(dbotu3_fasta)
-    results['dbotu3']['clustering'] = results['dada2']['asv_count'] - results['dbotu3']['asv_count']
-    results['dbotu3']['clustering_perc'] = round(100 - (results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count']), 2)
+    if nxt_params['steps']['dbotu3_enable'] == 'true':
+        dbotu3_fasta = os.path.join(args.path,structure['dbotu3']['fasta'])
+        results['dbotu3']['asv_count'] = count_seq_fasta(dbotu3_fasta)
+        results['dbotu3']['clustering'] = results['dada2']['asv_count'] - results['dbotu3']['asv_count']
+        results['dbotu3']['clustering_perc'] = round(100 - (results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count']), 2)
 
     # _____________________________________________________________
     ## MicroDecon
-    microdecon_fasta = os.path.join(args.path,structure['microdecon']['fasta'])
-    microdecon_removed = os.path.join(args.path,structure['microdecon']['removed'])
+    if nxt_params['steps']['microDecon_enable'] == 'true':
+        microdecon_fasta = os.path.join(args.path,structure['microdecon']['fasta'])
+        microdecon_removed = os.path.join(args.path,structure['microdecon']['removed'])
 
-    results['microdecon']['asv_count'] = count_seq_fasta(microdecon_fasta)
-    results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
-    # -1 to rm header line count
-    results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - results['microdecon']['asv_rm'] - 1
+        results['microdecon']['asv_count'] = count_seq_fasta(microdecon_fasta)
+        results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
+        # -1 to rm header line count
+        results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - results['microdecon']['asv_rm'] - 1
 
     # _____________________________________________________________
     ## piCrust
-    picrust_out_dir = os.path.join(args.path,structure['picrust']['folder'])
-    picrust_listdir = collect_from_folder(picrust_out_dir)
+    if nxt_params['steps']['picrust2_enable'] == 'true':
+        picrust_out_dir = os.path.join(args.path,structure['picrust']['folder'])
+        picrust_listdir = collect_from_folder(picrust_out_dir)
 
-    ### Collect png for each category
-    results['picrust'] = defaultdict(dict)
-    results['picrust']['var_tested'] = []
-    for file in picrust_listdir:
-        if file.startswith('EC_') and file.endswith('.png'):
-            var_name = os.path.splitext(file)[0].replace('EC_functional_predictions_NMDS_','')
-            results['picrust']['var_tested'].append(var_name)
+        ### Collect png for each category
+        results['picrust'] = defaultdict(dict)
+        results['picrust']['var_tested'] = []
+        for file in picrust_listdir:
+            if file.startswith('EC_') and file.endswith('.png'):
+                var_name = os.path.splitext(file)[0].replace('EC_functional_predictions_NMDS_','')
+                results['picrust']['var_tested'].append(var_name)
 
     # _____________________________________________________________
     ## ancom
@@ -179,36 +182,39 @@ def main(args):
 
     # _____________________________________________________________
     ## Alpha diversity
-    alpha_div_out_dir = os.path.join(args.path,structure['alpha_div']['folder'])
+    if nxt_params['steps']['stats_alpha_enable'] == 'true':
+        alpha_div_out_dir = os.path.join(args.path,structure['alpha_div']['folder'])
 
-    ### Collect all variables tested, using barplot folder
-    alpha_div_barplot_out_dir = os.path.join(alpha_div_out_dir, 'diversity_barplots')
-    results['alpha_div']['var_tested'] = collect_from_folder(alpha_div_barplot_out_dir)
+        ### Collect all variables tested, using barplot folder
+        alpha_div_barplot_out_dir = os.path.join(alpha_div_out_dir, 'diversity_barplots')
+        results['alpha_div']['var_tested'] = collect_from_folder(alpha_div_barplot_out_dir)
 
     # _____________________________________________________________
     ## Beta diversity
-    beta_div_out_dir = os.path.join(args.path,structure['beta_div']['folder'])
+    if nxt_params['steps']['stats_beta_enable'] == 'true':
+        beta_div_out_dir = os.path.join(args.path,structure['beta_div']['folder'])
 
-    # Collect all variables tested, using non_normalized folder
-    non_normalized_out_dir_tested_var = os.path.join(beta_div_out_dir, 'beta_diversity_non_normalized', 'NMDS')
-    results['beta_div']['var_tested'] = []
-    for f in collect_from_folder(non_normalized_out_dir_tested_var):
-        if f.endswith('_bray.png'):
-            f = f.replace('NMDS_','').replace('_bray.png','')
-            results['beta_div']['var_tested'].append(f)
+        # Collect all variables tested, using non_normalized folder
+        non_normalized_out_dir_tested_var = os.path.join(beta_div_out_dir, 'beta_diversity_non_normalized', 'NMDS')
+        results['beta_div']['var_tested'] = []
+        for f in collect_from_folder(non_normalized_out_dir_tested_var):
+            if f.endswith('_bray.png'):
+                f = f.replace('NMDS_','').replace('_bray.png','')
+                results['beta_div']['var_tested'].append(f)
 
     # _____________________________________________________________
     ## Descriptive comparison
-    descriptive_comparison_out_dir = os.path.join(args.path,structure['descriptive_comparison']['folder'])
-    descriptive_comparison_listdir = collect_from_folder(descriptive_comparison_out_dir)
+    if nxt_params['steps']['stats_desc_comp_enable'] == 'true':
+        descriptive_comparison_out_dir = os.path.join(args.path,structure['descriptive_comparison']['folder'])
+        descriptive_comparison_listdir = collect_from_folder(descriptive_comparison_out_dir)
 
-    # Collect files
-    results['descriptive_comparison']['var'] = {}
-    results['descriptive_comparison']['var_tested'] = []
-    for f in descriptive_comparison_listdir:
-        if f.endswith('.png'):
-            var_name = f.replace('upset_plot_', '').replace('.png', '')
-            results['descriptive_comparison']['var_tested'].append(var_name)
+        # Collect files
+        results['descriptive_comparison']['var'] = {}
+        results['descriptive_comparison']['var_tested'] = []
+        for f in descriptive_comparison_listdir:
+            if f.endswith('.png'):
+                var_name = f.replace('upset_plot_', '').replace('.png', '')
+                results['descriptive_comparison']['var_tested'].append(var_name)
 
     # -------------------------------------------------------------
     # Step 3 - write the final html report

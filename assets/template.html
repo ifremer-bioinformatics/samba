@@ -47,7 +47,6 @@
     <!-- Sidebar  -->
     <nav id="sidebar">
         <div class="sidebar-header" style="text-align: center;">
-
             <i class="fas fa-home fa-2x"></i><a href="#home" style="font-weight: bold; font-size: 2.0rem"> Home</a>
         </div>
         <ul class="list-unstyled components">
@@ -56,14 +55,22 @@
             <li class="active">
                 <a href="#BioinformaticSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Bioinformatic process</a>
                 <ul class="collapse list-unstyled" id="BioinformaticSubmenu">
-                    <li><a href="#data-integrity">Data integrity</a></li>
+                    {% if d.steps.data_integrity_enable == 'true' %}
+                        <li><a href="#data-integrity">Data integrity</a></li>
+                    {% endif %}
                     <li><a href="#importing-raw-data">Importing raw data</a></li>
                     <li><a href="#primers-removal">Primers removal</a></li>
                     <li><a href="#qc-feature-table">QC and feature table</a></li>
+                    {% if d.steps.dbotu3_enable == 'true' %}
                     <li><a href="#asv-clustering">ASV clustering</a></li>
+                    {% endif %}
                     <li><a href="#taxo-assign">Taxonomic assignation</a></li>
+                    {% if d.steps.microDecon_enable == 'true' %}
                     <li><a href="#microdecon">Samples decontamination</a></li>
+                    {% endif %}
+                    {% if d.steps.picrust2_enable == 'true' %}
                     <li><a href="#picrsut">Functional predictions</a></li>
+                    {% endif %}
                     <li><a href="#ancom">Differential abundance</a></li>
                     <li><a href="#final-output">Final outputs</a></li>
                 </ul>
@@ -71,18 +78,29 @@
             <li class="active">
                 <a href="#StatisticalSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Statistical analyses</a>
                 <ul class="collapse list-unstyled" id="StatisticalSubmenu">
+                    {% if d.steps.stats_alpha_enable == 'true' %}
                     <li><a href="#alpha-diversity">Alpha diversity</a></li>
+                    {% endif %}
+                    {% if d.steps.stats_beta_enable == 'true' %}
                     <li><a href="#beta-diversity">Beta diversity</a></li>
+                    {% endif %}
+                    {% if d.steps.stats_desc_comp_enable == 'true' %}
                     <li><a href="#decriptive-comparison">Descriptive comparison</a></li>
+                    {% endif %}
                 </ul>
             </li>
             <li><a href="#about">About</a></li>
+            <hr>
+            <div style="text-align: center; font-size: 1.0rem; color: #f0f0f0; margin-left: 8px; margin-right: 8px">nf-core/samba by Laure Quintric, Cyril Noël and Alexandre Cormier</div>
+            <br>
+            <div style="text-align: center; font-size: 1.0rem; color: #f0f0f0"><i class="fas fa-envelope"></i><a href="mailto: samba-sebimer@ifremer.fr"> Contact</a></div>
         </ul>
         </nav>
         <!-- Page Content  -->
     <div id="content">
-
-        <h1 style="font-size: 6.0rem; font-weight: bold" id="home">SAMBA</h1>
+        <a class="link" target="_blank" href="https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow" id="home" style="margin-left: -25px">
+            <img src="nfcore-samba_logo.png" style="width:600px">
+        </a>
         <p style="font-size: 2.0rem; color: #22ae63">Standardized and Automated MetaBarcoding Analyses workflow</p>
         <hr class="title">
         <br>
@@ -104,16 +122,17 @@
             you to <b>computerize metabarcoding analysis </b> (16S, 18S, ITS) using the
             <b>DADA2 package through QIIME 2</b> (Bolyen <i>et al.</i>, 2019 ; version 2020.2).
             It also performs <b>basic diversity analyses</b> (alpha and beta) via
-            <font color="#007bff">homemade R scripts</font>. Specific statistics based on your
+            <b>homemade R scripts</b>. Specific statistics based on your
             metadata can also be carried out either by using,
             in your own scripts, the <i>phyloseq</i> object created by SAMBA.
             This workflow is based on the use of the <b>NextFlow</b> workflow managers. All
             analysis parameters are fully configurable via the
-            <font color="#007bff">base.config file</font> available in the config folder of SAMBA.
+            <b>base.config file</b> available in the config folder of SAMBA.
         </div>
         <br>
         <h1 id="bioinformatic">Bioinformatic process</h1>
-        <h3 id ="data-integrity">1 - Data integrity</h3>
+        {% if d.steps.data_integrity_enable == 'true' %}
+        <h3 id ="data-integrity">Data integrity [optional]</h3>
         <br>
         <div style="text-align: justify">
             This first step allows to <b>analyze the integrity of your data</b> in order to identify
@@ -123,14 +142,15 @@
                 <li>that they come from a single sequencer</li>
                 <li>the efficiency of forward and reverse PCR amplification</li>
             </ul>
-            <b>This step is carried out by a <font color="#007bff">homemade script</font></b>
+            <b>This step is carried out by a homemade script</b>
         </div>
         <br>
         <div class="results">Results</div>
         <hr class="results">
         <ul style="margin: 0 ; padding: 1 ;"><li>All data integrity verification are summarized in <a class="link" href="./data_integrity.csv">this csv file</a></li></ul>
         <br>
-        <h3 id="importing-raw-data">2 - Importing raw data</h3>
+        {% endif %}
+        <h3 id="importing-raw-data">Importing raw data</h3>
         <br>
         <div style="text-align: justify">
             The step performs the import of sequencing data directly from DATAREF <b>into
@@ -166,15 +186,16 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./import_output"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;">
-            <li><a class="link" target="_blank" href="./import_output">Output folder</a></li>
-            <br>
             <li>Sample repartition according to the sequence count</li>
         </ul>
         <p align="center"> <img src="./import_output/demultiplex-summary.png" width="600"></p>
         <ul style="margin: 0 ; padding: 1 ;"><li>All descriptive statistics of your samples are available <a class="link" href="./import_output/overview.html">here</a> (html output)</li></ul>
         <br>
-        <h3 id="primers-removal">3 - Primers removal</h3>
+        <h3 id="primers-removal">Primers removal</h3>
         <br>
         <div style="text-align: justify">
            The third step is to remove the primers using <b>the cutadapt plugin</b> available in
@@ -223,9 +244,10 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./trimmed_output"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;">
-            <li><a class="link" target="_blank" href="./trimmed_output">Output folder</a></li>
-            <br>
             <li>Sample repartition according to the sequence count</li>
         </ul>
         <p align="center"> <img src="./trimmed_output/demultiplex-summary.png" width="600"><br></p>
@@ -237,7 +259,7 @@
         <!--  -->
         <!-- Sequence quality control and feature table construction -->
         <!--  -->
-        <h3 id="qc-feature-table">4 - Sequence quality control and feature table construction</h3>
+        <h3 id="qc-feature-table">Sequence quality control and feature table construction</h3>
         <br>
         <div style="text-align: justify">
             The following step of the workflow is to filter the quality of the sequences according
@@ -321,9 +343,10 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./dada2_output"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li><a class="link" target="_blank" href="./dada2_output">Output folder</a></li>
-            <br>
             <li>The dynamics of the different step of filtering can be visualized in this <a class="link" href="./dada2_output/index.html">html file</a> and
                 are also available in a <a class="link" href="./dada2_output/metadata.tsv">tabulated file</a></li>
             <li>Distribution of sequences in samples</li>
@@ -338,7 +361,8 @@
         <!--  -->
         <!-- ASV clustering -->
         <!--  -->
-        <h3 id="asv-clustering">5 - ASV clustering</h3>
+        {% if d.steps.dbotu3_enable == 'true' %}
+        <h3 id="asv-clustering">ASV clustering [optional]</h3>
         <br>
         <div style="text-align: justify">
             The following step of the workflow is to cluster ASV according to sequence similarity and
@@ -393,9 +417,10 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./dbotu3_output"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li><a class="link" target="_blank" href="./dbotu3_output">Output folder</a></li>
-            <br>
             <li>Overview of the results available <a class="link" href="./dbotu3_output/index.html">here</a> (html output)</li>
             <li>Feature details are available <a class="link" href="./dbotu3_output/feature-frequency-detail.html">here</a> (html output)</li>
             <li>Details about the samples can be found by going to <a class="link" href="./dbotu3_output/sample-frequency-detail.html">this interactive html page</a></li>
@@ -404,10 +429,11 @@
             <font color="red"><b>A total of {{ r.dbotu3.asv_count }} ASVs remain after this step. dbOTU3 allowed to cluster {{ r.dbotu3.clustering }} ASVs with others ASVs (i.e. about {{ r.dbotu3.clustering_perc }}% clustering). </b></font>
         </ul>
         <br>
+        {% endif %}
         <!--  -->
         <!-- Taxonomic assignation -->
         <!--  -->
-        <h3 id="taxo-assign">6 - Taxonomic assignation</h3>
+        <h3 id="taxo-assign">Taxonomic assignation</h3>
         <br>
         <div style="text-align: justify">
             The taxonomic assignation performed during the fourth step of the workflow allowed to
@@ -443,18 +469,19 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./taxo_output"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li><a class="link" target="_blank" href="./taxo_output">Output folder</a></li>
-            <br>
             <li>The result of the taxonomic affiliation is available in <a class="link" href="./taxo_output/index.html">html</a> and
                 <a class="link" href="./taxo_output/ASV_taxonomy.tsv">tabulated</a> formats</li>
         </ul>
         <br>
-        <!--  if microdecon  -->
         <!--  -->
         <!-- Samples decontamination (microDecon) [optional] -->
         <!--  -->
-        <h3 id="microdecon">7 - Samples decontamination (microDecon) [optional]</h3>
+        {% if d.steps.microDecon_enable == 'true' %}
+        <h3 id="microdecon">Samples decontamination (microDecon) [optional]</h3>
         <br>
         <div style="text-align: justify">
             If you have sequenced control samples, this step allows you to decontaminate your samples from the sequences identified in these controls. This step is carried out using microDecon and a homemade R script
@@ -470,9 +497,10 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./microDecon"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li><a class="link" target="_blank" href="./microDecon">Output folder</a></li>
-            <br>
             <li>New ASV table: <a class="link" href="./microDecon/decontaminated_ASV_table.tsv">decontaminated table</a></li>
             <li>Representative sequence: <a class="link" href="./microDecon/decontaminated_ASV.fasta">decontaminated ASV sequence</a></li>
             <li>All ASVs listed <a class="link" href="./microDecon/ASV_removed.txt">here</a> were removed because they were in the majority in the control samples         </li>
@@ -480,13 +508,13 @@
             <br>
             <font color="red"><b>A total of {{ r.microdecon.asv_count }} ASVs remain after this step. MicroDecon removed {{ r.microdecon.asv_rm }} ASVs essentially ASVs unique to controls ({{ r.microdecon.asv_rm_ctrl }} of {{ r.microdecon.asv_rm }}).</b></font>
         </ul>
-        <!--  end microdecon  -->
         <br>
-        <!--  if picrust2  -->
+        {% endif %}
         <!--  -->
         <!-- Functional predictions (PICRUSt2) [optional] -->
         <!--  -->
-        <h3 id="picrsut">8 - Functional predictions (PICRUSt2) [optional]</h3>
+        {% if d.steps.picrust2_enable == 'true' %}
+        <h3 id="picrsut">Functional predictions (PICRUSt2) [optional]</h3>
         <br>
         <div style="text-align: justify">
             This optional step allows you to predic the functional potential of the communities using PICRUSt2
@@ -509,9 +537,10 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./picrust2_output"> Output folder</a>
+        <br>
+        <br>
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
-            <li><a class="link" target="_blank" href="./picrust2_output">Output folder</a></li>
-            <br>
             <!--  EC predictions  -->
             <li>EC predictions: <a target="_blank" class="link" href="./picrust2_output/q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions_with-descriptions.tsv">EC metagenome predictions</a></li>
             <div class="row">
@@ -550,11 +579,12 @@
             </div>
         </ul>
         <br>
+        {% endif %}
         <!--  end picrust  -->
         <!--  -->
         <!--  Differential abundance testing using ANCOM -->
         <!--  -->
-        <h3 id="ancom">9 - Differential abundance testing using ANCOM [optional]</h3>
+        <h3 id="ancom">Differential abundance testing using ANCOM</h3>
         <br>
         <div style="text-align: justify">
             This step allows you to test if there are differentially abundant ASVs depending on the variable of interest that you have specified using the following commands :</span>
@@ -630,9 +660,9 @@
         <br>
         <div class="results">Results</div>
         <hr class="results">
-        <ul>
-            <li><a class="link" target="_blank" href="./ancom_output">Output folder</a></li>
-        </ul>
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./ancom_output"> Output folder</a>
+        <br>
+        <br>
         <div style="text-align: justify">
             List of all tested variables :
         </div>
@@ -698,7 +728,7 @@
         <!--  -->
         <!--  Final outputs -->
         <!--  -->
-        <h3 id="final-output">10 - Final outputs</h3>
+        <h3 id="final-output">Final outputs</h3>
         <br>
         <div style="text-align: justify">
             This is the last step of the bioinformatic process where the goal is to merge the ASV abundance table with the taxonomy file. This is performed using the following commands :
@@ -728,8 +758,9 @@
         <!--  -->
         <!--  General statistical analyses -->
         <!--  -->
-        <h2 id="statistical-analyses">IV - General statistical analyses</h2>
-        <h3 id="alpha-diversity">1 - Alpha diversity</h3>
+        <h1 id="statistical-analyses">General statistical analyses</h1>
+        {% if d.steps.stats_alpha_enable == 'true' %}
+        <h3 id="alpha-diversity">Alpha diversity [optional]</h3>
         <br>
         <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
             <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
@@ -786,11 +817,13 @@
             <li>The results of the significance tests carried out for each variable on each diversity indexes can be viewed <a class="link" target="_blank" href="./R/FIGURES/alpha_diversity/index_significance_tests.txt">here</a></li>
         </ul>
         <br>
+        {% endif %}
         <!--  end alpha div  -->
         <!--  -->
         <!--  beta div -->
         <!--  -->
-        <h3 id="beta-diversity">2 - Beta diversity</h3>
+        {% if d.steps.stats_beta_enable == 'true' %}
+        <h3 id="beta-diversity">Beta diversity [optional]</h3>
         <br>
         <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
             <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
@@ -1135,11 +1168,13 @@
             <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS/ExpVar/pie_ExpVar_CSS_unifrac.png">UniFrac distances</a>
         </div>
         <br>
+        {% endif %}
         <!--  end beta div  -->
         <!--  -->
         <!--  desc compar -->
         <!--  -->
-        <h3 id="decriptive-comparison">3 - Descriptive comparison</h3>
+        {% if d.steps.stats_desc_comp_enable == 'true' %}
+        <h3 id="decriptive-comparison">Descriptive comparison [optional]</h3>
         <br>
         <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
             <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
@@ -1162,14 +1197,28 @@
         <br>
         {% endfor %}
         <br>
+        {% endif %}
         <h2 id="about">About</h2>
+        <h5>Contributors</h5>
+        <hr class="results">
         <div style="text-align: justify">
-            SAMBA is developped by Laure QUINTRIC, Cyril NOËL and Alexandre CORMIER, bioinformatics engineers from
+            SAMBA was originally written developped by Laure QUINTRIC, Cyril NOËL and Alexandre CORMIER, bioinformatics engineers from
             <a style="color: #007bff" href="https://bioinfo.ifremer.fr" target="_blank">SeBiMER</a>
             plateform at <a style="color: #007bff" href="https://wwz.ifremer.fr/en" target="_blank">Ifremer</a>
-            (French Research Institute for Exploitation of the Sea). For any concerns/problems or suggestions, do not
-            hesitate to <a style="color: #007bff" href="mailto: samba-sebimer@ifremer.fr">contact us</a>.
+            (French Research Institute for Exploitation of the Sea).
         </div>
+        <br>
+        <h5>Citation</h5>
+        <hr class="results">
+        <div style="text-align: justify">You can cite the nf-core publication as follows:</div>
+            <br>
+
+        <div style="text-align: left; margin-left: 80px; margin-right: 80px">
+            Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia,
+            Paolo Di Tommaso & Sven Nahnsen. <i><a class="link" target="_blank" href="https://www.nature.com/articles/s41587-020-0439-x">The nf-core
+            framework for community-curated bioinformatics pipelines.</a></i> Nat Biotechnol. 2020 Feb 13.
+        </div>
+        <br>
     </div>
 </div>
 </body>

@@ -48,8 +48,8 @@ def helpMessage() {
 	--overlap [str]			Cutadapt overlaping length between primer and read (default : 18).
 
 	ASVs inference:
-	--trimLeft [str]		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
-	--trimRigth [str]		The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
+	--FtrimLeft [str]		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
+	--RtrimLeft [str]		The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
 	--FtruncLen [str]		Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
 	--RtruncLen [str]		Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
 	--FmaxEE [str]			Forward reads with higher than maxEE "expected errors" will be discarded (default = 2).
@@ -462,7 +462,7 @@ process q2_dada2 {
 
 	script :
 	"""
-	q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.trimLeft} ${params.trimRigth} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+	q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
 	"""
 }
 
@@ -1145,8 +1145,8 @@ process workflow_params {
     data["cutadapt"]["overlap"] = '$params.overlap'
  
     data["dada2"] = {}
-    data["dada2"]["trimLeft"] = '$params.trimLeft'
-    data["dada2"]["trimRigth"] = '$params.trimRigth'
+    data["dada2"]["FtrimLeft"] = '$params.FtrimLeft'
+    data["dada2"]["RtrimLeft"] = '$params.RtrimLeft'
     data["dada2"]["FtruncLen"] = '$params.FtruncLen'
     data["dada2"]["RtruncLen"] = '$params.RtruncLen'
     data["dada2"]["FmaxEE"] = '$params.FmaxEE'

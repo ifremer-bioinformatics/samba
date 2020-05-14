@@ -13,7 +13,7 @@ then
 fi
 
 #run nextflow nextmb workflow ($1 is useful if you want to run resume)
-nextflow -trace nextflow.executor run main.nf -profile conda $@
+nextflow -trace nextflow.executor run main.nf -profile conda,custom $@
 
 #deactivate nextflow environment
 . $BASEDIR/conf/conda_envs/delenv.sh

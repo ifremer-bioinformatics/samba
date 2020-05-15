@@ -43,24 +43,29 @@ h1,h2{
   margin:0;
   line-height:1.15;
 }
+
 h1{
   font-size:2em;
 }
+
 h2{
   font-size:1.5em;
   font-weight:400;
   margin:.25em 0;
 }
+
 h3{
   margin: 0;
   margin-left: 20px;
   color:#00609C
 }
+
 h4{
   color:#007fcc;
   margin: 0;
   margin-left: 40px;
 }
+
 h5{
   color:#007fcc;
   margin: 0;
@@ -73,6 +78,7 @@ hr.title {
     background: #333;
     background-image: linear-gradient(to right, #757575, #fbfbfb);
 }
+
 hr.results {
     border: 0;
     height: 1.0px;
@@ -163,11 +169,6 @@ a:focus {
     transition: all 0.9s;
 }
 
-/* .wrapper {
-    display: flex;
-    width: 100%;
-} */
-
 #sidebar {
     width: 250px;
     position: fixed;
@@ -189,26 +190,11 @@ a:focus {
     background: #007fcc;
 }
 
-/* #sidebar ul.components {
-    padding: 20px 0;
-    border-bottom: 1px solid #47748b;
-} */
-
-/* #sidebar ul p {
-    color: #fff;
-    padding: 10px;
-} */
-
 #sidebar ul li a {
     padding: 10px;
     font-size: 1.1em;
     display: block;
 }
-
-/* #sidebar ul li a:hover {
-    color: #7386D5;
-    background: #fff;
-} */
 
 #sidebar ul li.active>a,
 a[aria-expanded="true"] {

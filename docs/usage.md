@@ -7,16 +7,14 @@
 * [Running the pipeline](#running-the-pipeline)
   * [Updating the pipeline](#updating-the-pipeline)
   * [Reproducibility](#reproducibility)
-* [Main arguments](#main-arguments)
 
+* [Main arguments](#main-arguments)
   Mandatory arguments:
   * [`--input_metadata`](#--input_metadata)
   * [`--input_manifest`](#--input_manifest)
   * [`-profile`](#-profile)
-
   Generic arguments:
   * [`--singleEnd`](#--singleEnd)
-
   Other options:
   * [`--outdir`](#--outdir)
   * [`-w/--work-dir`](#-w/--work-dir)
@@ -24,18 +22,15 @@
   * [`--email_on_fail`](#--email_on_fail)
   * [`-name`](#-name)
   * [`--projectName`](#--projectName)
-
   Data integrity:
   * [`--data_integrity_enable`](#--data_integrity_enable)
   * [`--barcode_filter`](#--barcode_filter)
   * [`--primer_filter`](#--primer_filter)
-  
   Raw reads cleaning:
   * [`--primerF`](#--primerF)
   * [`--primerR`](#--primerR)
   * [`--errorRate`](#--errorRate)
   * [`--overlap`](#--overlap)
-  
   ASVs inference:
   * [`--FtrimLeft`](#--FtrimLeft)
   * [`--RtrimLeft`](#--RtrimLeft)
@@ -45,57 +40,61 @@
   * [`--RmaxEE`](#--RmaxEE)
   * [`--minQ`](#--minQ)
   * [`--chimeras`](#--chimeras)
-
   Merge ASVs tables:
   * [`--dada2merge`](#--dada2merge)
   * [`--merge_tabledir`](#--merge_tabledir)
   * [`--merge_repseqsdir`](#--merge_repseqsdir)
-
   Distribution based-clustering: 
   * [`--dbotu3_enable`](#--dbotu3_enable)
   * [`--gen_crit`](#--gen_crit)
   * [`--abund_crit`](#--abund_crit)
   * [`--pval_crit`](#--pval_crit)
-
   Taxonomic assignation:
   * [`--extract_db`](#--extract_db)
   * [`--seqs_db`](#--seqs_db)
   * [`--taxo_db`](#--taxo_db)
   * [`--database`](#--database)
   * [`--confidence`](#--confidence)
-
   Decontamination:
   * [`--microDecon_enable`](#--microDecon_enable)
   * [`--control_list`](#--control_list)
   * [`--nb_controls`](#--nb_controls)
   * [`--nb_samples`](#--nb_samples)
-
   Predict functionnal abundance:
   * [`--picrust2_enable`](#--picrust2_enable)
   * [`--method`](#--method)
   * [`--nsti`](#--nsti)
-
   Differential abundance testing:
   * [`--ancor_var`](#--ancor_var)
-
   Statistics:
   * [`--stats_alpha_enable`](#--stats_alpha_enable)
   * [`--stats_beta_enable`](#--stats_beta_enable)
   * [`--stats_desc_comp_enable`](#--stats_desc_comp_enable)
-
   * [`--kingdom`](#--kingdom)
   * [`--taxa_nb`](#--taxa_nb)
   * [`--alpha_div_group`](#--alpha_div_group)
   * [`--beta_div_var`](#--beta_div_var)
   * [`--sets_analysis_crit`](#--sets_analysis_crit)
   * [`--hc_method`](#--hc_method)
-  
   * [`--stats_only`](#--stats_only)
   * [`--inasv_table`](#--inasv_table)
   * [`--innewick`](#--innewick)
-
   Final analysis report:
   * [`--report_enable`](#--report_enable)
+  Other command line parameters:
+  * [`--outdir`](#--outdir)
+  * [`--email`](#--email)
+  * [`--email_on_fail`](#--email_on_fail)
+  * [`-name`](#-name)
+  * [`-resume`](#-resume)
+  * [`-c`](#-c)
+  * [`--custom_config_version`](#--custom_config_version)
+  * [`--custom_config_base`](#--custom_config_base)
+  * [`--max_memory`](#--max_memory)
+  * [`--max_time`](#--max_time)
+  * [`--max_cpus`](#--max_cpus)
+  * [`--plaintext_email`](#--plaintext_email)
+  * [`--monochrome_logs`](#--monochrome_logs)
 
 ## Introduction
 

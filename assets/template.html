@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <!-- Our Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-ifremer.css">
     <!-- Scrollbar Custom CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
     <!-- jQuery CDN - Slim version (=without AJAX) -->
@@ -508,7 +508,7 @@
         <!-- diversity indices -->
         <!--  -->
         <br>
-        <h4>a - Diversity indices</h4>
+        <h4>Diversity indices</h4>
         <br>
         {% for var in r.alpha_div.var_tested %}
         <p class="highlight" >{{var}}</p>
@@ -519,7 +519,7 @@
             <br>
         </p>
         {% endfor %}
-        <h4>b - Rarefaction curve</h4>
+        <h4>Rarefaction curve</h4>
         <br>
         <p align="center">
             <a target="_blank" href="R/FIGURES/alpha_diversity/rarefaction_curve.png">
@@ -527,7 +527,7 @@
             </a>
             <br>
         </p>
-        <h4>c - Taxonomic diversity</h4>
+        <h4>Taxonomic diversity</h4>
         <br>
         {% for var in r.alpha_div.var_tested %}
         <ul>
@@ -574,7 +574,7 @@
           <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
         </div>
         <br>
-        <h4>a - Rarefied data</h4>
+        <h4>Rarefied data</h4>
         <br>
         <h5>PCoA ordination</h5>
         <br>
@@ -654,7 +654,7 @@
         <br>
         {% endfor %}
         <br>
-        <h4>b - DESeq2 normalized data</h4>
+        <h4>DESeq2 normalized data</h4>
         <br>
         <h5>PCoA ordination</h5>
         <br>
@@ -735,7 +735,7 @@
         <br>
         {% endfor %}
         <br>
-        <h4>c - CSS normalized data</h4>
+        <h4>CSS normalized data</h4>
         <br>
         <h5>PCoA ordination</h5>
         {% for var in r.beta_div.var_tested %}
@@ -817,7 +817,7 @@
         <br>
         {% endfor %}
         <br>
-        <h4>d - Explained variance</h4>
+        <h4>Explained variance</h4>
         <br>
         <h5>Rarefied data</h5>
         <br>

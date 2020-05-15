@@ -106,22 +106,66 @@
         <h1 id="description">Description of the workflow</h1>
         <br>
         <div style="text-align: justify">
-            The <i>SAMBA workflow</i> developed by the <b>SeBiMER</b> (Ifremer's Bioinformatics service) and allows
-            you to <b>computerize metabarcoding analysis </b> (16S, 18S, ITS) using the
-            <b>DADA2 package through QIIME 2</b> (Bolyen <i>et al.</i>, 2019 ; version 2020.2).
-            It also performs <b>basic diversity analyses</b> (alpha and beta) via
-            <b>homemade R scripts</b>. Specific statistics based on your
-            metadata can also be carried out either by using,
-            in your own scripts, the <i>phyloseq</i> object created by SAMBA.
-            This workflow is based on the use of the <b>NextFlow</b> workflow managers. All
-            analysis parameters are fully configurable via the
-            <b>base.config file</b> available in the config folder of SAMBA.
+            The <b>SAMBA workflow</b>, developed by the <b>SeBiMER</b> (Ifremer's Bioinformatics platform) is an open-source modular workflow
+            to process eDNA metabarcoding data. SAMBA is developped using the NextFlow workflow manager (Di Tommaso <i>et al.</i>, 2017). SAMBA is built
+            around three main parts: data integrity checking, bioinformatics processes and statistical analyses. The SAMBA checking process
+            allows to verify the integrity of the raw data. All bioinformatics processes are mainly based on the use of the next-generation
+            microbiome bioinformatics platform <b>QIIME 2</b> (Bolyen <i>et al.</i>, 2019 ; version 2020.2) and on the approach of grouping
+            sequences in ASV (Amplicon Sequence Variants) using <b>DADA2</b> (Callahan <i>et al.</i>, 2016). It also performs extensives analyses
+            of the alpha- and beta-diversity using homemade R scripts (R CORE TEAM, 2020). SAMBA offers a real alternative to the complex use of
+            a suite of command line bioinformatics tools while providing access to state-of-the-art methods and tools in the field.
+            The SAMBA source code, documentation and installation instructions are freely available at <a class="link" href="">SeBiMER GitHub</a>
+            and at <a class="link" href="">SAMBA nf_core</a>.
         </div>
+        <br>
         <p align="center">
             <a class="link" target="_blank" href="samba_wf.png">
                 <img src="samba_wf.png" style="width:75%">
             </a>
         </p>
+
+        <br>
+        <div style="text-align: justify">
+          In order to achieve the complete analysis, SAMBA uses a range of state-of-the-art software and methods which you will find the list below :
+        </div>
+        <br>
+        <table>
+          <tr>
+            <th>Tools and softwares</th>
+            <th style="text-align: center">Version</th>
+          </tr>
+          <tr>
+            <th colspan="2"><i>Required</i></th>
+          </tr>
+          <tr>
+            <td><a class="link" href="https://www.nextflow.io/index.html">Nextflow</a></td>
+            <td style="text-align: center">20.01.0</td>
+          </tr>
+          <tr>
+            <th colspan="2"><i>Included in SAMBA</i></th>
+          </tr>
+          <tr>
+            <td>
+              <u><a class="link" href="https://qiime2.org/">QIIME 2</a></u>
+              <li><a class="link" href="https://github.com/cduvallet/q2-dbotu">q2-dbotu</a></li>
+              <li><a class="link" href="https://library.qiime2.org/plugins/q2-picrust2/13/">q2-picrust2</a></li>
+            </td>
+            <td style="text-align: center">2019.10</td>
+          </tr>
+          <tr>
+            <td>
+              <u><a class="link" href="https://cran.r-project.org/">R</a></u>
+              <li>DESeq2</li>
+              <li>metagenomeSeq</li>
+              <li>microbiome</li>
+              <li>microDecon</li>
+              <li>phyloseq</li>
+              <li>vegan</li>
+            </td>
+            <td style="text-align: center">3.6.1</td>
+          </tr>
+        </table>
+        <br>
 
 <!--        <br>-->
 <!--               <p>-->
@@ -955,6 +999,14 @@
           Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia,
           Paolo Di Tommaso & Sven Nahnsen. (2020). <a class="link" target="_blank" href="https://www.nature.com/articles/s41587-020-0439-x">The nf-core
           framework for community-curated bioinformatics pipelines.</a> <i>Nature biotechnology</i>. <b>38</b>(3), 276-278.
+        </div>
+        <br>
+        <div style="text-align: justify">You can cite the NextFlow publication as follows:</div>
+        <br>
+        <div style="text-align: justify; margin-left: 80px; margin-right: 80px">
+          Paolo Di Tommaso, Maria Chatzou, Evan W. Floden, Pablo Prieto Barja, Emilio Palumbo & Cedric Notredame. (2017).
+          <a class="link" target="_blank" href="https://www.nature.com/articles/nbt.3820/">Nextflow enables reproducible computational workflows.</a>
+          <i>Nature biotechnology</i>. <b>35</b>(4), 316-319.
         </div>
         <br>
         <div style="text-align: justify">You can cite each tool used in SAMBA as follows:</div>

@@ -15,13 +15,13 @@ create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, co
     #Input data
     rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
     METADATA = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
-    
-    if (microDecon == "true") {    
+
+    if (microDecon == "true") {
     control_list =  unlist(strsplit(control,","))
     METADATA = METADATA[!rownames(METADATA) %in% control_list, ]
     write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
     }
-    
+
     #Reformatting of the input data
     abund = rawASVtable[,1:length(rawASVtable)-1]
     row.names(abund) = abund$ASV_ID
@@ -31,8 +31,9 @@ create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, co
     colnames(tax) = c("ASV_ID","Kingdom","Phylum","Class","Order","Family","Genus","Species")
     row.names(tax) = tax$ASV_ID
     tax = as.matrix(tax %>% select (-ASV_ID))
-    
+
     ## Construction of the phyloseq object ####
+    abund = abund[,colSums(abund) > 0]
     ABUND = otu_table(abund,taxa_are_rows=TRUE)
     TAX = tax_table(tax)
     METADATA_phyloseq = sample_data(METADATA)

@@ -118,6 +118,35 @@ li.cmdline {
 }
 
 /* ---------------------------------------------------
+    TABLE STYLE
+----------------------------------------------------- */
+
+#tools_list {
+  font-family: Lato, sans-serif;
+  border-collapse: collapse;
+  width: 25%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+#tools_list td, #tools_list th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#tools_list tr:nth-child(even){background-color: #f2f2f2;}
+
+#tools_list tr:hover {background-color: #ddd;}
+
+#tools_list th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #007fcc;
+  color: white;
+}
+
+/* ---------------------------------------------------
     FUNCTIONS STYLE
 ----------------------------------------------------- */
 

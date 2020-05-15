@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-</style>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -52,7 +50,6 @@
             <i class="fas fa-home fa-2x"></i><a href="#home" style="font-weight: bold; font-size: 2.0rem"> Home</a>
         </div>
         <ul class="list-unstyled components">
-            <li><a href="#introduction">Introduction</a></li>
             <li><a href="#description">Description</a></li>
             <li class="active">
                 <a href="#BioinformaticSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Bioinformatic process</a>
@@ -121,6 +118,13 @@
             and at <a class="link" href="">SAMBA nf_core</a>.
         </div>
         <br>
+        <p align="center">
+            <a class="link" target="_blank" href="samba_wf.png">
+                <img src="samba_wf.png" style="width:75%">
+            </a>
+        </p>
+
+        <br>
         <div style="text-align: justify">
           In order to achieve the complete analysis, SAMBA uses a range of state-of-the-art software and methods which you will find the list below :
         </div>
@@ -162,6 +166,20 @@
           </tr>
         </table>
         <br>
+
+<!--        <br>-->
+<!--               <p>-->
+<!--            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">-->
+<!--            Button with data-target-->
+<!--            </button>-->
+<!--        </p>-->
+<!--        <div class="collapse show" id="collapseExample">-->
+<!--          <div class="card card-body">-->
+<!--            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.-->
+<!--          </div>-->
+<!--        </div>-->
+
+
         <h1 id="bioinformatic">Bioinformatic process</h1>
         {% if d.steps.data_integrity_enable == 'true' %}
         <h3 id ="data-integrity">Data integrity [optional]</h3>
@@ -210,18 +228,19 @@
            defined in the parameters configuration file :
         </div>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined Cutadapt parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
             {% if d.singleEnd == 'false' %}
-            <pre>Cutadapt in paired-end mode \</pre>
-            <pre><span class="cm-attribute">Forward primer sequence: </span><span class="cm-def">{{d.cutadapt.primerF}}</span> \</pre>
-            <pre><span class="cm-attribute">Reverse primer sequence: </span><span class="cm-def">{{d.cutadapt.primerR}}</span> \</pre>
-            <pre><span class="cm-attribute">Overlap: </span><span class="cm-def">{{d.cutadapt.overlap}}</span> \</pre>
+            <li class="cmdline">Mode: <span class="highlight">Paired-end</span></li>
+            <li class="cmdline">Forward primer sequence: <span class="highlight">{{d.cutadapt.primerF}}</span></li>
+            <li class="cmdline">Reverse primer sequence: <span class="highlight">{{d.cutadapt.primerR}}</span></li>
+            <li class="cmdline">Overlap: <span class="highlight">{{d.cutadapt.overlap}}</span></li>
             {% else %}
-            <pre>Cutadapt in single-end mode \</pre>
-            <pre><span class="cm-attribute">Primer sequence: </span><span class="cm-def">{{d.cutadapt.primerF}}</span> \</pre>
+            <li class="cmdline">Mode: <span class="highlight">Single-end</span></li>
+            <li class="cmdline">Primer sequence: <span class="highlight">{d.cutadapt.primerF}}</span></li>
             {% endif %}
-            <pre><span class="cm-attribute">--p-error-rate </span><span class="cm-def">{{d.cutadapt.errorRate}}</span> \</pre>
-        </div>
+            <li class="cmdline">Error rate: <span class="highlight">{{d.cutadapt.errorRate}}</span></li>
+        </ul>
         <br>
         <div class="results">Results</div>
         <hr class="results">
@@ -250,24 +269,25 @@
             using the <a class="link" href="./cmd/q2_dada2_complete.sh">following commands</a> and your parameters :
         </div>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined DADA2 parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
             {% if d.singleEnd == 'false' %}
-            <pre>DADA2 in paired-end mode \</pre>
-            <pre><span class="cm-attribute">Number of bases trimmed in 5' of forward reads:</span> <span class="cm-def">{{d.dada2.trimLeft}}</span> \</pre>
-            <pre><span class="cm-attribute">Number of bases trimmed in 5' of reverse reads:</span> <span class="cm-def">{{d.dada2.trimRigth}}</span> \</pre>
-            <pre><span class="cm-attribute">Length to trim forward reads:</span> <span class="cm-def">{{d.dada2.FtruncLen}}</span> \</pre>
-            <pre><span class="cm-attribute">Length to trim reverse reads:</span> <span class="cm-def">{{d.dada2.RtruncLen}}</span> \</pre>
-            <pre><span class="cm-attribute">Max error rate allowed in forward reads:</span> <span class="cm-def">{{d.dada2.FmaxEE}}</span> \</pre>
-            <pre><span class="cm-attribute">Max error rate allowed in reverse reads:</span> <span class="cm-def">{{d.dada2.RmaxEE}}</span> \</pre>
+            <li class="cmdline">Mode: <span class="highlight">Paired-end</span></li>
+            <li class="cmdline">Number of bases trimmed in 5' of forward reads: <span class="highlight">{{d.dada2.trimLeft}}</span></li>
+            <li class="cmdline">Number of bases trimmed in 5' of reverse reads: <span class="highlight">{{d.dada2.trimRigth}}</span></li>
+            <li class="cmdline">Length to trim forward reads: <span class="highlight">{{d.dada2.FtruncLen}}</span></li>
+            <li class="cmdline">Length to trim reverse reads: <span class="highlight">{{d.dada2.RtruncLen}}</span></li>
+            <li class="cmdline">Max error rate allowed in forward reads: <span class="highlight">{{d.dada2.FmaxEE}}</span></li>
+            <li class="cmdline">Max error rate allowed in reverse reads: <span class="highlight">{{d.dada2.RmaxEE}}</span></li>
             {% else %}
-            <pre>DADA2 in single-end mode \</pre>
-            <pre><span class="cm-attribute">Number of bases trimmed in 5' of reads:</span> <span class="cm-def">{{d.dada2.trimLeft}}</span> \</pre>
-            <pre><span class="cm-attribute">Length to trim reads:</span> <span class="cm-def">{{d.dada2.FtruncLen}}</span> \</pre>
-            <pre><span class="cm-attribute">Max error rate allowed:</span> <span class="cm-def">{{d.dada2.FmaxEE}}</span> \</pre>
+            <li class="cmdline">Mode: <span class="highlight">Single-end</span></li>
+            <li class="cmdline">Number of bases trimmed in 5' of reads: <span class="highlight">{{d.dada2.trimLeft}}</span></li>
+            <li class="cmdline">Length to trim reads: <span class="highlight">{{d.dada2.FtruncLen}}</span></li>
+            <li class="cmdline">Max error rate allowed: <span class="highlight">{{d.dada2.FmaxEE}}</span></li>
             {% endif %}
-            <pre><span class="cm-attribute">Minimal quality score allowed:</span> <span class="cm-def">{{d.dada2.minQ}}</span> \</pre>
-            <pre><span class="cm-attribute">Method for chimeras detection:</span> <span class="cm-def">{{d.dada2.chimeras}}</span> \</pre>
-        </div>
+            <li class="cmdline">Minimal quality score allowed: <span class="highlight">{{d.dada2.minQ}}</span></li>
+            <li class="cmdline">Method for chimeras detection: <span class="highlight">{{d.dada2.chimeras}}</span></li>
+        </ul>
         <br>
         <div class="results">Results</div>
         <hr class="results">
@@ -299,11 +319,12 @@
             the <b>dbOTU3 algorithm</b> was used through QIIME 2 using the <a class="link" href="./cmd/q2_dbotu3_complete.sh">following commands</a> and the parameters :
         </div>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-attribute">Genetic criterion:</span> <span class="cm-def">{{d.dbotu3.genet_crit}}</span> \</pre>
-            <pre><span class="cm-attribute">Abundance criterion:</span> <span class="cm-def">{{d.dbotu3.abund_crit}}</span> \</pre>
-            <pre><span class="cm-attribute">Pvalue criterion:</span> <span class="cm-def">{{d.dbotu3.pval_crit}}</span> \</pre>
-        </div>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined dbOTU3 parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li class="cmdline">Genetic criterion: <span class="highlight">{{d.dbotu3.genet_crit}}</span></li>
+            <li class="cmdline">Abundance criterion: <span class="highlight">{{d.dbotu3.abund_crit}}</span></li>
+            <li class="cmdline">Pvalue criterion: <span class="highlight">{{d.dbotu3.pval_crit}}</span></li>
+        </ul>
         <br>
         <div class="results">Results</div>
         <hr class="results">
@@ -330,10 +351,11 @@
             affiliate each ASV to a taxonomy by using as reference the database defined by yourself.<a class="link" href="./cmd/q2_taxonomy_complete.sh">Commands executed</a>
         </div>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-attribute">Minimal confidence allowed:</span> <span class="cm-def">{{d.taxonomy.confidence}}</span> \</pre>
-            <pre><span class="cm-attribute">Taxonomic database used:</span> <span class="cm-def">{{d.taxonomy.database}}</span> \</pre>
-        </div>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined QIIME 2 parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li class="cmdline">Minimal confidence allowed: <span class="highlight">{{d.taxonomy.confidence}}</span></li>
+            <li class="cmdline">Taxonomic database used: <span class="highlight">{{d.taxonomy.database}}</span></li>
+        </ul>
         <br>
         <div class="results">Results</div>
         <hr class="results">
@@ -352,16 +374,15 @@
         <h3 id="microdecon">Samples decontamination (microDecon) [optional]</h3>
         <br>
         <div style="text-align: justify">
-            If you have sequenced control samples, this step allows you to decontaminate your samples from the sequences identified in these controls. This step is carried out using microDecon and a homemade R script
+            If you have sequenced control samples, this step allows you to decontaminate your samples from the sequences identified in these controls. This step is carried out using microDecon and a homemade R script.
         </div>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### R Script ###</span></pre>
-            <pre><span cm-text="">​</span></pre>
-            <pre>TABLE = read.table(ASV_table,h=T,sep="\t",check.names=FALSE)</pre>
-            <pre>TABLE_control = TABLE %>% select("ASV_ID",c(<span class="cm-def">{{d.microdecon.control_list}}</span>), everything())</pre>
-            <pre>decon(TABLE_control, numb.blanks=<span class="cm-def">{{d.microdecon.nb_controls}}</span>, numb.ind=<span class="cm-def">{{d.microdecon.nb_samples}}</span>, taxa=TRUE, runs=2, thresh=1) </pre>
-        </div>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined microDecon parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li class="cmdline">Control list: <span class="highlight">{{d.microdecon.control_list}}</span></li>
+            <li class="cmdline">Number of blanks: <span class="highlight">{{d.microdecon.nb_controls}}</span></li>
+            <li class="cmdline">Number of  samples: <span class="highlight">{{d.microdecon.nb_samples}}</span></li>
+        </ul>
         <br>
         <div class="results">Results</div>
         <hr class="results">
@@ -388,10 +409,11 @@
             This optional step allows you to predic the functional potential of the communities using PICRUSt2
         </div>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-attribute">HSP method:</span> <span class="cm-def">{{d.picrust2.method}}</span> \</pre>
-            <pre><span class="cm-attribute">Max nsti:</span> <span class="cm-def">{{d.picrust2.nsti}}</span> \</pre>
-        </div>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined microDecon parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li class="cmdline">HSP method: <span class="highlight">{{d.picrust2.method}}</span></li>
+            <li class="cmdline">Max nsti: <span class="highlight">{{d.picrust2.nsti}}</span></li>
+        </ul>
         <br>
         <div class="results">Results</div>
         <hr class="results">
@@ -969,7 +991,7 @@
             (French Research Institute for Exploitation of the Sea).
         </div>
         <br>
-        <h5>Citation</h5>
+        <h5>Citations</h5>
         <hr class="results">
         <div style="text-align: justify">You can cite the nf-core publication as follows:</div>
         <br>

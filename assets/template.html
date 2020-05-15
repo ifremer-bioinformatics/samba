@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <!-- Our Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-ifremer.css">
     <!-- Scrollbar Custom CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
     <!-- jQuery CDN - Slim version (=without AJAX) -->
@@ -104,21 +104,10 @@
         <p style="font-size: 2.0rem; color: #22ae63">Standardized and Automated MetaBarcoding Analyses workflow</p>
         <hr class="title">
         <br>
-        <h1 id="introduction">Report introduction</h1>
-        <br>
-        <div style="text-align: justify">
-            This document is the report automatically generated following the metabarcoding
-            analysis of your data performed using <b>the SAMBA workflow</b> created by
-            the engineers of the Ifremer's Bioinformatics service (<b>SeBiMER</b>).
-            This report includes results in the form of clickable links referring
-            to result files. In order not to break them, <b> be sure not to move this document
-            independently of all the result folder</b>.
-        </div>
-        <br>
         <h1 id="description">Description of the workflow</h1>
         <br>
         <div style="text-align: justify">
-            The <i>SAMBA workflow</i> developed by <u>Laure Quintric and Cyril Noël</u> allows
+            The <i>SAMBA workflow</i> developed by the <b>SeBiMER</b> (Ifremer's Bioinformatics service) and allows
             you to <b>computerize metabarcoding analysis </b> (16S, 18S, ITS) using the
             <b>DADA2 package through QIIME 2</b> (Bolyen <i>et al.</i>, 2019 ; version 2020.2).
             It also performs <b>basic diversity analyses</b> (alpha and beta) via
@@ -155,33 +144,7 @@
         <div style="text-align: justify">
             The step performs the import of sequencing data directly from DATAREF <b>into
             a QIIME 2 specific format</b>. In addition, <b>descriptive statistics of your data are generated
-            </b>. The SAMBA workflow ran for you the commands below :
-        </div>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### Import data using the q2_manifest ###</span></pre>
-            <br>
-            <pre>qiime tools import \</pre>
-            <pre><span class="cm-attribute">--input-path</span> q2_manifest \</pre>
-            <pre><span class="cm-attribute">--output-path</span> data.qza \</pre>
-            {% if d.singleEnd == 'false' %}
-            <pre><span class="cm-attribute">--type</span> <span class="cm-string">'SampleData[PairedEndSequencesWithQuality]'</span> \</pre>
-            <pre><span class="cm-attribute">--input-format</span> PairedEndFastqManifestPhred33V2</span></pre>
-            {% else %}
-            <pre><span class="cm-attribute">--type</span> <span class="cm-string">'SampleData[SequencesWithQuality]'</span> \</pre>
-            <pre><span class="cm-attribute">--input-format</span> SingleEndFastqManifestPhred33V2</span></pre>
-            {% endif %}
-            <br>
-            <pre><span class="cm-comment">### Descriptive statistics ###</span></pre>
-            <pre><span class="cm-comment"># Summarize statistics</span></pre>
-            <pre>qiime demux summarize \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-data</span> data.qza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> data.qzv</pre>
-            <br>
-            <pre><span class="cm-comment"># Export statistics</span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> data.qzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> import_output</pre>
+            </b>. The SAMBA workflow ran for you the <a class="link" href="./cmd/q2_import_complete.sh">following commands</a>
         </div>
         <br>
         <div class="results">Results</div>
@@ -200,46 +163,21 @@
         <div style="text-align: justify">
            The third step is to remove the primers using <b>the cutadapt plugin</b> available in
            QIIME 2. In addition, <b>descriptive statistics of your data are generated</b>.
-           The following commands made this step possible using the parameters that you have
+           The <a class="link" href="./cmd/q2_cutadapt_complete.sh">following commands</a> made this step possible using the parameters that you have
            defined in the parameters configuration file :
         </div>
         <br>
         <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### Cutadapt process ###</span></pre>
-            <br>
             {% if d.singleEnd == 'false' %}
-            <pre>qiime cutadapt trim-paired \</pre>
+            <pre>Cutadapt in paired-end mode \</pre>
+            <pre><span class="cm-attribute">Forward primer sequence: </span><span class="cm-def">{{d.cutadapt.primerF}}</span> \</pre>
+            <pre><span class="cm-attribute">Reverse primer sequence: </span><span class="cm-def">{{d.cutadapt.primerR}}</span> \</pre>
+            <pre><span class="cm-attribute">Overlap: </span><span class="cm-def">{{d.cutadapt.overlap}}</span> \</pre>
             {% else %}
-            <pre>qiime cutadapt trim-single \</pre>
-            {% endif %}
-            <pre><span class="cm-attribute">--verbose </span> \</pre>
-            <pre><span class="cm-attribute">--p-cores </span><span class="cm-number">14</span> \</pre>
-            <pre><span class="cm-attribute">--i-demultiplexed-sequences </span>data.qza \</pre>
-            {% if d.singleEnd == 'false' %}
-            <pre><span class="cm-attribute">--p-front-f </span><span class="cm-def">{{d.cutadapt.primerF}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-front-r </span><span class="cm-def">{{d.cutadapt.primerR}}</span> \</pre>
-            {% else %}
-            <pre><span class="cm-attribute">--p-front </span><span class="cm-def">{{d.cutadapt.primerF}}</span> \</pre>
+            <pre>Cutadapt in single-end mode \</pre>
+            <pre><span class="cm-attribute">Primer sequence: </span><span class="cm-def">{{d.cutadapt.primerF}}</span> \</pre>
             {% endif %}
             <pre><span class="cm-attribute">--p-error-rate </span><span class="cm-def">{{d.cutadapt.errorRate}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-discard-untrimmed</span> \</pre>
-            <pre><span class="cm-attribute">--p-match-read-wildcards</span> \</pre>
-            {% if d.singleEnd == 'false' %}
-            <pre><span class="cm-attribute">--p-overlap </span><span class="cm-def">{{d.cutadapt.overlap}}</span> \</pre>
-            {% endif %}
-            <pre><span class="cm-attribute">--o-trimmed-sequences</span> data_trimmed.qza</pre>
-            <br>
-            <pre><span class="cm-comment">### Descriptive statistics ###</span></pre>
-            <pre><span class="cm-comment"># Summarize statistics of the cutadapt process</span></pre>
-            <pre>qiime demux summarize \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-data</span> data_trimmed.qza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> data_trimmed.qzv</pre>
-            <br>
-            <pre><span class="cm-comment"># Export statistics</span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> data_trimmed.qzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> trimmed_output</pre>
         </div>
         <br>
         <div class="results">Results</div>
@@ -266,79 +204,26 @@
             to the parameters defined yourself by having considered the quality of your data in the
             previous step. Also to assemble the forward and reverse sequences, and to identify and remove the
             chimeras. To performed this step, the <b>DADA2 R package</b> was used through QIIME 2
-            using the following commands :
+            using the <a class="link" href="./cmd/q2_dada2_complete.sh">following commands</a> and your parameters :
         </div>
         <br>
         <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### All DADA2 processes ###</span></pre>
-            <br>
             {% if d.singleEnd == 'false' %}
-            <pre>qiime dada2 denoise-paired \</pre>
+            <pre>DADA2 in paired-end mode \</pre>
+            <pre><span class="cm-attribute">Number of bases trimmed in 5' of forward reads:</span> <span class="cm-def">{{d.dada2.trimLeft}}</span> \</pre>
+            <pre><span class="cm-attribute">Number of bases trimmed in 5' of reverse reads:</span> <span class="cm-def">{{d.dada2.trimRigth}}</span> \</pre>
+            <pre><span class="cm-attribute">Length to trim forward reads:</span> <span class="cm-def">{{d.dada2.FtruncLen}}</span> \</pre>
+            <pre><span class="cm-attribute">Length to trim reverse reads:</span> <span class="cm-def">{{d.dada2.RtruncLen}}</span> \</pre>
+            <pre><span class="cm-attribute">Max error rate allowed in forward reads:</span> <span class="cm-def">{{d.dada2.FmaxEE}}</span> \</pre>
+            <pre><span class="cm-attribute">Max error rate allowed in reverse reads:</span> <span class="cm-def">{{d.dada2.RmaxEE}}</span> \</pre>
             {% else %}
-            <pre>qiime dada2 denoise-single \</pre>
+            <pre>DADA2 in single-end mode \</pre>
+            <pre><span class="cm-attribute">Number of bases trimmed in 5' of reads:</span> <span class="cm-def">{{d.dada2.trimLeft}}</span> \</pre>
+            <pre><span class="cm-attribute">Length to trim reads:</span> <span class="cm-def">{{d.dada2.FtruncLen}}</span> \</pre>
+            <pre><span class="cm-attribute">Max error rate allowed:</span> <span class="cm-def">{{d.dada2.FmaxEE}}</span> \</pre>
             {% endif %}
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-demultiplexed-seqs</span> data_trimmed.qza \</pre>
-            {% if d.singleEnd == 'false' %}
-            <pre><span class="cm-attribute">--p-trim-left-f</span> <span class="cm-def">{{d.dada2.trimLeft}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-trim-left-r</span> <span class="cm-def">{{d.dada2.trimRigth}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-trunc-len-f</span> <span class="cm-def">{{d.dada2.FtruncLen}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-trunc-len-r</span> <span class="cm-def">{{d.dada2.RtruncLen}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-max-ee-f</span> <span class="cm-def">{{d.dada2.FmaxEE}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-max-ee-r</span> <span class="cm-def">{{d.dada2.RmaxEE}}</span> \</pre>
-            {% else %}
-            <pre><span class="cm-attribute">--p-trim-left</span> <span class="cm-def">{{d.dada2.trimLeft}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-trunc-len</span> <span class="cm-def">{{d.dada2.FtruncLen}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-max-ee</span> <span class="cm-def">{{d.dada2.FmaxEE}}</span> \</pre>
-            {% endif %}
-            <pre><span class="cm-attribute">--p-trunc-q</span> <span class="cm-def">{{d.dada2.minQ}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-chimera-method</span> <span class="cm-def">{{d.dada2.chimeras}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-n-threads</span> <span class="cm-number">14</span> \</pre>
-            <pre><span class="cm-attribute">--o-representative-sequences</span> rep_seqs.qza \</pre>
-            <pre><span class="cm-attribute">--o-table</span> table.qza \</pre>
-            <pre><span class="cm-attribute">--o-denoising-stats</span> stats.qza</span></pre>
-            <br>
-            <pre><span class="cm-comment">### Descriptive statistics ###</span></span></pre>
-            <pre><span class="cm-comment"># Summarize statistics of the DADA2 processes</span></span></pre>
-            <pre>qiime metadata tabulate \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--m-input-file</span> stats.qza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> stats.qzv</span></pre>
-            <br>
-            <pre><span class="cm-comment"># Export statistics</span></span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> stats.qzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dada2_output</span></pre>
-            <br>
-            <pre><span class="cm-comment">### ASV table ###</span></span></pre>
-            <pre><span class="cm-comment"># Construction of the count table</span></span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> table.qza \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dada2_output &nbsp;</span></pre>
-            <br>
-            <pre><span class="cm-comment"># Summarize statistics from the table file</span></span></pre>
-            <pre>qiime feature-table summarize \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-table</span> table.qza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> table.qzv \</pre>
-            <pre><span class="cm-attribute">--m-sample-metadata-file</span> q2_metadata</span></pre>
-            <br>
-            <pre><span class="cm-comment"># Export of the table ASV statistics</span></span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> table.qzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dada2_output</span></pre>
-            <br>
-            <pre><span class="cm-comment">### Reference sequences ###</span></span></pre>
-            <pre><span class="cm-comment"># Obtaining ASV reference sequences</span></span></pre>
-            <pre>qiime feature-table tabulate-seqs \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-data</span> rep_seqs.qza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> rep_seqs.qzv</span></pre>
-            <br>
-            <pre><span class="cm-comment"># Export of ASV reference sequences</span></span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> rep_seqs.qzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dada2_output</pre>
+            <pre><span class="cm-attribute">Minimal quality score allowed:</span> <span class="cm-def">{{d.dada2.minQ}}</span> \</pre>
+            <pre><span class="cm-attribute">Method for chimeras detection:</span> <span class="cm-def">{{d.dada2.chimeras}}</span> \</pre>
         </div>
         <br>
         <div class="results">Results</div>
@@ -368,51 +253,13 @@
             The following step of the workflow is to cluster ASV according to sequence similarity and
             abundance profil. This allow to takes into account the overestimation of diversity
             produced by DADA2. It also reduces possible PCR errors. To performed this step,
-            the <b>dbOTU3 algorithm</b> was used through QIIME 2 using the following commands :
+            the <b>dbOTU3 algorithm</b> was used through QIIME 2 using the <a class="link" href="./cmd/q2_dbotu3_complete.sh">following commands</a> and the parameters :
         </div>
         <br>
         <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### dbOTU3 process ###</span></span></pre>
-            <br>
-            <pre>qiime dbotu-q2 call-otus \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-table</span> table.qza \</pre>
-            <pre><span class="cm-attribute">--i-sequences</span> rep_seqs.qza \</pre>
-            <pre><span class="cm-attribute">--p-gen-crit</span> <span class="cm-def">{{d.dbotu3.genet_crit}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-abund-crit</span> <span class="cm-def">{{d.dbotu3.abund_crit}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-pval-crit</span> <span class="cm-def">{{d.dbotu3.pval_crit}}</span> \</pre>
-            <pre><span class="cm-attribute">--o-representative-sequences</span> dbotu3_seqsqza \</pre>
-            <pre><span class="cm-attribute">--o-dbotu-table</span> dbotu3_tableqza &gt; dbotu3_details</span></pre>
-            <br>
-            <pre><span class="cm-comment">### ASV table ###</span></span></pre>
-            <pre><span class="cm-comment"># Construction of the count table</span></span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> dbotu3_tableqza \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dbotu3_output &nbsp;</span></pre>
-            <br>
-            <pre><span class="cm-comment"># Summarize statistics from the table file</span></pre>
-            <pre>qiime feature-table summarize \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-table</span> dbotu3_tableqza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> dbotu3_tableqzv \</pre>
-            <pre><span class="cm-attribute">--m-sample-metadata-file</span> q2_metadata</pre>
-            <br>
-            <pre><span class="cm-comment"># Export of the table ASV statistics</span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> dbotu3_tableqzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dbotu3_output</pre>
-            <br>
-            <pre><span class="cm-comment">### Reference sequences ###</span></pre>
-            <pre><span class="cm-comment"># Obtaining ASV reference sequences</span></pre>
-            <pre>qiime feature-table tabulate-seqs \</pre>
-            <pre><span class="cm-attribute">--verbose</span> \</pre>
-            <pre><span class="cm-attribute">--i-data</span> dbotu3_seqsqza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> dbotu3_seqsqzv</pre>
-            <br>
-            <pre><span class="cm-comment"># Export of ASV reference sequences</span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> dbotu3_seqsqzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> dbotu3_output</pre>
+            <pre><span class="cm-attribute">Genetic criterion:</span> <span class="cm-def">{{d.dbotu3.genet_crit}}</span> \</pre>
+            <pre><span class="cm-attribute">Abundance criterion:</span> <span class="cm-def">{{d.dbotu3.abund_crit}}</span> \</pre>
+            <pre><span class="cm-attribute">Pvalue criterion:</span> <span class="cm-def">{{d.dbotu3.pval_crit}}</span> \</pre>
         </div>
         <br>
         <div class="results">Results</div>
@@ -437,34 +284,12 @@
         <br>
         <div style="text-align: justify">
             The taxonomic assignation performed during the fourth step of the workflow allowed to
-            affiliate each ASV to a taxonomy by using as reference the database defined by yourself
+            affiliate each ASV to a taxonomy by using as reference the database defined by yourself.<a class="link" href="./cmd/q2_taxonomy_complete.sh">Commands executed</a>
         </div>
         <br>
         <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### Taxonomic assignation ###</span></pre>
-            <br>
-            <pre>qiime feature-classifier classify-sklearn \</pre>
-            <pre><span class="cm-attribute">--p-n-jobs</span> <span class="cm-number">14</span> \</pre>
-            <pre><span class="cm-attribute">--p-confidence</span> <span class="cm-def">{{d.taxonomy.confidence}}</span> \</pre>
-            <pre><span class="cm-attribute">--i-classifier</span> <span class="cm-def">{{d.taxonomy.database}}</span> \</pre>
-            <pre><span class="cm-attribute">--i-reads</span> rep_seqs.qza \</pre>
-            <pre><span class="cm-attribute">--o-classification</span> taxonomy.qza</pre>
-            <br>
-            <pre><span class="cm-comment">### Output formatting ###</span></pre>
-            <pre><span class="cm-comment"># Summarize taxonomic results</span></pre>
-            <pre>qiime metadata tabulate \</pre>
-            <pre><span class="cm-attribute">--m-input-file</span> taxonomy.qza \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> taxonomy.qzv</pre>
-            <br>
-            <pre><span class="cm-comment"># Export</span></pre>
-            <pre>qiime tools <span class="cm-keyword">export</span> \</pre>
-            <pre><span class="cm-attribute">--input-path</span> taxonomy.qzv \</pre>
-            <pre><span class="cm-attribute">--output-path</span> taxo_output</pre>
-            <br>
-            <pre><span class="cm-comment"># Formatting</span></pre>
-            <pre><span class="cm-builtin">mv</span> taxo_output/metadata.tsv ASV_taxonomy.tsv</pre>
-            <pre><span class="cm-builtin">sed</span> <span class="cm-attribute">-i</span> <span class="cm-string">'1,2d'</span> ASV_taxonomy.tsv</pre>
-            <pre><span class="cm-builtin">sed</span> <span class="cm-attribute">-i</span> <span class="cm-string">'1 i\#OTUID\ttaxonomy\tconfidence'</span> ASV_taxonomy.tsv</pre>
+            <pre><span class="cm-attribute">Minimal confidence allowed:</span> <span class="cm-def">{{d.taxonomy.confidence}}</span> \</pre>
+            <pre><span class="cm-attribute">Taxonomic database used:</span> <span class="cm-def">{{d.taxonomy.database}}</span> \</pre>
         </div>
         <br>
         <div class="results">Results</div>
@@ -521,18 +346,8 @@
         </div>
         <br>
         <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### PICRUSt2 process ###</span></pre>
-            <br>
-            <pre>qiime picrust2 full-pipeline \</pre>
-            <pre><span class="cm-attribute">--i-table</span> decontaminated_ASV_table.qza \</pre>
-            <pre><span class="cm-attribute">--i-seq</span> decontam_seqs.qza \</pre>
-            <pre><span class="cm-attribute">--output-dir</span> picrust2_output</pre>
-            <br>
-            <pre>q2-picrust2_output \</pre>
-            <pre><span class="cm-attribute">--p-threads</span> <span class="cm-number">14</span> \</pre>
-            <pre><span class="cm-attribute">--p-hsp-method</span> <span class="cm-def">{{d.picrust2.method}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-max-nsti</span> <span class="cm-def">{{d.picrust2.nsti}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-highly-verbose --verbose </span></pre>
+            <pre><span class="cm-attribute">HSP method:</span> <span class="cm-def">{{d.picrust2.method}}</span> \</pre>
+            <pre><span class="cm-attribute">Max nsti:</span> <span class="cm-def">{{d.picrust2.nsti}}</span> \</pre>
         </div>
         <br>
         <div class="results">Results</div>
@@ -587,75 +402,7 @@
         <h3 id="ancom">Differential abundance testing using ANCOM</h3>
         <br>
         <div style="text-align: justify">
-            This step allows you to test if there are differentially abundant ASVs depending on the variable of interest that you have specified using the following commands :</span>
-        </div>
-        <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre><span class="cm-comment">### ANCOM process at the ASV level ###</span></pre>
-            <br>
-            <pre>qiime composition add-pseudocount \</pre>
-            <pre><span class="cm-attribute">--i-table</span> decontaminated_ASV_table.qza \</pre>
-            <pre><span class="cm-attribute">--o-composition-table</span> compo_table.qza</pre>
-            <br>
-            <pre>qiime composition ancom \</pre>
-            <pre><span class="cm-attribute">--i-table</span> compo_table.qza \</pre>
-            <pre><span class="cm-attribute">--m-metadata-file</span> <span class="cm-def">{{d.metadata}}</span> \</pre>
-            <pre><span class="cm-attribute">--m-metadata-column</span> <span class="cm-def">{{d.stats.ancom_var}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-transform-function</span> log \</pre>
-            <pre><span class="cm-attribute">--p-difference-function</span> f_statistic \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> ancom_<span class="cm-def">{{d.stats.ancom_var}}</span>.qzv</pre>
-            <br>
-            <pre>qiime tools export \</pre>
-            <pre><span class="cm-attribute">--input_path</span> ancom_<span class="cm-def">{{d.stats.ancom_var}}</span>.qzv \</pre>
-            <pre><span class="cm-attribute">--output_path</span> export_ancom_<span class="cm-def">{{d.stats.ancom_var}}</span></pre>
-            <br>
-            <pre><span class="cm-comment">### ANCOM process at the family level ###</span></pre>
-            <br>
-            <pre>qiime taxa collapse \</pre>
-            <pre><span class="cm-attribute">--i-table</span> decontaminated_ASV_table.qza \</pre>
-            <pre><span class="cm-attribute">--i-taxonomy</span> taxonomy.qza \</pre>
-            <pre><span class="cm-attribute">--p-level</span> <span class="cm-number">5</span> \</pre>
-            <pre><span class="cm-attribute">--o-collapsed-table</span> collapsed_table_family.qza</pre>
-            <br>
-            <pre>qiime composition add-pseudocount \</pre>
-            <pre><span class="cm-attribute">--i-table</span> collapsed_table_family.qza \</pre>
-            <pre><span class="cm-attribute">--o-composition-table</span> compo_table_family.qza</pre>
-            <br>
-            <pre>qiime composition ancom \</pre>
-            <pre><span class="cm-attribute">--i-table</span> compo_table_family.qza \</pre>
-            <pre><span class="cm-attribute">--m-metadata-file</span> <span class="cm-def">{{d.metadata}}</span> \</pre>
-            <pre><span class="cm-attribute">--m-metadata-column</span> <span class="cm-def">{{d.stats.ancom_var}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-transform-function</span> log \</pre>
-            <pre><span class="cm-attribute">--p-difference-function</span> f_statistic \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> ancom_<span class="cm-def">{{d.stats.ancom_var}}</span>_family.qzv</pre>
-            <br>
-            <pre>qiime tools export \</pre>
-            <pre><span class="cm-attribute">--input_path</span> ancom_<span class="cm-def">{{d.stats.ancom_var}}</span>_family.qzv \</pre>
-            <pre><span class="cm-attribute">--output_path</span> export_ancom_<span class="cm-def">{{d.stats.ancom_var}}_family</span></pre>
-            <br>
-            <pre><span class="cm-comment">### ANCOM process at the genus level ###</span></pre>
-            <br>
-            <pre>qiime taxa collapse \</pre>
-            <pre><span class="cm-attribute">--i-table</span> decontaminated_ASV_table.qza \</pre>
-            <pre><span class="cm-attribute">--i-taxonomy</span> taxonomy.qza \</pre>
-            <pre><span class="cm-attribute">--p-level</span> <span class="cm-number">6</span> \</pre>
-            <pre><span class="cm-attribute">--o-collapsed-table</span> collapsed_table_genus.qza</pre>
-            <br>
-            <pre>qiime composition add-pseudocount \</pre>
-            <pre><span class="cm-attribute">--i-table</span> collapsed_table_genus.qza \</pre>
-            <pre><span class="cm-attribute">--o-composition-table</span> compo_table_genus.qza</pre>
-            <br>
-            <pre>qiime composition ancom \</pre>
-            <pre><span class="cm-attribute">--i-table</span> compo_table_genus.qza \</pre>
-            <pre><span class="cm-attribute">--m-metadata-file</span> <span class="cm-def">{{d.metadata}}</span> \</pre>
-            <pre><span class="cm-attribute">--m-metadata-column</span> <span class="cm-def">{{d.stats.ancom_var}}</span> \</pre>
-            <pre><span class="cm-attribute">--p-transform-function</span> log \</pre>
-            <pre><span class="cm-attribute">--p-difference-function</span> f_statistic \</pre>
-            <pre><span class="cm-attribute">--o-visualization</span> ancom_<span class="cm-def">{{d.stats.ancom_var}}</span>_genus.qzv</pre>
-            <br>
-            <pre>qiime tools export \</pre>
-            <pre><span class="cm-attribute">--input_path</span> ancom_<span class="cm-def">{{d.stats.ancom_var}}</span>_genus.qzv \</pre>
-            <pre><span class="cm-attribute">--output_path</span> export_ancom_<span class="cm-def">{{d.stats.ancom_var}}_genus</span></pre>
+            This step allows you to test if there are differentially abundant ASVs depending on the variable of interest that you have specified using the <a class="link" href="./cmd/q2_ancom_complete.sh">following commands</a> :</span>
         </div>
         <br>
         <div class="results">Results</div>
@@ -731,21 +478,7 @@
         <h3 id="final-output">Final outputs</h3>
         <br>
         <div style="text-align: justify">
-            This is the last step of the bioinformatic process where the goal is to merge the ASV abundance table with the taxonomy file. This is performed using the following commands :
-        </div>
-        <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-            <pre>biom add-metadata \</pre>
-            <pre><span class="cm-attribute">-i</span> dada2_output/feature-table.biom \</pre>
-            <pre><span class="cm-attribute">--observation-metadata-fp</span> ASV_taxonomy.tsv \</pre>
-            <pre><span class="cm-attribute">-o</span> Final_ASV_table_with_taxonomy.biom \</pre>
-            <pre><span class="cm-attribute">--sc-separated</span> taxonomy</pre>
-            <br>
-            <pre>biom convert \</pre>
-            <pre><span class="cm-attribute">-i</span> Final_ASV_table_with_taxonomy.biom \</pre>
-            <pre><span class="cm-attribute">-o</span> Final_ASV_table_with_taxonomy.tsv \</pre>
-            <pre><span class="cm-attribute">--to-tsv</span> \</pre>
-            <pre><span class="cm-attribute">--header-key</span> taxonomy</pre>
+            This is the last step of the bioinformatic process where the goal is to merge the ASV abundance table with the taxonomy file
         </div>
         <br>
         <div class="results">Results</div>
@@ -762,21 +495,20 @@
         {% if d.steps.stats_alpha_enable == 'true' %}
         <h3 id="alpha-diversity">Alpha diversity [optional]</h3>
         <br>
-        <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
-            <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
-            <li>Tested variables :</li>
-            <ul>
-                {% for var in r.alpha_div.var_tested %}
-                <li><span class="highlight">{{ var }}</span></li>
-                {% endfor %}
-            </ul>
-            <li>Diversity index used : "Observed richness / Chao1 / Shannon / InvSimpson / Pielou"</li>
-        </ul>
+        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
+          <li>Tested variables :</li>
+          <ul>
+              {% for var in r.alpha_div.var_tested %}
+              <li><span class="highlight">{{ var }}</span></li>
+              {% endfor %}
+          </ul>
+          <li>Diversity index used : "Observed richness / Chao1 / Shannon / InvSimpson / Pielou"</li>
+        </div>
         <!--  -->
         <!-- diversity indices -->
         <!--  -->
         <br>
-        <h4>a - Diversity indices</h4>
+        <h4>Diversity indices</h4>
         <br>
         {% for var in r.alpha_div.var_tested %}
         <p class="highlight" >{{var}}</p>
@@ -787,7 +519,7 @@
             <br>
         </p>
         {% endfor %}
-        <h4>b - Rarefaction curve</h4>
+        <h4>Rarefaction curve</h4>
         <br>
         <p align="center">
             <a target="_blank" href="R/FIGURES/alpha_diversity/rarefaction_curve.png">
@@ -795,7 +527,7 @@
             </a>
             <br>
         </p>
-        <h4>c - Taxonomic diversity</h4>
+        <h4>Taxonomic diversity</h4>
         <br>
         {% for var in r.alpha_div.var_tested %}
         <ul>
@@ -825,39 +557,24 @@
         {% if d.steps.stats_beta_enable == 'true' %}
         <h3 id="beta-diversity">Beta diversity [optional]</h3>
         <br>
-        <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
-            <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
-            <li>Normalization method : "
-                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">None</a> /
-                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied">Rarefaction</a>  /
-                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2">DESeq2</a> /
-                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS">CSS</a>"
-            </li>
-            <li>Tested variables :</li>
-            <ul>
-                {% for v in r.beta_div.var_tested %}
-                <li><span class="highlight">{{ v }}</span></li>
-                {% endfor %}
-            </ul>
-            <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
-        </ul>
-        <br>
-        <div style="text-align: justify">
-            <font color="red"><b>NOTE 1: Raw results without any data normalization are available
-                <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">here</a>.
-                However, we do not recommend using them because from a statistical point of view,
-                these results are very questionable.</b></font>
-            <br>
-            <font color="red"><b>
-                NOTE 2: For the beta diversity, SAMBA calculates 4 different distance matrices with
-                jaccard, bray-curtis, UniFrac and weighted UniFrac indices. To facilitate the reading
-                of this report, we have displayed the results of the bray-curtis and weighted UniFrac
-                matrice analyses. All results are available in each normalization
-                folder <a class="link" target="_blank" href="./R/FIGURES/">here</a></b>
-            </font>
+        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
+          <li>Tested variables :</li>
+          <li>Normalization method : "
+              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">None</a> /
+              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied">Rarefaction</a>  /
+              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2">DESeq2</a> /
+              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS">CSS</a>"
+          </li>
+          <li>Tested variables :</li>
+          <ul>
+              {% for v in r.beta_div.var_tested %}
+              <li><span class="highlight">{{ v }}</span></li>
+              {% endfor %}
+          </ul>
+          <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
         </div>
         <br>
-        <h4>a - Rarefied data</h4>
+        <h4>Rarefied data</h4>
         <br>
         <h5>PCoA ordination</h5>
         <br>
@@ -937,7 +654,7 @@
         <br>
         {% endfor %}
         <br>
-        <h4>b - DESeq2 normalized data</h4>
+        <h4>DESeq2 normalized data</h4>
         <br>
         <h5>PCoA ordination</h5>
         <br>
@@ -1018,7 +735,7 @@
         <br>
         {% endfor %}
         <br>
-        <h4>c - CSS normalized data</h4>
+        <h4>CSS normalized data</h4>
         <br>
         <h5>PCoA ordination</h5>
         {% for var in r.beta_div.var_tested %}
@@ -1100,7 +817,7 @@
         <br>
         {% endfor %}
         <br>
-        <h4>d - Explained variance</h4>
+        <h4>Explained variance</h4>
         <br>
         <h5>Rarefied data</h5>
         <br>
@@ -1176,15 +893,17 @@
         {% if d.steps.stats_desc_comp_enable == 'true' %}
         <h3 id="decriptive-comparison">Descriptive comparison [optional]</h3>
         <br>
-        <ul style="border: 2px dashed #FF0000 ;margin:0;padding:1;">
-            <b><span style="color:red;">CONFIGURATION SETTINGS</span></b>
+        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
+          <li>Tested variables :</li>
+          <ul>
             <li>Tested variables :</li>
             <ul>
                 {% for var in r.descriptive_comparison.var_tested %}
                 <li><span class="highlight">{{ var }}</span></li>
                 {% endfor %}
             </ul>
-        </ul>
+          </ul>
+        </div>
         <br>
         {% for var in r.descriptive_comparison.var_tested %}
         <li>Repartition of ASVs in the samples grouped by <span class="highlight">{{var}}:</span></li>
@@ -1202,8 +921,7 @@
         <h5>Contributors</h5>
         <hr class="results">
         <div style="text-align: justify">
-            SAMBA was originally written developped by Laure QUINTRIC, Cyril NOËL and Alexandre CORMIER, bioinformatics engineers from
-            <a style="color: #007bff" href="https://bioinfo.ifremer.fr" target="_blank">SeBiMER</a>
+            SAMBA was originally written developped by <a style="color: #007bff" href="https://bioinfo.ifremer.fr" target="_blank">SeBiMER</a>
             plateform at <a style="color: #007bff" href="https://wwz.ifremer.fr/en" target="_blank">Ifremer</a>
             (French Research Institute for Exploitation of the Sea).
         </div>
@@ -1212,7 +930,6 @@
         <hr class="results">
         <div style="text-align: justify">You can cite the nf-core publication as follows:</div>
             <br>
-
         <div style="text-align: left; margin-left: 80px; margin-right: 80px">
             Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia,
             Paolo Di Tommaso & Sven Nahnsen. <i><a class="link" target="_blank" href="https://www.nature.com/articles/s41587-020-0439-x">The nf-core

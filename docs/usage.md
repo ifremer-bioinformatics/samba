@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+* [`--input`](#--input)
 * [Table of contents](#table-of-contents)
 * [Introduction](#introduction)
 * [Running the pipeline](#running-the-pipeline)
@@ -87,6 +88,9 @@
   * [`--max_cpus`](#--max_cpus)
   * [`--plaintext_email`](#--plaintext_email)
   * [`--monochrome_logs`](#--monochrome_logs)
+
+
+### `--input`
 
 ## Introduction
 

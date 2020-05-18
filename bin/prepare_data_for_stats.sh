@@ -12,6 +12,7 @@ biom_tsv=${args[1]}
 asv_table=${args[2]}
 metadata_stats=${args[3]}
 microDecon=${args[4]}
+stats_only=${args[5]}
 
 cmd="cp $metadata $metadata_stats;
      sed -i '1s/#//' $metadata_stats;
@@ -19,7 +20,7 @@ cmd="cp $metadata $metadata_stats;
      cp $biom_tsv $asv_table;"
 eval $cmd
 
-if [ $microDecon = "true" ]
+if [ $microDecon = "true" ] || [ $stats_only = "true" ]
 then
    cmd="sed -i 's/D_0__//g' $asv_table;
    sed -i 's/ D_.__//g' $asv_table"

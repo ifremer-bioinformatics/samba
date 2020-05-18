@@ -146,10 +146,10 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `docker`
   * A generic configuration profile to be used with [Docker](http://docker.com/)
-  * Pulls software from dockerhub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
+  * Pulls software from dockerhub: [`nfcore/samba`](http://hub.docker.com/r/nfcore/samba/)
 * `singularity`
   * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
-  * Pulls software from DockerHub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
+  * Pulls software from DockerHub: [`nfcore/samba`](http://hub.docker.com/r/nfcore/samba/)
 
 Profiles are also available to configure the samba workflow and can be combined with execution profiles listed above.
 
@@ -185,7 +185,7 @@ This process is optional and checks if input datasets are correctly demultiplexe
 
 Data integrity checking step. Set to false to deactivate this step. (default = true)
 
-### `--barcode_filter`
+### `--barcode_filter`
 
 Percentage of sample barcode supposed to be found in raw reads (default : 90).
 
@@ -356,7 +356,7 @@ According to your metadata file, select the column name corresponding to the var
 Alpha diversity, Beta diversity and Descriptive comparisons statistics can be enabled or disabled.
 Statistics steps can also being run alone (without the above bioinformatics steps). See below.
 
-### `--stats_alpha_enable`
+### `--stats_alpha_enable`
 
 Set to false to deactivate Alpha diversity statistics step. (default = true)
 

@@ -19,7 +19,7 @@ and processes data using the following steps:
 * [Phylogeny](#phylogeny) - ASVs sequences aligment and tree
 * [Functional predictions](#functional-predictions) - \[OPTIONAL\] PICRUSt2 functionnal predictions
 
-### Statistic steps 
+### Statistic steps
 
 * [Data preparation](#data-preparation) - Create R-Phyloseq object
 * [Alpha diversity](#alpha-diversity) - \[OPTIONAL\] Communities intra-specific diversity
@@ -32,9 +32,10 @@ and processes data using the following steps:
 
 ## Data integrity
 
-OPTIONAL Step.
+**OPTIONAL Step**
+
 Bash script used to check raw sequencing data and metadata file integrity.
-- Demultiplexing control checks if barcodes are the same in reads names within a sample file ([`--barcode_filter`](#usage.md#data-integrity) default is 90).
+- Demultiplexing control checks if barcodes are the same in reads names within a sample file ([`--barcode_filter`](#../usage.md#data-integrity) default is 90).
 - Multiple sequencer detection checks if sequencer names are the same in the reads names within a sample file
 - The primer ratio control checks if at least 70% (`--primer_filter` default is 70%) of the raw reads sequences within a sample the sequencing primer.
 - The headers of the metadata file are checked in order to fit to the QIIME2 metadata requirements.

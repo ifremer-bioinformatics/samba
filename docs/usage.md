@@ -203,7 +203,7 @@ Forward primer (to be used in Cutadapt cleaning step).
 
 Reverse primer (to be used in Cutadapt cleaning step).
 
-### `--errorRate`
+### `--errorRate`
 
 Cutadapt error rate allowed to match primers (default : 0.1).
 

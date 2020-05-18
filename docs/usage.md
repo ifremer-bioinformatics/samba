@@ -146,10 +146,10 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `docker`
   * A generic configuration profile to be used with [Docker](http://docker.com/)
-  * Pulls software from dockerhub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
+  * Pulls software from dockerhub: [`nfcore/samba`](http://hub.docker.com/r/nfcore/samba/)
 * `singularity`
   * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
-  * Pulls software from DockerHub: [`nfcore/rnaseq`](http://hub.docker.com/r/nfcore/rnaseq/)
+  * Pulls software from DockerHub: [`nfcore/samba`](http://hub.docker.com/r/nfcore/samba/)
 
 Profiles are also available to configure the samba workflow and can be combined with execution profiles listed above.
 

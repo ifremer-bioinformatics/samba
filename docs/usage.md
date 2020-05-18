@@ -7,37 +7,23 @@
 * [Running the pipeline](#running-the-pipeline)
   * [Updating the pipeline](#updating-the-pipeline)
   * [Reproducibility](#reproducibility)
-
 * [Main arguments](#main-arguments)
-
-  Mandatory arguments:
+* [Mandatory arguments](#mandatory-arguments)
   * [`--input_metadata`](#--input_metadata)
   * [`--input_manifest`](#--input_manifest)
   * [`-profile`](#-profile)
-
-  Generic arguments:
+* [Generic arguments](#generic-arguments)
   * [`--singleEnd`](#--singleEnd)
-
-  Other options:
-  * [`--outdir`](#--outdir)
-  * [`-w/--work-dir`](#-w/--work-dir)
-  * [`--email`](#--email)
-  * [`--email_on_fail`](#--email_on_fail)
-  * [`-name`](#-name)
-  * [`--projectName`](#--projectName)
-
-  Data integrity:
+* [Data integrity](#data-integrity)
   * [`--data_integrity_enable`](#--data_integrity_enable)
   * [`--barcode_filter`](#--barcode_filter)
   * [`--primer_filter`](#--primer_filter)
-
-  Raw reads cleaning:
+* [Raw reads cleaning](#raw-reads-cleaning)
   * [`--primerF`](#--primerF)
   * [`--primerR`](#--primerR)
   * [`--errorRate`](#--errorRate)
   * [`--overlap`](#--overlap)
-
-  ASVs inference:
+* [ASVs inference](#asvs-inference)
   * [`--FtrimLeft`](#--FtrimLeft)
   * [`--RtrimLeft`](#--RtrimLeft)
   * [`--FtruncLen`](#--FtruncLen)
@@ -46,40 +32,33 @@
   * [`--RmaxEE`](#--RmaxEE)
   * [`--minQ`](#--minQ)
   * [`--chimeras`](#--chimeras)
-
-  Merge ASVs tables:
+* [Merge ASVs tables](#merge-asvs-tables)
   * [`--dada2merge`](#--dada2merge)
   * [`--merge_tabledir`](#--merge_tabledir)
   * [`--merge_repseqsdir`](#--merge_repseqsdir)
-
-  Distribution based-clustering: 
+* [Distribution based-clustering](#distribution-based-clustering)
   * [`--dbotu3_enable`](#--dbotu3_enable)
   * [`--gen_crit`](#--gen_crit)
   * [`--abund_crit`](#--abund_crit)
   * [`--pval_crit`](#--pval_crit)
-
-  Taxonomic assignation:
+* [Taxonomic assignation](#taxonomic-assignation)
   * [`--extract_db`](#--extract_db)
   * [`--seqs_db`](#--seqs_db)
   * [`--taxo_db`](#--taxo_db)
   * [`--database`](#--database)
   * [`--confidence`](#--confidence)
-
-  Decontamination:
+* [Decontamination](#decontamination)
   * [`--microDecon_enable`](#--microDecon_enable)
   * [`--control_list`](#--control_list)
   * [`--nb_controls`](#--nb_controls)
   * [`--nb_samples`](#--nb_samples)
-
-  Predict functionnal abundance:
+* [Predict functionnal abundance](#predict-functionnal-abundance)
   * [`--picrust2_enable`](#--picrust2_enable)
   * [`--method`](#--method)
   * [`--nsti`](#--nsti)
-
-  Differential abundance testing:
+* [Differential abundance testing](#differential-abundance-testing)
   * [`--ancor_var`](#--ancor_var)
-
-  Statistics:
+* [Statistics](#statistics)
   * [`--stats_alpha_enable`](#--stats_alpha_enable)
   * [`--stats_beta_enable`](#--stats_beta_enable)
   * [`--stats_desc_comp_enable`](#--stats_desc_comp_enable)
@@ -92,11 +71,9 @@
   * [`--stats_only`](#--stats_only)
   * [`--inasv_table`](#--inasv_table)
   * [`--innewick`](#--innewick)
-
-  Final analysis report:
+* [Final analysis report](#final-analysis-report)
   * [`--report_enable`](#--report_enable)
-
-  Other command line parameters:
+* [Other command line parameters](#other-command-line-parameters)
   * [`--outdir`](#--outdir)
   * [`--email`](#--email)
   * [`--email_on_fail`](#--email_on_fail)
@@ -156,7 +133,7 @@ First, go to the [nf-core/samba releases page](https://github.com/nf-core/samba/
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For running a (not necessarily stable) development version of the pipeline you can use the `dev` branch with `-r dev`.
 
-## Main arguments
+## Mandatory arguments
 
 ### `-profile`
 
@@ -200,7 +177,7 @@ Set to true to specify that the inputs are single-end reads. Default is paired-E
 
 Name of the project being analyzed.
 
-## Data integrity process arguments
+## Data integrity
 
 This process is optional and checks if input datasets are correctly demultiplexed, if primers ratio is high enough, if metadata file is well-formed and creates a CSV report.
 
@@ -234,7 +211,7 @@ Cutadapt error rate allowed to match primers (default : 0.1).
 
 Cutadapt overlaping length between primer and read (default : 18). 
 
-## ASVs inference process arguments
+## ASVs inference
 
 This process is based on [Qiime2/Dada2](https://docs.qiime2.org/2019.10/plugins/available/dada2/).
 
@@ -270,7 +247,7 @@ After truncation, reads contain a quality score less than minQ will be discarded
 
 Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification.
 
-## Merge ASVs tables process 
+## Merge ASVs tables 
 
 This process is optionnal and based on [Qiime2/feature-table function](https://docs.qiime2.org/2019.10/plugins/available/feature-table/). The workflow can begin at this step if you already have Dada2 ASVs tables that you want to merge to perform the analysis.
 
@@ -286,7 +263,7 @@ Path to the directory containing the ASVs tables to merge (this directory must c
 
 Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
-## Distribution based-clustering process arguments
+## Distribution based-clustering
 
 This step, based on [dbotu3](https://github.com/swo/dbotu3) is optional if you don\`t want to cluster your ASVs.
 
@@ -306,7 +283,7 @@ dbotu3 Abundance criterion (default = 10).
 
 dbotu3 P-value criterion (default = 0.0005).
 
-## Taxonomic assignation process arguments
+## Taxonomic assignation
 
 This process is based on [Qiime2/feature-classifier function](https://docs.qiime2.org/2019.10/tutorials/feature-classifier/).
 
@@ -330,7 +307,7 @@ Path to preformatted QIIME2 format database (required if extract_db = false).
 
 RDP confidence threshold (default = 90).
 
-## Decontamination process arguments
+## Decontamination
 
 This step is optional and based on [microDecon](https://github.com/donaldtmcknight/microDecon) package.
 
@@ -350,7 +327,7 @@ Number of controled samples listed (required if microDecon_enable = true).
 
 Number of samples that are not control samples (required if microDecon_enable = true).
 
-## Predict functionnal abundance process arguments
+## Predict functionnal abundance
 
 This step is optional and based on [Qiime2/PICRUSt2](https://github.com/gavinmdouglas/q2-picrust2)
 
@@ -366,7 +343,7 @@ HSP method of your choice. (default = 'mp' ) The most accurate prediction method
 
 Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
-## Differential abundance testing process arguments
+## Differential abundance testing 
 
 Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/available/composition/ancom/)
 
@@ -374,7 +351,7 @@ Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/
 
 According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis. 
 
-## Statistics processes arguments
+## Statistics
 
 Alpha diversity, Beta diversity and Descriptive comparisons statistics can be enabled or disabled.
 Statistics steps can also being run alone (without the above bioinformatics steps). See below.
@@ -415,7 +392,7 @@ According to your metadata file, select the column name corresponding to the var
 
 Hierarchical clustering method (default = 'ward.D2').
 
-## Run the statistics steps only processes arguments
+## Run the statistics steps only
 
 Statistics steps can be run without running previous bioinformatics steps. Above statistics arguments must be set to perform statistics only steps.
 
@@ -431,7 +408,7 @@ if stats_only is activated, set the path to your own ASV table in tsv format.
 
 if stats_only is activated, set the path to your own phylogenetic tree in newick format.
 
-## Final report process arguments
+## Final analysis report
 
 This step is optional and create a HTML report of samba analyses.
 

@@ -1190,6 +1190,11 @@ process workflow_params {
     data["stats"]["inasv_table"] = '$params.inasv_table'
     data["stats"]["innewick"] = '$params.innewick'
 
+    #software versions
+    data["soft"] = {}
+    data["soft"]["samba"] = '$workflow.manifest.version'
+    data["soft"]["nextflow"] = '$workflow.nextflow.version'
+
     with open('data.json', 'w') as outfile:
        json.dump(data, outfile, sort_keys=True, indent=4)
     """

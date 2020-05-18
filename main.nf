@@ -473,7 +473,7 @@ if (params.dbotu3_enable) {
     /* Run dbotu3 */
     process q2_dbotu3 {
 
-    	label 'qiime2_2019_env'
+    	label 'qiime2_env'
 
     	publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -558,9 +558,9 @@ process q2_taxonomy {
 	input :
 		file repseqs_taxo from seqs_taxo
 		file summary_output from taxonomy_output
-        file seqs_db from seqs_db_ch
-        file taxo_db from taxo_db_ch
-        file database from database_ch
+    		file seqs_db from seqs_db_ch
+	        file taxo_db from taxo_db_ch
+        	file database from database_ch
 
 	output :
 		file 'taxonomy.qza' into data_taxonomy
@@ -767,7 +767,7 @@ if (params.picrust2_enable) {
 
     process q2_picrust2_analysis {
 
-    	label 'qiime2_2019_env'
+    	label 'qiime2_env'
 
     	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
     	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'

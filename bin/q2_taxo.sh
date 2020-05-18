@@ -34,6 +34,7 @@ if [ "$extract_db" = true ]; then
         --o-reads $seqs_db_filtered"
     echo $cmd > $logcmd
     eval $cmd
+    if [ ! $? -eq 0 ]; then exit 1; fi
     
     cmd="qiime feature-classifier fit-classifier-naive-bayes \
         --i-reference-reads $seqs_db_filtered \
@@ -41,6 +42,7 @@ if [ "$extract_db" = true ]; then
         --o-classifier $database"
     echo $cmd >> $logcmd
     eval $cmd
+    if [ ! $? -eq 0 ]; then exit 1; fi
 
 else 
     # Keep complete database
@@ -56,6 +58,7 @@ cmd="qiime feature-classifier classify-sklearn \
     --o-classification $taxoqza"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 #Generate a tabular view of taxonomy metadata
 cmd="qiime metadata tabulate \
@@ -63,6 +66,7 @@ cmd="qiime metadata tabulate \
     --o-visualization $taxoqzv"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 #Export data
 cmd="qiime tools export \
@@ -70,19 +74,23 @@ cmd="qiime tools export \
     --output-path $taxo_output"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 #Rename tabular taxonomy file and modify header
 cmd="mv $taxo_output/metadata.tsv $asv_taxo_tsv"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 cmd="sed -i '1,2d' $asv_taxo_tsv"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 cmd="sed -i '1 i\\#OTUID\ttaxonomy\tconfidence' $asv_taxo_tsv"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 #Add taxonomy to count table (biom format)
 cmd="biom add-metadata \
@@ -92,6 +100,7 @@ cmd="biom add-metadata \
     --sc-separated taxonomy"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi
 
 #Convert biom table to tabular
 cmd="biom convert \
@@ -101,3 +110,4 @@ cmd="biom convert \
     --header-key taxonomy"
 echo $cmd >> $logcmd
 eval $cmd
+if [ ! $? -eq 0 ]; then exit 1; fi

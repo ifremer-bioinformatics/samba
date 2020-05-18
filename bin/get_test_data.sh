@@ -21,7 +21,7 @@ DB=$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza
 if [ ! -f "$DB" ]
   then
     mkdir -p $BASEDIR/tax.databases.test
-    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2020.02/SILVA_v132/DATABASE_silva_132_99_16S.qza -O $BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza
+    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v132/DATABASE_silva_v132_99_16S.qza -O $BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza
 fi
 if ([ -f "$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza" ] && [ -f "$BASEDIR/training_dataset/q2_manifest" ])
 then

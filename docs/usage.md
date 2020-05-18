@@ -2,7 +2,6 @@
 
 ## Table of contents
 
-* [`--input`](#--input)
 * [Table of contents](#table-of-contents)
 * [Introduction](#introduction)
 * [Running the pipeline](#running-the-pipeline)
@@ -88,9 +87,6 @@
   * [`--max_cpus`](#--max_cpus)
   * [`--plaintext_email`](#--plaintext_email)
   * [`--monochrome_logs`](#--monochrome_logs)
-
-
-### `--input`
 
 ## Introduction
 
@@ -189,7 +185,7 @@ This process is optional and checks if input datasets are correctly demultiplexe
 
 Data integrity checking step. Set to false to deactivate this step. (default = true)
 
-### `--barcode_filter`
+### `--barcode_filter`
 
 Percentage of sample barcode supposed to be found in raw reads (default : 90).
 
@@ -360,7 +356,7 @@ According to your metadata file, select the column name corresponding to the var
 Alpha diversity, Beta diversity and Descriptive comparisons statistics can be enabled or disabled.
 Statistics steps can also being run alone (without the above bioinformatics steps). See below.
 
-### `--stats_alpha_enable`
+### `--stats_alpha_enable`
 
 Set to false to deactivate Alpha diversity statistics step. (default = true)
 

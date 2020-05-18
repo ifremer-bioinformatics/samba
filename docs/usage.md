@@ -193,7 +193,7 @@ Percentage of sample barcode supposed to be found in raw reads (default : 90).
 
 Percentage of primers supposed to be found in raw reads (default : 70).
 
-## Raw reads cleaning process parameters
+## Raw reads cleaning
 
 ### `--primerF` 
 

@@ -18,7 +18,7 @@ and processes data using the following steps:
 * [Phylogeny](#phylogeny) - ASVs sequences aligment and tree
 * [Functional predictions](#functional-predictions) - \[OPTIONAL\] PICRUSt2 functionnal predictions
 
-### Statistic steps
+### Statistic steps
 * [Data preparation](#data-preparation) - Create R-Phyloseq object
 * [Alpha diversity](#alpha-diversity) - \[OPTIONAL\] Communities intra-specific diversity
 * [Beta diversity](#beta-diversity) - \[OPTIONAL\] Communities inter-specific diversity
@@ -26,11 +26,11 @@ and processes data using the following steps:
 
 ### Final analysis report
 
-* [Global analysis report](#glabal-analysis-report) - Synthesis and results of communities analysis
+* [Global analysis report](#global-analysis-report) - Synthesis and results of communities analysis
 
 ## Data integrity
 
-**OPTIONAL Step**
+**\[OPTIONAL\]**
 
 Bash script used to check raw sequencing data and metadata file integrity.
 - Demultiplexing control checks if barcodes are the same in reads names within a sample file ([`--barcode_filter`] default is 90%).
@@ -38,13 +38,13 @@ Bash script used to check raw sequencing data and metadata file integrity.
 - The primer ratio control checks if at least 70% (`--primer_filter` default is 70%) of the raw reads sequences within a sample the sequencing primer.
 - The headers of the metadata file are checked in order to fit to the QIIME2 metadata requirements.
 
-Finally, a data integrity CSV report `data-integrity.csv` is produced in the pipeline **output directory : `results/project_name/steps_data/01_data_integrity`**
+A data integrity CSV report **`data-integrity.csv`** is produced in the pipeline **output directory : `results/project_name/steps_data/01_data_integrity`**
 
 ![Data integrity report](images/samba-data-integrity.png)
 
 ## Data importation
 
-This step creates :
+[QIIME2 import](https://docs.qiime2.org/2019.10/tutorials/importing/) step creates :
 - a QIIME2 object using QIIME2 manifest and metadata files
 - QIIME2 reads count overview html statistics 
 - QIIME2 html quality plots of the raw reads sequences
@@ -56,12 +56,14 @@ QIIM2 import report `index.html` is available in **output directory : `results/p
 
 ## Data cleaning
 
-QIIME2 Cutadapt will remove primers from raw sequences, generate quality plots of cleaned and reads counts for each sample. Output report will create the same graphs as the ones created in data importation step.
+[QIIME2 Cutadapt](https://docs.qiime2.org/2019.10/plugins/available/cutadapt/) will remove primers from raw sequences, generate quality plots of cleaned and reads counts for each sample. Output report will create the same graphs as the ones created in data importation step.
 
+[Cutadapt specific parameters](./usage.md#raw-reads-cleaning) can be set for nf-core/samba custom usage.
 QIIME2 cutadapt report `index.html` is available in **output directory : `results/project_name/00_report/trimmed_output`**
 
 ## ASVs inference
 
+The inference of ASVs (Amplicon Sequence Variant) is performed using [QIIME2 Dada2](https://docs.qiime2.org/2019.10/plugins/available/dada2/) algorithm.
 
 
 When `--removeRiboRNA` is specified, nfcore/samba pipeline uses [SortMeRNA](https://github.com/biocore/sortmerna) for removal of rRNA. SortMeRNA requires reference sequences and these are by default from the [SILVA database](https://www.arb-silva.de/).

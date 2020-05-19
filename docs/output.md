@@ -86,7 +86,7 @@ The **output directory : `results/project_name/00_report/dada2_output`** contain
 
 The **output directory : `results/project_name/00_report/dbotu3_output`** contains :
 - QIIME2 dbOTU3 report `index.html` with sample and feature frequencies
-[!QIIME2 dbOTU3 report](images/qiime2-dbotu3-report.png)
+![QIIME2 dbOTU3 report](images/qiime2-dbotu3-report.png)
 - All ASVs sequences in a fasta file : `sequences.fasta`
 - A biom counting table : `feature-table.biom`
 

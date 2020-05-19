@@ -24,7 +24,7 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
 
   # Load metatada
   metadata = read.table(metadata, h=T, sep="\t", check.names=F)
-  metadata = metadata[metadata[,1] %in% pred[,1]]
+  metadata = metadata[metadata[,1] %in% pred[,1],]
   if (microDecon == "true") {
      control_list =  unlist(strsplit(control,","))
      metadata = metadata[!metadata[,1] %in% control_list, ]

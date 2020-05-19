@@ -939,7 +939,7 @@ process stats_beta {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/hclustering", mode: 'copy', pattern : 'hclustering*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'variance_significance_tests_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/ExpVar", mode:'copy', pattern : 'pie_ExpVar_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
@@ -975,7 +975,7 @@ process stats_beta_rarefied {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/hclustering", mode: 'copy', pattern : 'hclustering*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : 'variance_significance_tests_rarefied_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/ExpVar", mode:'copy', pattern : 'pie_ExpVar_rarefied_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
@@ -1010,7 +1010,7 @@ process stats_beta_deseq2 {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/hclustering", mode: 'copy', pattern : 'hclustering*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2", mode: 'copy',pattern : 'variance_significance_tests_DESeq2_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/ExpVar", mode: 'copy',pattern : 'pie_ExpVar_DESeq2_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
@@ -1045,7 +1045,7 @@ process stats_beta_css {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/Hierarchical_Clustering", mode: 'copy', pattern : 'hclustering*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/hclustering", mode: 'copy', pattern : 'hclustering*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS", mode: 'copy', pattern : 'variance_significance_tests_CSS_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/ExpVar", mode: 'copy', pattern : 'pie_ExpVar_CSS_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'

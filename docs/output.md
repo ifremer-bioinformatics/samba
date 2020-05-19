@@ -103,8 +103,10 @@ The **output directory : `results/project_name/00_report/ancom_output`** contain
 
 ## Remove sample contamination
 
+yy**\[OPTIONAL\]**
+
 [microDecon](https://github.com/donaldtmcknight/microDecon) R package is used to remove contamination from control samples to experiment samples.
-[Controls samples and number of samples to decontaminate](usage.md#remove-sample-contamination) are specified in samba parameters.
+[Controls samples and number of samples to decontaminate](usage.md#decontamination) are specified in samba parameters.
 
 The **output directory : `results/project_name/00_report/microDecon`** contains :
 - the ASVs concerned sequences in `decontaminated_ASV.fasta`
@@ -117,4 +119,22 @@ The **output directory : `results/project_name/00_report/microDecon`** contains 
 [QIIME2 feature-classifier](https://docs.qiime2.org/2019.10/tutorials/feature-classifier/) will use a Naive Bayes classifier that can be used on global marker reference database or be trained on only the region of the target sequences. Check the [available parameters](usage.md#taxonomic-assignation) for this step.
 
 The **output directory : `results/project_name/00_report/taxo_output`** contains :
+- QIIME2 taxonomy report `index.html` with ASVs list, taxonomic assignation and confidence score.
+![QIIME2 taxonomy report](images/qiime2-taxo-report.png)
+- the merging of counts and taxonomy for each ASVs in a TSV file : `ASV_taxonomy.tsv`
+
+## Phylogeny
+
+QIIME2 sequences alignement and phylogeny are performed with [MAFFT](https://docs.qiime2.org/2019.10/plugins/available/alignment/) and [Fastree](https://docs.qiime2.org/2019.10/plugins/available/phylogeny/) algorithms.
+
+The **output directory : `results/project_name/00_report/tree_export_dir`** contains :
+- the ASVs phylogenetic tree in newick format : `tree.nwk`
+
+## Functional predictions
+
+**\[OPTIONAL\]**
+
+[QIIME2 picrust2](https://library.qiime2.org/plugins/q2-picrust2/13/) plugin is used to get EC, KO and MetaCyc pathway predictions base on 16S data.
+
+The **output directory : `results/project_name/00_report/q2-picrust2_output`** contains :
 

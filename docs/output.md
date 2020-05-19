@@ -135,6 +135,43 @@ The **output directory : `results/project_name/00_report/tree_export_dir`** cont
 **\[OPTIONAL\]**
 
 [QIIME2 picrust2](https://library.qiime2.org/plugins/q2-picrust2/13/) plugin is used to get EC, KO and MetaCyc pathway predictions base on 16S data.
+Picrust2 [HSP method and NSTI cut-off](images/#predict-functionnal-abundance) can be modified in the workflow parameters.
 
-The **output directory : `results/project_name/00_report/q2-picrust2_output`** contains :
+The **output directory : `results/project_name/00_report/picrust2_output`** contains :
+- an NDMS for each EC, KO and MetaCyc pathways for the selected variable. Example for EC :
+![EC Functional predictions NMDS](images/qiime2-picrust-EC-NMDS.png)
+- a picrust analysis report `q2-picrust2_output/pathway_abundance_visu/index.html` with pathways frequencies.
+
+
+## Data preparation
+
+In order to perform diversity analysis, a R [Phyloseq](https://joey711.github.io/phyloseq/) object is created with the counting table, the sample metadata description and the ASVs phylogenetic tree.
+
+The **output directory : `results/project_name/00_report/R/DATA`** constains the Phyloseq object and the counting table ready for performing statistics analysis.
+
+## Alpha diversity
+
+In order to evaluate samples intra-specific communities diversity, several diversity indexes are calculated :
+- **Observed** : the sample richness, ie. the number of different ASVs per sample
+- **Chao1** : the predicted richness index
+- **InvSimpson** : the probability that two sequences taken at random from a sample belongs to same taxa
+- **Shannon** : the entropy index reflects the specific diversity of the sample. The more the index is high, the more the diversity and equitabily are high.
+- **Pielou** : the community equitability index
+Then, taxonomic barplots from phylum to genus are produced.
+
+[Alpha diversity parameters](usage.md#statistics) can be specified in the workflow.
+
+The **output directory : `results/project_name/00_report/R/FIGURES/alpha_diversity`** contains :
+- a samples rarefaction curve : `rarefaction_curve.png`
+![Rarefaction curve](images/alpha-div-rarefaction-curve.png)
+- the diversity indexes plot : `diversity_index/alpha_div_VARNAME.png`
+![diversity index plot](images/alpha-div-index.png)
+- the taxonomic barplots : `diversity_barplots/VARNAME` from Phylum to Genus
+![taxo phylum](images/alpha-div-taxo-phylum.png)
+![taxo class](images/alpha-div-taxo-class.png)
+![taxo order](images/alpha-div-taxo-order.png)
+![taxo family](images/alpha-div-taxo-family.png)
+![taxo genus](images/alpha-div-taxo-genus.png)
+
+## Beta diversity
 

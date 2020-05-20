@@ -28,6 +28,11 @@ def load_json(jsonfile):
     nxt_params['metadata'] = os.path.basename(nxt_params['metadata'])
     nxt_params['manifest'] = os.path.basename(nxt_params['manifest'])
 
+    nxt_params['methods'] = ['rarefied','DESeq2','CSS']
+    nxt_params['indices'] = ['NMDS', 'PCoA', 'hclustering']
+    nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard', 'unifrac']
+
+
     return nxt_params
 
 def count_seq_fasta(fasta):

@@ -69,7 +69,8 @@ h4{
 h5{
   color:#007fcc;
   margin: 0;
-  text-align: center;
+  margin-left: 60px;
+  /*text-align: center;*/
 }
 
 hr.title {
@@ -101,7 +102,7 @@ div.results {
 }
 
 a.link {
-    color: #007bff
+    color: #007bff;
 }
 
 span.highlight {
@@ -161,6 +162,11 @@ h1:before {
 h1 {
 	counter-reset: h3counter;
 }
+
+h3 {
+	counter-reset: h4counter;
+}
+
 h3:before {
 	content: counter(h3counter)" - ";
 	counter-increment: h3counter;

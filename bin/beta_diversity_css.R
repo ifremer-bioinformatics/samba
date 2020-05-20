@@ -21,6 +21,8 @@ args = commandArgs(trailingOnly=TRUE)
 PHYLOSEQ = readRDS(args[1])
 final_css_ASV_table_with_taxonomy = args[2]
 
+otu_table(PHYLOSEQ) = otu_table(PHYLOSEQ)[,colSums(otu_table(PHYLOSEQ) !=0) > 1]
+otu_table(PHYLOSEQ) = otu_table(PHYLOSEQ)[rowSums(otu_table(PHYLOSEQ)) > 0,]
 css = phyloseq_to_metagenomeSeq(PHYLOSEQ)
 p = cumNormStatFast(css)
 css = cumNorm(css, p=p)

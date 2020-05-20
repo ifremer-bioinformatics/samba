@@ -555,15 +555,13 @@
         {% if d.steps.stats_alpha_enable == 'true' %}
         <h3 id="alpha-diversity">Alpha diversity [optional]</h3>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-          <li>Tested variables :</li>
-          <ul>
-              {% for var in r.alpha_div.var_tested %}
-              <li><span class="highlight">{{ var }}</span></li>
-              {% endfor %}
-          </ul>
-          <li>Diversity index used : "Observed richness / Chao1 / Shannon / InvSimpson / Pielou"</li>
-        </div>
+        <li>Tested variables :</li>
+        <ul>
+            {% for var in r.alpha_div.var_tested %}
+            <li><span class="highlight">{{ var }}</span></li>
+            {% endfor %}
+        </ul>
+        <li>Diversity index used : "Observed richness / Chao1 / Shannon / InvSimpson / Pielou"</li>
         <!--  -->
         <!-- diversity indices -->
         <!--  -->
@@ -618,22 +616,19 @@
 
         <h3 id="beta-diversity-1">Beta diversity by index [optional]</h3>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-          <li>Tested variables :</li>
-          <li>Normalization method : "
-              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">None</a> /
-              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied">Rarefaction</a>  /
-              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2">DESeq2</a> /
-              <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS">CSS</a>"
-          </li>
-          <li>Tested variables :</li>
-          <ul>
-              {% for v in r.beta_div.var_tested %}
-              <li><span class="highlight">{{ v }}</span></li>
-              {% endfor %}
-          </ul>
-          <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
-        </div>
+        <li>Normalization method : "
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_non_normalized">None</a> /
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_rarefied">Rarefaction</a>  /
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_DESeq2">DESeq2</a> /
+            <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_CSS">CSS</a>"
+        </li>
+        <li>Tested variables :</li>
+        <ul>
+            {% for v in r.beta_div.var_tested %}
+            <li><span class="highlight">{{ v }}</span></li>
+            {% endfor %}
+        </ul>
+        <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
         <!-- devel test -->
 
 
@@ -816,20 +811,15 @@
         {% if d.steps.stats_desc_comp_enable == 'true' %}
         <h3 id="decriptive-comparison">Descriptive comparison [optional]</h3>
         <br>
-        <div class="md-fences CodeMirror cm-s-inner" lang="bash">
-          <li>Tested variables :</li>
-          <ul>
-            <li>Tested variables :</li>
-            <ul>
-                {% for var in r.descriptive_comparison.var_tested %}
-                <li><span class="highlight">{{ var }}</span></li>
-                {% endfor %}
-            </ul>
-          </ul>
-        </div>
+        <li>Tested variables :</li>
+        <ul>
+            {% for var in r.descriptive_comparison.var_tested %}
+            <li><span class="highlight">{{ var }}</span></li>
+            {% endfor %}
+        </ul>
         <br>
         {% for var in r.descriptive_comparison.var_tested %}
-        <li>Repartition of ASVs in the samples grouped by <span class="highlight">{{var}}:</span></li>
+        <li>Repartition of ASVs in the samples grouped by <span class="highlight">{{var}}</span>:</li>
         <br>
         <p align="center">
             <a class="link" target="_blank" href="R/FIGURES/descriptive_comparison/upset_plot_{{var}}.png">
@@ -929,6 +919,7 @@
         </div>
         <br>
     </div>
+
 </div>
 </body>
 </html>

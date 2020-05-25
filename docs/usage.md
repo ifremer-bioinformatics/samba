@@ -360,14 +360,6 @@ Statistics steps can also being run alone (without the above bioinformatics step
 
 Set to false to deactivate Alpha diversity statistics step. (default = true)
 
-### `--stats_beta_enable`
-
-Set to false to deactivate Beta diversity statistics steps. (default = true)
-
-### `--stats_desc_comp_enable`
-
-Set to false to deactivate Descriptive comparisons steps. (default = true)
-
 ### `--kingdom`
 
 Kingdom to be displayed in barplots. (default = "Bacteria")
@@ -380,17 +372,25 @@ Number of taxa to be displayed in barplots.
 
 According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
 
+### `--stats_beta_enable`
+
+Set to false to deactivate Beta diversity statistics steps. (default = true)
+
 ### `--beta_div_var`
 
 According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
 
-### `--sets_analysis_crit`
-
-According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
-
 ### `--hc_method`
 
 Hierarchical clustering method (default = 'ward.D2').
+
+### `--stats_desc_comp_enable`
+
+Set to false to deactivate Descriptive comparisons steps. (default = true)
+
+### `--sets_analysis_crit`
+
+According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
 
 ## Run the statistics steps only
 

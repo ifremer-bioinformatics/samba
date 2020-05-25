@@ -39,7 +39,7 @@ Bash script used to check raw sequencing data and metadata file integrity.
 - The headers of the metadata file are checked in order to fit to the QIIME2 metadata requirements.
 
 [Data integrity specific parameters](usage.md#data-integrity) can be set for nf-core/samba custom usage.
-A data integrity CSV report **`data-integrity.csv`** is produced in the pipeline **output directory : `results/project_name/steps_data/01_data_integrity`**
+A data integrity CSV report **`data-integrity.csv`** is produced in the pipeline **output directory : `results/[PROJECT_NAME]/steps_data/01_data_integrity`**
 
 ![Data integrity report](images/samba-data-integrity.png)
 
@@ -52,14 +52,14 @@ A data integrity CSV report **`data-integrity.csv`** is produced in the pipeline
 - QIIME2 html quality plots of the raw reads sequences
 ![QIIME2 import quality plots](images/qiime2-quality-plots.png)
 
-QIIM2 import report `index.html` is available in **output directory : `results/project_name/00_report/import_output`**
+QIIM2 import report `index.html` is available in **output directory : `results/[PROJECT_NAME]/00_report/import_output`**
 
 ## Data cleaning
 
 [QIIME2 Cutadapt](https://docs.qiime2.org/2019.10/plugins/available/cutadapt/) will remove primers from raw sequences, generate quality plots of cleaned and reads counts for each sample. Output report will create the same graphs as the ones created in data importation step.
 
 [Cutadapt specific parameters](usage.md#raw-reads-cleaning) can be set for nf-core/samba custom usage.
-QIIME2 cutadapt report `index.html` is available in **output directory : `results/project_name/00_report/trimmed_output`**
+QIIME2 cutadapt report `index.html` is available in **output directory : `results/[PROJECT_NAME]/00_report/trimmed_output`**
 
 ## ASVs inference
 
@@ -68,7 +68,7 @@ DADA2 can filter and trim cleaned reads before running an error model learning a
 
 [DADA2 specific parameters](usage.md#asvs-inference) can be set for nf-core/samba custom usage.
 
-The **output directory : `results/project_name/00_report/dada2_output`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/dada2_output`** contains :
 - QIIME2 DADA2 report `index.html` with the remaining sequences and ASVs in each sample.
 ![QIIME2 DADA2 report](images/qiime2-dada2-report.png)
 - QIIME2 DADA2 report `sample-frequency-detail.html` with interactive ASVs counts for each samples metadata.
@@ -84,7 +84,7 @@ The **output directory : `results/project_name/00_report/dada2_output`** contain
 
 [QIIME2 dbotu3](https://library.qiime2.org/plugins/q2-dbotu/4/) plugin will call OTUs from ASVs distribution across samples and phylogenetic tree.
 
-The **output directory : `results/project_name/00_report/dbotu3_output`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/dbotu3_output`** contains :
 - QIIME2 dbOTU3 report `index.html` with sample and feature frequencies
 ![QIIME2 dbOTU3 report](images/qiime2-dbotu3-report.png)
 - All ASVs sequences in a fasta file : `sequences.fasta`
@@ -95,7 +95,7 @@ The **output directory : `results/project_name/00_report/dbotu3_output`** contai
 [QIIME2 ANCOM](https://docs.qiime2.org/2019.10/plugins/available/composition/ancom/) analysis will compare the composition of microbiomes and identify ASVs that differ in abundance.
 [ANCOM variable](usage.md#differential-abundance-testing) can be specified in samba parameters.
 
-The **output directory : `results/project_name/00_report/ancom_output`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/ancom_output`** contains :
 - the ANCOM analysis report : `export_ancom_[ANCOM_VAR]/index.html`  
 ![QIIME2 ANCOM report](images/qiime2-ancom-report.png)
 - the ANCOM analysis report at family level : `export_ancom_[ANCOM_VAR]_family/index.html`  
@@ -108,7 +108,7 @@ The **output directory : `results/project_name/00_report/ancom_output`** contain
 [microDecon](https://github.com/donaldtmcknight/microDecon) R package is used to remove contamination from control samples to experiment samples.
 [Controls samples and number of samples to decontaminate](usage.md#decontamination) are specified in samba parameters.
 
-The **output directory : `results/project_name/00_report/microDecon`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/microDecon`** contains :
 - the ASVs concerned sequences in `decontaminated_ASV.fasta`
 - the decontaminated counting table in TSV format : `decontaminated_ASV_table.tsv`
 - the list of removed ASVs : `ASV_removed.txt`
@@ -118,7 +118,7 @@ The **output directory : `results/project_name/00_report/microDecon`** contains 
 
 [QIIME2 feature-classifier](https://docs.qiime2.org/2019.10/tutorials/feature-classifier/) will use a Naive Bayes classifier that can be used on global marker reference database or be trained on only the region of the target sequences. Check the [available parameters](usage.md#taxonomic-assignation) for this step.
 
-The **output directory : `results/project_name/00_report/taxo_output`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/taxo_output`** contains :
 - QIIME2 taxonomy report `index.html` with ASVs list, taxonomic assignation and confidence score.
 ![QIIME2 taxonomy report](images/qiime2-taxo-report.png)
 - the merging of counts and taxonomy for each ASVs in a TSV file : `ASV_taxonomy.tsv`
@@ -127,7 +127,7 @@ The **output directory : `results/project_name/00_report/taxo_output`** contains
 
 QIIME2 sequences alignement and phylogeny are performed with [MAFFT](https://docs.qiime2.org/2019.10/plugins/available/alignment/) and [Fastree](https://docs.qiime2.org/2019.10/plugins/available/phylogeny/) algorithms.
 
-The **output directory : `results/project_name/00_report/tree_export_dir`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/tree_export_dir`** contains :
 - the ASVs phylogenetic tree in newick format : `tree.nwk`
 
 ## Functional predictions
@@ -137,7 +137,7 @@ The **output directory : `results/project_name/00_report/tree_export_dir`** cont
 [QIIME2 picrust2](https://library.qiime2.org/plugins/q2-picrust2/13/) plugin is used to get EC, KO and MetaCyc pathway predictions base on 16S data.
 Picrust2 [HSP method and NSTI cut-off](images/#predict-functionnal-abundance) can be modified in the workflow parameters.
 
-The **output directory : `results/project_name/00_report/picrust2_output`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/picrust2_output`** contains :
 - an NDMS for each EC, KO and MetaCyc pathways for the selected variable. Example for EC :
 ![EC Functional predictions NMDS](images/qiime2-picrust-EC-NMDS.png)
 - a picrust analysis report `q2-picrust2_output/pathway_abundance_visu/index.html` with pathways frequencies.
@@ -147,7 +147,7 @@ The **output directory : `results/project_name/00_report/picrust2_output`** cont
 
 In order to perform diversity analysis, a R [Phyloseq](https://joey711.github.io/phyloseq/) object is created with the counting table, the sample metadata description and the ASVs phylogenetic tree.
 
-The **output directory : `results/project_name/00_report/R/DATA`** constains the Phyloseq object and the counting table ready for performing statistics analysis.
+The **output directory : `results/[PROJECT_NAME]/00_report/R/DATA`** constains the Phyloseq object and the counting table ready for performing statistics analysis.
 
 ## Alpha diversity
 
@@ -161,12 +161,12 @@ Then, taxonomic barplots from phylum to genus are produced.
 
 [Alpha diversity parameters](usage.md#statistics) can be specified in the workflow.
 
-The **output directory : `results/project_name/00_report/R/FIGURES/alpha_diversity`** contains :
+The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/alpha_diversity`** contains :
 - a samples rarefaction curve : `rarefaction_curve.png`
 ![Rarefaction curve](images/alpha-div-rarefaction-curve.png)
-- the diversity indexes plot : `diversity_index/alpha_div_VARNAME.png`
+- the diversity indexes plot : `diversity_index/alpha_div_[VARNAME].png`
 ![diversity index plot](images/alpha-div-index.png)
-- the taxonomic barplots : `diversity_barplots/VARNAME` from Phylum to Genus
+- the taxonomic barplots : `diversity_barplots/[VARNAME]` from Phylum to Genus
 ![taxo phylum](images/alpha-div-taxo-phylum.png)
 ![taxo class](images/alpha-div-taxo-class.png)
 ![taxo order](images/alpha-div-taxo-order.png)
@@ -193,12 +193,12 @@ These distance matrices are represented through PCoA and NMDS (including ADONIS 
 
 [Beta diversity parameters](usage.md#statistics) can be specified in the workflow.
  
-The **output directory : `results/project_name/00_report/R/FIGURES/beta_diversity_NORM_METHOD`** contains 4 directories :
+The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/beta_diversity_[NORM_METHOD]`** contains 4 directories :
 - PCoA with PCoA plots images (png and svg format) for each distance matrix
 - NMDS with NMDS plots images (png and svg format) for each distance matrix
 - Hierachical_Clustering with hierarchical clustering plots images (png and svg format) for each distance matrix using clustering method set in samba parameters.
 - ExpVar with pie charts images (png and svg format) for each distance matrix representing the percentage of explained variance for each experiment variables.
-- Files variance_signifiance_tests_NORM_METHOD.txt for each distance (i.e jaccard, bray, unifrac, wunifrac) with Adonis test results combining each experiment variables.
+- Files variance_signifiance_tests_[NORM_METHOD].txt for each distance (i.e jaccard, bray, unifrac, wunifrac) with Adonis test results combining each experiment variables.
 
 Here are some examples of the plots for beta diversity analysis available in samba workflow (example with DESeq2 normalization method and Bray-Curtis distance matrix) based on the selected experiment variable transect_name :
 
@@ -211,5 +211,13 @@ Here are some examples of the plots for beta diversity analysis available in sam
 - Hierarchical clustering with Ward.D2 method :
 ![HC plot](images/hclustering_DESeq2_transect_name_bray.png)
 
+## Descriptive comparisons
 
+This step is based on [UpSetR package](https://github.com/hms-dbmi/UpSetR) and provide an alternative to Venn diagram to deal with more than 3 sets.
 
+[Descriptive comparisons parameters](usage.md#statistics) can be specified.
+
+The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/descriptive_comparison`** contains the UpSetR graphs images in png and svg format.
+
+In the test dataset, this graph enables to compare the number of ASVs and their abundance between samples group selected variable regarding to the total of ASVs by sample groups :
+[!UpSetR graph](images/upset_plot_transect_name.png)

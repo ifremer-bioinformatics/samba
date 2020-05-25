@@ -103,7 +103,7 @@ The **output directory : `results/project_name/00_report/ancom_output`** contain
 
 ## Remove sample contamination
 
-yy**\[OPTIONAL\]**
+**\[OPTIONAL\]**
 
 [microDecon](https://github.com/donaldtmcknight/microDecon) R package is used to remove contamination from control samples to experiment samples.
 [Controls samples and number of samples to decontaminate](usage.md#decontamination) are specified in samba parameters.
@@ -175,3 +175,21 @@ The **output directory : `results/project_name/00_report/R/FIGURES/alpha_diversi
 
 ## Beta diversity
 
+Sample distances are evaluated through beta diversity analyses. The ASV count table will be normalized to calculate beta diversity distance matrices.
+
+Four normalization methods are used in samba :
+- **No-normalization** : the beta diversity is calculated on raw ASVs counts. Warning : We do not recommend to use theses results for your data interpretation, this normalization aims to help to select the normalization method that fits the best your dataset.
+- **Rarefaction** : the rarefaction normalization consists in reducing the number of sequences in the samples to the size of the smallest sample. This method is recommended if all your samples have almost the same sequences number repartition. Beware if you have samples with low and high number of sequences, you could lost diversity and end to a bad results interpretation.
+- **[Bioconductor DESeq2](http://bioconductor.org/packages/release/bioc/html/DESeq2.html)** normalization : DESeq2 has been widely used in RNA-seq analysis to detect differential gene expression. This method can also be used as metabarcoding data normalization to evaluate if an ASV is more or less present through samples. Remind that the ending normalised table will contain positive and negative values and will thereby not be usable as an input for further analysis.
+- **Bioconductor metagenomeSeq CSS(https://rdrr.io/bioc/metagenomeSeq/man/cumNormMat.html)** : Cumulative Sum Scaling returns a matrix normalized by scaling counts up to and including the pth quantile. The method will give more weight to rare species.
+
+For each normalization method, four distance matrices are calculated :
+- **Jaccard distance** is a qualitative measure which indicates if an ASV is present or not. It will take 0 value if the ASV is not present in the sample or 1 if it is present, no matter if the ASV is rare or abundant.
+- **Bray-Curtis distance** is a quantitive measure which is based on specific ASV abundance over the samples. If two samples share the same communities, their Bray-Curtis distance will be equal to 0 whereas it will tend to 1 if the communities between the samples are different.
+- **Unifrac distance** is a qualitative distance based on the shared phylogenetic tree branches of the samples.
+- **Weighted unifrac** is a quantitative distance based on ASV abundance and on shared phylogenetic tree branches of the samples.
+
+These distance matrices are represented through PCoA and NMDS (including ADONIS test) ordination plots. A Hierarchical clustering of the samples is also provided by samba.
+
+[Beta diversity parameters](usage.md#statistics) can be specified in the workflow.
+ 

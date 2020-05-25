@@ -220,4 +220,4 @@ This step is based on [UpSetR package](https://github.com/hms-dbmi/UpSetR) and p
 The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/descriptive_comparison`** contains the UpSetR graphs images in png and svg format.
 
 In the test dataset, this graph enables to compare the number of ASVs and their abundance between samples group selected variable regarding to the total of ASVs by sample groups :
-[!UpSetR graph](images/upset_plot_transect_name.png)
+![UpSetR graph](images/upset_plot_transect_name.png)

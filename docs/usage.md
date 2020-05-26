@@ -73,6 +73,10 @@
   * [`--innewick`](#--innewick)
 * [Final analysis report](#final-analysis-report)
   * [`--report_enable`](#--report_enable)
+  * [`--SAMBAtemplate`](#--SAMBAtemplate)
+  * [`--SAMBAcss`](#--SAMBAcss)
+  * [`--SAMBAlogo`](#--SAMBAlogo)
+  * [`--SAMBAwf`](#\--SAMBAwf)
 * [Other command line parameters](#other-command-line-parameters)
   * [`--outdir`](#--outdir)
   * [`--email`](#--email)
@@ -416,6 +420,21 @@ This step is optional and create a HTML report of samba analyses.
 
 Set to false to deactivate report creation. (default = true)
 
+### `--SAMBAtemplate`
+
+Path to HTML template to use for samba report.
+
+### `--SAMBAcss`
+
+Path to CSS style file to be used in samba report.
+
+### `--SAMBAlogo`
+
+Path to samba workflow logo.
+
+### `--SAMBAwf`
+
+Path to samba workflow steps image.
 
 ## Job resources
 

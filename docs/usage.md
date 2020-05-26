@@ -163,21 +163,22 @@ Profiles are also available to configure the samba workflow and can be combined 
 * `custom`
   * A profile to complete according to your data and experiment.
 
-### \--input_metadata
+### `--input_metadata`
 
 Path to input file with project samples metadata (csv format). Headers of metadata file must follow the Qiime2 requirements [Qiime2 metadata](https://docs.qiime2.org/2019.10/tutorials/metadata/)
 
-### `\--input_manifest`
+### `--input_manifest`
 
 Path to input file with samples reads files paths (csv format). Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](https://docs.qiime2.org/2019.10/tutorials/importing/#manifest-file)
 
 ## Generic arguments
 
-### --singleEnd
+### `--singleEnd`
 
 Set to true to specify that the inputs are single-end reads. Default is paired-End.
 
-### \--projectName
+###`--projectName`
+## `--projectName`
 
 Name of the project being analyzed.
 

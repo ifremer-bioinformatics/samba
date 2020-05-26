@@ -11,7 +11,7 @@ and processes data using the following steps:
 * [Importing raw data](#importing-raw-data) - Create QIIME2 objects
 * [Primers removal](#primers-removal) - Remove primers from raw reads
 * [QC and feature table](#qc-and-feature-table) - QC and feature table and counts table
-* [OTUs calling](#otus-calling) - \[OPTIONAL\] Distribution and phylogeny based clustering
+* [ASV clustering](#asv-clustering) - \[OPTIONAL\] Distribution and phylogeny based clustering
 * [Differential abundance](#differential-abundance) - ANCOM analysis
 * [Samples decontamination](#samples-decontamination) - \[OPTIONAL\] Samples decontamination based on control samples 
 * [Taxonomic assignation](#taxonomic-assignation) - QIIME2 Naive bayesian classifier assignation
@@ -32,59 +32,61 @@ and processes data using the following steps:
 
 **\[OPTIONAL\]**
 
-Bash script used to check raw sequencing data and metadata file integrity.
-- Demultiplexing control checks if barcodes are the same in reads names within a sample file (`--barcode_filter` default is 90%).
-- Multiple sequencer detection checks if sequencer names are the same in the reads names within a sample file
-- The primer ratio control checks if at least 70% (`--primer_filter` default is 70%) of the raw reads sequences within a sample the sequencing primer.
+Bash script used to check raw sequencing data and metadata files integrity.
+- Demultiplexing control checks if barcodes are the same in reads names within a sample file.
+- Multiple sequencer detection checks if sequencer names are the same in the reads names within a sample file.
+- The primer ratio control checks if at least 70% of the raw reads sequences within a sample contain the sequencing primer.
 - The headers of the metadata file are checked in order to fit to the QIIME2 metadata requirements.
 
-[Data integrity specific parameters](usage.md#data-integrity) can be set for nf-core/samba custom usage.
-A data integrity CSV report **`data-integrity.csv`** is produced in the pipeline **output directory : `results/[PROJECT_NAME]/steps_data/01_data_integrity`**
+[Data integrity specific parameters](usage.md#data-integrity) can be set for samba custom usage.
+
+A data integrity CSV report **`data-integrity.csv`** is produced in the pipeline **output directory : `results/[projectName]/steps_data/01_data_integrity`** : 
 
 ![Data integrity report](images/samba-data-integrity.png)
 
 ## Importing raw data
 
 [QIIME2 import](https://docs.qiime2.org/2019.10/tutorials/importing/) step creates :
-- a QIIME2 object using QIIME2 manifest and metadata files
-- QIIME2 reads count overview html statistics 
+- a QIIME2 object using QIIME2 manifest and metadata input files.
+- QIIME2 reads count overview html statistics :
 ![QIIME2 import reads count](images/qiime2-reads-counts.png)
-- QIIME2 html quality plots of the raw reads sequences
+- QIIME2 html quality plots of the raw reads sequences :
 ![QIIME2 import quality plots](images/qiime2-quality-plots.png)
 
-QIIM2 import report `index.html` is available in **output directory : `results/[PROJECT_NAME]/00_report/import_output`**
+The QIIM2 import report `index.html` is available in **output directory : `results/[projectName]/00_report/import_output`**
 
 ## Primers removal
 
 [QIIME2 Cutadapt](https://docs.qiime2.org/2019.10/plugins/available/cutadapt/) will remove primers from raw sequences, generate quality plots of cleaned and reads counts for each sample. Output report will create the same graphs as the ones created in data importation step.
 
-[Cutadapt specific parameters](usage.md#raw-reads-cleaning) can be set for nf-core/samba custom usage.
-QIIME2 cutadapt report `index.html` is available in **output directory : `results/[PROJECT_NAME]/00_report/trimmed_output`**
+[Cutadapt specific parameters](usage.md#primers-removal) can be set for samba custom usage.
+
+QIIME2 cutadapt report `index.html` is available in **output directory : `results/[projectName]/00_report/trimmed_output`**
 
 ## QC and feature table
 
 The inference of ASV (Amplicon Sequence Variant) is performed using [QIIME2 Dada2](https://docs.qiime2.org/2019.10/plugins/available/dada2/) algorithm.
-DADA2 can filter and trim cleaned reads before running an error model learning algorithm which will correct the reads if necessary before the QC and feature table. Then, reads for each ASV are merged and chimeras are removed. Finally, an ASV counting table for reach sample is generated.
+DADA2 can filter and trim cleaned reads before running an error model learning algorithm which will correct the reads if necessary before the reads quality control and feature table are created. Then, reads each ASV sequences are merged (in running in paired-end mode) and chimeras are removed.
 
 [DADA2 specific parameters](usage.md#qc-and-feature-table) can be set for nf-core/samba custom usage.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/dada2_output`** contains :
-- QIIME2 DADA2 report `index.html` with the remaining sequences and ASV in each sample.
+The **output directory : `results/[projectName]/00_report/dada2_output`** contains :
+- QIIME2 DADA2 report `index.html` with the remaining number of sequences and ASV in each sample :
 ![QIIME2 DADA2 report](images/qiime2-dada2-report.png)
-- QIIME2 DADA2 report `sample-frequency-detail.html` with interactive ASV counts for each samples metadata.
+- QIIME2 DADA2 report `sample-frequency-detail.html` with interactive ASV counts for each sample metadata :
 ![QIIME2 DADA2 sample frequency](images/qiime2-dada2-sample-frequency.png)
-- QIIME2 DADA2 report `feature-frequency-detail.html` with ASV frequency and observation counts in each sample.
+- QIIME2 DADA2 report `feature-frequency-detail.html` with ASV frequency and observation counts in each sample :
 ![QIIME2 DADA2 feature frequency](images/qiime2-dada2-feature-frequency.png)
 - All ASV sequences in a fasta file : `sequences.fasta`
 - A biom counting table : `feature-table.biom`
 
-## OTUs calling
+## ASV clustering
 
 **\[OPTIONAL\]**
 
-[QIIME2 dbotu3](https://library.qiime2.org/plugins/q2-dbotu/4/) plugin will call OTUs from ASV distribution across samples and phylogenetic tree.
+[QIIME2 dbotu3](https://library.qiime2.org/plugins/q2-dbotu/4/) plugin will cluster ASV sequences from their distribution across samples and phylogenetic tree.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/dbotu3_output`** contains :
+The **output directory : `results/[projectName]/00_report/dbotu3_output`** contains :
 - QIIME2 dbOTU3 report `index.html` with sample and feature frequencies
 ![QIIME2 dbOTU3 report](images/qiime2-dbotu3-report.png)
 - All ASV sequences in a fasta file : `sequences.fasta`
@@ -93,23 +95,23 @@ The **output directory : `results/[PROJECT_NAME]/00_report/dbotu3_output`** cont
 ## Differential abundance
 
 [QIIME2 ANCOM](https://docs.qiime2.org/2019.10/plugins/available/composition/ancom/) analysis will compare the composition of microbiomes and identify ASV that differ in abundance.
-[ANCOM variable](usage.md#differential-abundance-testing) can be specified in samba parameters.
+[ANCOM variable](usage.md#differential-abundance) can be specified in samba parameters.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/ancom_output`** contains :
-- the ANCOM analysis report : `export_ancom_[ANCOM_VAR]/index.html`  
+The **output directory : `results/[projectName]/00_report/ancom_output`** contains :
+- the ANCOM analysis report : `export_ancom_[ancom_var]/index.html` :
 ![QIIME2 ANCOM report](images/qiime2-ancom-report.png)
-- the ANCOM analysis report at family level : `export_ancom_[ANCOM_VAR]_family/index.html`  
-- the ANCOM analysis report at genus level : `export_ancom_[ANCOM_VAR]_genus/index.html`  
+- the ANCOM analysis report at family level : `export_ancom_[ancom_var]_family/index.html`  
+- the ANCOM analysis report at genus level : `export_ancom_[ancom_var]_genus/index.html`  
 
 ## Samples decontamination
 
 **\[OPTIONAL\]**
 
 [microDecon](https://github.com/donaldtmcknight/microDecon) R package is used to remove contamination from control samples to experiment samples.
-[Controls samples and number of samples to decontaminate](usage.md#decontamination) are specified in samba parameters.
+[Controls samples and number of samples to decontaminate](usage.md#samples-decontamination) are specified in samba parameters.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/microDecon`** contains :
-- the ASV concerned sequences in `decontaminated_ASV.fasta`
+The **output directory : `results/[projectName]/00_report/microDecon`** contains :
+- the ASV concerned sequences in `decontaminated_ASV.fasta`.
 - the decontaminated counting table in TSV format : `decontaminated_ASV_table.tsv`
 - the list of removed ASV : `ASV_removed.txt`
 - the abundance of the removed ASV : `abundance_removed.txt`
@@ -118,16 +120,16 @@ The **output directory : `results/[PROJECT_NAME]/00_report/microDecon`** contain
 
 [QIIME2 feature-classifier](https://docs.qiime2.org/2019.10/tutorials/feature-classifier/) will use a Naive Bayes classifier that can be used on global marker reference database or be trained on only the region of the target sequences. Check the [available parameters](usage.md#taxonomic-assignation) for this step.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/taxo_output`** contains :
+The **output directory : `results/[projectName]/00_report/taxo_output`** contains :
 - QIIME2 taxonomy report `index.html` with ASV list, taxonomic assignation and confidence score.
 ![QIIME2 taxonomy report](images/qiime2-taxo-report.png)
 - the merging of counts and taxonomy for each ASV in a TSV file : `ASV_taxonomy.tsv`
 
 ## Phylogeny
 
-QIIME2 sequences alignement and phylogeny are performed with [MAFFT](https://docs.qiime2.org/2019.10/plugins/available/alignment/) and [Fastree](https://docs.qiime2.org/2019.10/plugins/available/phylogeny/) algorithms.
+QIIME2 sequences alignment and phylogeny are performed with [MAFFT](https://docs.qiime2.org/2019.10/plugins/available/alignment/) and [Fastree](https://docs.qiime2.org/2019.10/plugins/available/phylogeny/) algorithms.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/tree_export_dir`** contains :
+The **output directory : `results/[projectName]/00_report/tree_export_dir`** contains :
 - the ASV phylogenetic tree in newick format : `tree.nwk`
 
 ## Functional predictions
@@ -135,9 +137,9 @@ The **output directory : `results/[PROJECT_NAME]/00_report/tree_export_dir`** co
 **\[OPTIONAL\]**
 
 [QIIME2 picrust2](https://library.qiime2.org/plugins/q2-picrust2/13/) plugin is used to get EC, KO and MetaCyc pathway predictions base on 16S data.
-Picrust2 [HSP method and NSTI cut-off](images/#predict-functionnal-abundance) can be modified in the workflow parameters.
+Picrust2 [HSP method and NSTI cut-off](usage.md/#functionnal-predictions) can be modified in the workflow parameters.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/picrust2_output`** contains :
+The **output directory : `results/[projectName]/00_report/picrust2_output`** contains :
 - an NDMS for each EC, KO and MetaCyc pathways for the selected variable. Example for EC :
 ![EC Functional predictions NMDS](images/qiime2-picrust-EC-NMDS.png)
 - a picrust analysis report `q2-picrust2_output/pathway_abundance_visu/index.html` with pathways frequencies.
@@ -147,26 +149,27 @@ The **output directory : `results/[PROJECT_NAME]/00_report/picrust2_output`** co
 
 In order to perform diversity analysis, a R [Phyloseq](https://joey711.github.io/phyloseq/) object is created with the counting table, the sample metadata description and the ASV phylogenetic tree.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/R/DATA`** constains the Phyloseq object and the counting table ready for performing statistics analysis.
+The **output directory : `results/[projectName]/00_report/R/DATA`** contains the Phyloseq object and the counting table ready for performing statistics analysis.
 
 ## Alpha diversity
 
-In order to evaluate samples intra-specific communities diversity, several diversity indexes are calculated :
-- **Observed** : the sample richness, ie. the number of different ASV per sample
-- **Chao1** : the predicted richness index
-- **InvSimpson** : the probability that two sequences taken at random from a sample belongs to same taxa
+In order to evaluate samples intra-specific diversity, several diversity indexes are calculated :
+- **Observed** : the sample richness, ie. the number of different ASV per sample.
+- **Chao1** : the predicted richness index.
+- **InvSimpson** : the probability that two sequences taken at random from a sample belongs to same taxa.
 - **Shannon** : the entropy index reflects the specific diversity of the sample. The more the index is high, the more the diversity and equitabily are high.
-- **Pielou** : the community equitability index
+- **Pielou** : the community equitability index.
+
 Then, taxonomic barplots from phylum to genus are produced.
 
 [Alpha diversity parameters](usage.md#statistics) can be specified in the workflow.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/alpha_diversity`** contains :
-- a samples rarefaction curve : `rarefaction_curve.png`
+The **output directory : `results/[projectName]/00_report/R/FIGURES/alpha_diversity`** contains :
+- a samples rarefaction curve : `rarefaction_curve.png` :
 ![Rarefaction curve](images/alpha-div-rarefaction-curve.png)
 - the diversity indexes plot : `diversity_index/alpha_div_[VARNAME].png`
 ![diversity index plot](images/alpha-div-index.png)
-- the taxonomic barplots : `diversity_barplots/[VARNAME]` from Phylum to Genus
+- the taxonomic barplots : `diversity_barplots/[VARNAME]` from Phylum to Genus :
 ![taxo phylum](images/alpha-div-taxo-phylum.png)
 ![taxo class](images/alpha-div-taxo-class.png)
 ![taxo order](images/alpha-div-taxo-order.png)
@@ -193,7 +196,7 @@ These distance matrices are represented through PCoA and NMDS (including ADONIS 
 
 [Beta diversity parameters](usage.md#statistics) can be specified in the workflow.
  
-The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/beta_diversity_[NORM_METHOD]`** contains 4 directories :
+The **output directory : `results/[projectName]/00_report/R/FIGURES/beta_diversity_[NORM_METHOD]`** contains 4 directories :
 - PCoA with PCoA plots images (png and svg format) for each distance matrix
 - NMDS with NMDS plots images (png and svg format) for each distance matrix
 - Hierachical_Clustering with hierarchical clustering plots images (png and svg format) for each distance matrix using clustering method set in samba parameters.
@@ -217,14 +220,14 @@ This step is based on [UpSetR package](https://github.com/hms-dbmi/UpSetR) and p
 
 [Descriptive comparisons parameters](usage.md#statistics) can be specified.
 
-The **output directory : `results/[PROJECT_NAME]/00_report/R/FIGURES/descriptive_comparison`** contains the UpSetR graphs images in png and svg format.
+The **output directory : `results/[projectName]/00_report/R/FIGURES/descriptive_comparison`** contains the UpSetR graphs images in png and svg format.
 
 In the test dataset, this graph enables to compare the number of ASV and their abundance between samples group selected variable regarding to the total of ASV by sample groups :
 ![UpSetR graph](images/upset_plot_transect_name.png)
 
 ## Global analysis report
 
-All samba workflow results are stored in a global analysis available in **`results/[PROJECT_NAME]/00_report/SAMBA_report.html`**. This report is based on a Jinja2 template and gives a synthesis of the community profiles and characteristics of your dataset :
+All samba workflow results are stored in a global analysis available in **`results/[projectName]/00_report/SAMBA_report.html`**. This report is based on a Jinja2 template and gives a synthesis of the community profiles and characteristics of your dataset :
 - Bioinformatic processes are described with software versions and used parameters and important results for each step.
 - Statistical analyses results can be quickly compared for each variable of interest to understand environmental or experiments effects and samples similarities and differences.
 

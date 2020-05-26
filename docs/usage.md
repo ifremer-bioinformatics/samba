@@ -56,7 +56,7 @@
   * [`--method`](#--method)
   * [`--nsti`](#--nsti)
 * [Differential abundance](#differential-abundance)
-  * [`--ancor_var`](#--ancor_var)
+  * [`--ancom_var`](#--ancom_var)
 * [Statistics](#statistics)
   * [`--stats_alpha_enable`](#--stats_alpha_enable)
   * [`--stats_beta_enable`](#--stats_beta_enable)
@@ -352,7 +352,7 @@ Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk s
 
 Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/available/composition/ancom/).
 
-### `--ancor_var`
+### `--ancom_var`
 
 According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis. 
 

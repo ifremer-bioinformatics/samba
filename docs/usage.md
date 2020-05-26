@@ -17,12 +17,12 @@
   * [`--data_integrity_enable`](#--data_integrity_enable)
   * [`--barcode_filter`](#--barcode_filter)
   * [`--primer_filter`](#--primer_filter)
-* [Raw reads cleaning](#raw-reads-cleaning)
+* [Primers removal](#primers-removal)
   * [`--primerF`](#--primerF)
   * [`--primerR`](#--primerR)
   * [`--errorRate`](#--errorRate)
   * [`--overlap`](#--overlap)
-* [ASV inference](#asvs-inference)
+* [QC and feature table](#qc-and-feature-table)
   * [`--FtrimLeft`](#--FtrimLeft)
   * [`--RtrimLeft`](#--RtrimLeft)
   * [`--FtruncLen`](#--FtruncLen)
@@ -35,7 +35,7 @@
   * [`--dada2merge`](#--dada2merge)
   * [`--merge_tabledir`](#--merge_tabledir)
   * [`--merge_repseqsdir`](#--merge_repseqsdir)
-* [Distribution based-clustering](#distribution-based-clustering)
+* [ASV clustering](#asv-clustering)
   * [`--dbotu3_enable`](#--dbotu3_enable)
   * [`--gen_crit`](#--gen_crit)
   * [`--abund_crit`](#--abund_crit)
@@ -46,16 +46,16 @@
   * [`--taxo_db`](#--taxo_db)
   * [`--database`](#--database)
   * [`--confidence`](#--confidence)
-* [Decontamination](#decontamination)
+* [Samples decontamination](#samples-decontamination)
   * [`--microDecon_enable`](#--microDecon_enable)
   * [`--control_list`](#--control_list)
   * [`--nb_controls`](#--nb_controls)
   * [`--nb_samples`](#--nb_samples)
-* [Predict functionnal abundance](#predict-functionnal-abundance)
+* [Funtional predictions](#functional-predictions)
   * [`--picrust2_enable`](#--picrust2_enable)
   * [`--method`](#--method)
   * [`--nsti`](#--nsti)
-* [Differential abundance testing](#differential-abundance-testing)
+* [Differential abundance](#differential-abundance)
   * [`--ancor_var`](#--ancor_var)
 * [Statistics](#statistics)
   * [`--stats_alpha_enable`](#--stats_alpha_enable)
@@ -198,7 +198,7 @@ Percentage of sample barcode supposed to be found in raw reads (default : 90).
 
 Percentage of primers supposed to be found in raw reads (default : 70).
 
-## Raw reads cleaning
+## Primers removal
 
 ### `--primerF` 
 
@@ -216,7 +216,7 @@ Cutadapt error rate allowed to match primers (default : 0.1).
 
 Cutadapt overlaping length between primer and read (default : 18). 
 
-## ASV inference
+## QC and feature table
 
 This process is based on [Qiime2/Dada2](https://docs.qiime2.org/2019.10/plugins/available/dada2/).
 
@@ -268,13 +268,13 @@ Path to the directory containing the ASV tables to merge (this directory must co
 
 Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
-## Distribution based-clustering
+## ASV clustering
 
 This step, based on [dbotu3](https://github.com/swo/dbotu3) is optional if you do not want to cluster your ASV sequences.
 
 ### `--dbotu3_enable`
 
-Distribution based-clustering step. Set to false to deactivate this step. (default = true)
+ASV clustering step. Set to false to deactivate this step. (default = true)
 
 ### `--gen_crit`
 
@@ -312,7 +312,7 @@ Path to preformatted QIIME2 format database (required if extract_db = false).
 
 RDP confidence threshold (default = 90).
 
-## Decontamination
+## Samples decontamination
 
 This step is optional and based on [microDecon](https://github.com/donaldtmcknight/microDecon) package.
 
@@ -332,7 +332,7 @@ Number of controled samples listed (required if microDecon_enable = true).
 
 Number of samples that are not control samples (required if microDecon_enable = true).
 
-## Predict functionnal abundance
+## Funtional predictions
 
 This step is optional and based on [Qiime2/PICRUSt2](https://github.com/gavinmdouglas/q2-picrust2).
 
@@ -348,7 +348,7 @@ HSP method of your choice (default = 'mp' ). The most accurate prediction method
 
 Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
-## Differential abundance testing 
+## Differential abundance 
 
 Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/available/composition/ancom/).
 
@@ -449,17 +449,19 @@ Wherever process-specific requirements are set in the pipeline, the default valu
 
 If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition below). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
 
+Samba job resources are defined in **conf/resources.config** file.
+
 If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack).
 
 ## Other command line parameters
 
 ### `--outdir`
 
-The output directory where the results will be saved.
+The output directory where the results will be published.
 
 ### `-w/--work-dir`
 
-The temporary directory where intermediate data will be saved.
+The temporary directory where intermediate data will be written.
 
 ### `--email`
 

@@ -14,6 +14,7 @@
   * [`-profile`](#-profile)
 * [Generic arguments](#generic-arguments)
   * [`--singleEnd`](#--singleEnd)
+  * [`--projectName`](#--projectName)
 * [Data integrity](#data-integrity)
   * [`--data_integrity_enable`](#--data_integrity_enable)
   * [`--barcode_filter`](#--barcode_filter)

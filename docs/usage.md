@@ -1,6 +1,33 @@
 # nf-core/samba: Usage
 
 ## Table of contents
+* [Ribosomal RNA removal](#ribosomal-rna-removal)
+  * [`--removeRiboRNA`](#removeriborna)
+  * [`--saveNonRiboRNAReads`](#savenonribornareads)
+  * [`--rRNA_database_manifest`](#rrnadatabasemanifest)
+
+
+
+## Ribosomal RNA removal
+
+If rRNA removal is desired (for example, metatranscriptomics),
+add the following command line parameters.
+Please be adviced that by default these steps make use of the SILVA v119 database that requires [`licencing for commercial/non-academic entities`](https://www.arb-silva.de/silva-license-information).
+
+### `--removeRiboRNA`
+
+Instructs to use SortMeRNA to remove reads related to ribosomal RNA (or any patterns found in the sequences defined by `--rRNA_database_manifest`).
+
+### `--saveNonRiboRNAReads`
+
+By default, non-rRNA FastQ files will not be saved to the results directory. Specify this
+flag (or set to true in your config file) to copy these files when complete.
+
+### `--rRNA_database_manifest`
+
+Be aware that commercial/non-academic entities require [`licensing for SILVA`](https://www.arb-silva.de/silva-license-information) with these default databases.
+
+
 
 * [Table of contents](#table-of-contents)
 * [Introduction](#introduction)
@@ -179,7 +206,6 @@ Path to input file with samples reads files paths (csv format). Headers of manif
 Set to true to specify that the inputs are single-end reads. Default is paired-End.
 
 ### `--projectName`
-## `--projectName`
 
 Name of the project being analyzed.
 

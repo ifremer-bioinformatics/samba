@@ -76,7 +76,7 @@
   * [`--SAMBAtemplate`](#--SAMBAtemplate)
   * [`--SAMBAcss`](#--SAMBAcss)
   * [`--SAMBAlogo`](#--SAMBAlogo)
-  * [`--SAMBAwf`](#\--SAMBAwf)
+  * [`\--SAMBAwf`](#--SAMBAwf)
 * [Other command line parameters](#other-command-line-parameters)
   * [`--outdir`](#--outdir)
   * [`--email`](#--email)

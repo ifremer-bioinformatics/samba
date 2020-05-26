@@ -178,7 +178,7 @@ Path to input file with samples reads files paths (csv format). Headers of manif
 
 Set to true to specify that the inputs are single-end reads. Default is paired-End.
 
-###`--projectName`
+### `--projectName`
 ## `--projectName`
 
 Name of the project being analyzed.

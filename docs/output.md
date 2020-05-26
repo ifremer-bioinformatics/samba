@@ -230,4 +230,5 @@ In the test dataset, this graph enables to compare the number of ASV and their a
 All samba workflow results are stored in a global analysis available in **`results/[projectName]/00_report/SAMBA_report.html`**. This report is based on a [Jinja2](https://jinja.palletsprojects.com) template and gives a synthesis of the community profiles and characteristics of your dataset :
 - Bioinformatic processes are described with software versions and used parameters and important results for each step.
 - Statistical analyses results can be quickly compared for each variable of interest to understand environmental or experiments effects and samples similarities and differences.
+
 ![report](images/samba-report.gif)

@@ -181,13 +181,13 @@ The **output directory : `results/[projectName]/00_report/R/FIGURES/alpha_divers
 Sample distances are evaluated through beta diversity analyses. The ASV count table will be normalized to calculate beta diversity distance matrices.
 
 Four normalization methods are used in samba :
-- **No-normalization** : the beta diversity is calculated on raw ASV counts. Warning : We do not recommend to use theses results for your data interpretation, this normalization aims to help to select the normalization method that fits the best your dataset.
+- **No-normalization** : the beta diversity is calculated on raw ASV counts. **Warning** : we do not recommend to use these results for your data interpretation, this normalization aims to help to select the normalization method that fits the best your dataset.
 - **Rarefaction** : the rarefaction normalization consists in reducing the number of sequences in the samples to the size of the smallest sample. This method is recommended if all your samples have almost the same sequences number repartition. Beware if you have samples with low and high number of sequences, you could lost diversity and end to a bad results interpretation.
 - **[Bioconductor DESeq2](http://bioconductor.org/packages/release/bioc/html/DESeq2.html)** normalization : DESeq2 has been widely used in RNA-seq analysis to detect differential gene expression. This method can also be used as metabarcoding data normalization to evaluate if an ASV is more or less present through samples. Remind that the ending normalised table will contain positive and negative values and will thereby not be usable as an input for further analysis.
 - **[Bioconductor metagenomeSeq CSS](https://rdrr.io/bioc/metagenomeSeq/man/cumNormMat.html)** : Cumulative Sum Scaling returns a matrix normalized by scaling counts up to and including the pth quantile. The method will give more weight to rare species.
 
 For each normalization method, four distance matrices are calculated :
-- **Jaccard** distance is a qualitative measure which indicates if an ASV is present or not. It will take 0 value if the ASV is not present in the sample or 1 if it is present, no matter if the ASV is rare or abundant.
+- **Jaccard** distance is a qualitative measure which indicates if an ASV is present or not. It will be equal to 0 if the ASV is not present in the sample or 1 if it is present, no matter if the ASV is rare or abundant.
 - **Bray-Curtis** distance is a quantitive measure which is based on specific ASV abundance over the samples. If two samples share the same communities, their Bray-Curtis distance will be equal to 0 whereas it will tend to 1 if the communities between the samples are different.
 - **Unifrac** distance is a qualitative distance based on the shared phylogenetic tree branches of the samples.
 - **Weighted-Unifrac** distance is a quantitative distance based on ASV abundance and on shared phylogenetic tree branches of the samples.
@@ -197,8 +197,8 @@ These distance matrices are represented through PCoA and NMDS (including ADONIS 
 [Beta diversity parameters](usage.md#statistics) can be specified in the workflow.
  
 The **output directory : `results/[projectName]/00_report/R/FIGURES/beta_diversity_[NORM_METHOD]`** contains 4 directories :
-- PCoA with PCoA plots images (png and svg format) for each distance matrix
-- NMDS with NMDS plots images (png and svg format) for each distance matrix
+- PCoA with PCoA plots images (png and svg format) for each distance matrix.
+- NMDS with NMDS plots images (png and svg format) for each distance matrix.
 - Hierachical_Clustering with hierarchical clustering plots images (png and svg format) for each distance matrix using clustering method set in samba parameters.
 - ExpVar with pie charts images (png and svg format) for each distance matrix representing the percentage of explained variance for each experiment variables.
 - Files variance_signifiance_tests_[NORM_METHOD].txt for each distance (i.e jaccard, bray, unifrac, wunifrac) with Adonis test results combining each experiment variables.
@@ -227,7 +227,7 @@ In the test dataset, this graph enables to compare the number of ASV and their a
 
 ## Global analysis report
 
-All samba workflow results are stored in a global analysis available in **`results/[projectName]/00_report/SAMBA_report.html`**. This report is based on a Jinja2 template and gives a synthesis of the community profiles and characteristics of your dataset :
+All samba workflow results are stored in a global analysis available in **`results/[projectName]/00_report/SAMBA_report.html`**. This report is based on a [Jinja2](https://jinja.palletsprojects.com) template and gives a synthesis of the community profiles and characteristics of your dataset :
 - Bioinformatic processes are described with software versions and used parameters and important results for each step.
 - Statistical analyses results can be quickly compared for each variable of interest to understand environmental or experiments effects and samples similarities and differences.
 

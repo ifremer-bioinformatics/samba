@@ -399,11 +399,11 @@ According to your metadata file, select the column name corresponding to the var
 
 ## Run the statistics steps only
 
-Statistics steps can be run without running previous bioinformatics steps. Above statistics arguments must be set to perform statistics only steps.
+Statistics steps can be run without running previous bioinformatics steps. Parameters below must be set to perform statistics only steps.
 
 ### `--stats_only`
 
-Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)
+Perform only statistical analysis (ASV table and newick tree required). Set to true to activate (default = false).
 
 ### `--inasv_table`
 
@@ -415,11 +415,11 @@ if stats_only is activated, set the path to your own phylogenetic tree in newick
 
 ## Final analysis report
 
-This step is optional and create a HTML report of samba analyses.
+This step is optional and create a HTML report of samba analysis.
 
 ### `--report_enable`
 
-Set to false to deactivate report creation. (default = true)
+Set to false to deactivate report creation (default = true).
 
 ### `--SAMBAtemplate`
 

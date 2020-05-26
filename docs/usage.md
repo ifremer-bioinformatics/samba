@@ -1,35 +1,6 @@
 # nf-core/samba: Usage
 
 ## Table of contents
-* [Ribosomal RNA removal](#ribosomal-rna-removal)
-  * [`--removeRiboRNA`](#removeriborna)
-  * [`--saveNonRiboRNAReads`](#savenonribornareads)
-  * [`--rRNA_database_manifest`](#rrnadatabasemanifest)
-
-
-
-## Ribosomal RNA removal
-
-If rRNA removal is desired (for example, metatranscriptomics),
-add the following command line parameters.
-Please be adviced that by default these steps make use of the SILVA v119 database that requires [`licencing for commercial/non-academic entities`](https://www.arb-silva.de/silva-license-information).
-
-### `--removeRiboRNA`
-
-Instructs to use SortMeRNA to remove reads related to ribosomal RNA (or any patterns found in the sequences defined by `--rRNA_database_manifest`).
-
-### `--saveNonRiboRNAReads`
-
-By default, non-rRNA FastQ files will not be saved to the results directory. Specify this
-flag (or set to true in your config file) to copy these files when complete.
-
-### `--rRNA_database_manifest`
-
-Be aware that commercial/non-academic entities require [`licensing for SILVA`](https://www.arb-silva.de/silva-license-information) with these default databases.
-
-
-
-* [Table of contents](#table-of-contents)
 * [Introduction](#introduction)
 * [Running the pipeline](#running-the-pipeline)
   * [Updating the pipeline](#updating-the-pipeline)
@@ -51,7 +22,7 @@ Be aware that commercial/non-academic entities require [`licensing for SILVA`](h
   * [`--primerR`](#--primerR)
   * [`--errorRate`](#--errorRate)
   * [`--overlap`](#--overlap)
-* [ASVs inference](#asvs-inference)
+* [ASV inference](#asvs-inference)
   * [`--FtrimLeft`](#--FtrimLeft)
   * [`--RtrimLeft`](#--RtrimLeft)
   * [`--FtruncLen`](#--FtruncLen)
@@ -60,7 +31,7 @@ Be aware that commercial/non-academic entities require [`licensing for SILVA`](h
   * [`--RmaxEE`](#--RmaxEE)
   * [`--minQ`](#--minQ)
   * [`--chimeras`](#--chimeras)
-* [Merge ASVs tables](#merge-asvs-tables)
+* [Merge ASV tables](#merge-asvs-tables)
   * [`--dada2merge`](#--dada2merge)
   * [`--merge_tabledir`](#--merge_tabledir)
   * [`--merge_repseqsdir`](#--merge_repseqsdir)
@@ -94,7 +65,7 @@ Be aware that commercial/non-academic entities require [`licensing for SILVA`](h
   * [`--taxa_nb`](#--taxa_nb)
   * [`--alpha_div_group`](#--alpha_div_group)
   * [`--beta_div_var`](#--beta_div_var)
-  * [`--sets_analysis_crit`](#--sets_analysis_crit)
+  * [`--desc_comp_crit`](#--desc_comp_crit)
   * [`--hc_method`](#--hc_method)
   * [`--stats_only`](#--stats_only)
   * [`--inasv_table`](#--inasv_table)
@@ -169,7 +140,7 @@ This version number will be logged in reports when you run the pipeline, so that
 
 ### `-profile`
 
-Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments. Note that multiple profiles can be loaded, for example: `-profile docker` - the order of arguments is important!
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments. Note that multiple profiles can be loaded, for example: `-profile docker,test` - the order of arguments is important!
 
 If `-profile` is not specified at all the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
 
@@ -189,15 +160,17 @@ Profiles are also available to configure the samba workflow and can be combined 
   * A profile with a complete configuration for automated testing
   * Includes training dataset so needs no other parameters
 * `custom`
-  * A profile to complete according to your data and experiment.
+  * A profile to complete according to your dataset and experiment
 
 ### `--input_metadata`
 
-Path to input file with project samples metadata (csv format). Headers of metadata file must follow the Qiime2 requirements [Qiime2 metadata](https://docs.qiime2.org/2019.10/tutorials/metadata/)
+Path to input file with project samples metadata (csv format). 
+Headers of metadata file must follow the Qiime2 requirements [Qiime2 metadata](https://docs.qiime2.org/2019.10/tutorials/metadata/).
 
 ### `--input_manifest`
 
-Path to input file with samples reads files paths (csv format). Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](https://docs.qiime2.org/2019.10/tutorials/importing/#manifest-file)
+Path to input file with samples reads files paths (csv format). 
+Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](https://docs.qiime2.org/2019.10/tutorials/importing/#manifest-file).
 
 ## Generic arguments
 
@@ -243,7 +216,7 @@ Cutadapt error rate allowed to match primers (default : 0.1).
 
 Cutadapt overlaping length between primer and read (default : 18). 
 
-## ASVs inference
+## ASV inference
 
 This process is based on [Qiime2/Dada2](https://docs.qiime2.org/2019.10/plugins/available/dada2/).
 
@@ -269,27 +242,27 @@ Forward reads with higher than maxEE "expected errors" will be discarded (defaul
 
 ### `--RmaxEE`
 
-Reverse with higher than maxEE "expected errors" will be discarded (default = 2).
+Reverse reads with higher than maxEE "expected errors" will be discarded (default = 2).
 
 ### `--minQ`
 
-After truncation, reads contain a quality score less than minQ will be discarded (default = 10).
+After truncation, reads with a quality score less than minQ will be discarded (default = 10).
 
 ### `--chimeras`
 
 Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification.
 
-## Merge ASVs tables 
+## Merge ASV tables 
 
-This process is optionnal and based on [Qiime2/feature-table function](https://docs.qiime2.org/2019.10/plugins/available/feature-table/). The workflow can begin at this step if you already have Dada2 ASVs tables that you want to merge to perform the analysis.
+This process is optionnal and based on [Qiime2/feature-table function](https://docs.qiime2.org/2019.10/plugins/available/feature-table/). The workflow can begin at this step if you already have Dada2 ASV tables that you want to merge to perform the analysis.
 
 ### `--dada2merge`
 
-Set to true to merge Dada2 ASVs tables.
+Set to true to merge Dada2 ASV tables.
 
 ### `--merge_tabledir`
 
-Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
+Path to the directory containing the ASV tables to merge (this directory must contain only the ASV tables to merge).
 
 ### `--merge_repseqsdir`
 
@@ -297,7 +270,7 @@ Path to the directory containing the representative sequences to merge (this dir
 
 ## Distribution based-clustering
 
-This step, based on [dbotu3](https://github.com/swo/dbotu3) is optional if you don\`t want to cluster your ASVs.
+This step, based on [dbotu3](https://github.com/swo/dbotu3) is optional if you do not want to cluster your ASV sequences.
 
 ### `--dbotu3_enable`
 
@@ -321,7 +294,7 @@ This process is based on [Qiime2/feature-classifier function](https://docs.qiime
 
 ### `--extract_db`
 
-Set to true to extract specific region from reference database (default = false).
+Set to true to extract marker specific region (using the sequencing primers) from reference database (default = false).
 
 ### `--seqs_db`
 
@@ -361,7 +334,7 @@ Number of samples that are not control samples (required if microDecon_enable = 
 
 ## Predict functionnal abundance
 
-This step is optional and based on [Qiime2/PICRUSt2](https://github.com/gavinmdouglas/q2-picrust2)
+This step is optional and based on [Qiime2/PICRUSt2](https://github.com/gavinmdouglas/q2-picrust2).
 
 ### `--picrust2_enable`
 
@@ -369,7 +342,7 @@ Set to true to enable functionnal prediction step. (default = false)
 
 ### `--method`
 
-HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
+HSP method of your choice (default = 'mp' ). The most accurate prediction method. Faster method: 'pic'.
 
 ### `--nsti`
 
@@ -377,7 +350,7 @@ Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk s
 
 ## Differential abundance testing 
 
-Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/available/composition/ancom/)
+Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/available/composition/ancom/).
 
 ### `--ancor_var`
 
@@ -394,7 +367,7 @@ Set to false to deactivate Alpha diversity statistics step. (default = true)
 
 ### `--kingdom`
 
-Kingdom to be displayed in barplots. (default = "Bacteria")
+Kingdom to be displayed in barplots (default = "Bacteria").
 
 ### `--taxa_nb`
 
@@ -418,11 +391,11 @@ Hierarchical clustering method (default = 'ward.D2').
 
 ### `--stats_desc_comp_enable`
 
-Set to false to deactivate Descriptive comparisons steps. (default = true)
+Set to false to deactivate Descriptive comparisons steps (default = true).
 
-### `--sets_analysis_crit`
+### `--desc_comp_crit`
 
-According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
+According to your metadata file, select the column name corresponding to the variable of interest for descriptive comparisons graphs.
 
 ## Run the statistics steps only
 

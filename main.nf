@@ -98,7 +98,7 @@ def helpMessage() {
 	--taxa_nb [str]			Number of taxa to be displayed in barplots.
 	--alpha_div_group [str]	 	According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
 	--beta_div_var [str]		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
-	--sets_analysis_crit [str]	According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
+	--desc_comp_crit [str]		According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
 	--hc_method [str]		Hierarchical clustering method (default = 'ward.D2').
 
 	--stats_only [bool]		Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)

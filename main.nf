@@ -381,6 +381,7 @@ process q2_import {
 
 	publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
 
 	input :
@@ -392,6 +393,7 @@ process q2_import {
 		file 'data.qzv' into imported_visu
 		file 'import_output' into imported_output
 		file 'completecmd' into complete_cmd_import
+                file 'v_qiime2.txt' into qiime2_version
 
 	when :
 		!params.stats_only && !params.dada2merge
@@ -399,6 +401,7 @@ process q2_import {
 	script :
 	"""
 	q2_import.sh ${params.singleEnd} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
+	qiime --version|grep 'q2cli'|cut -d' ' -f3 > v_qiime2.txt
 	"""
 }
 
@@ -598,6 +601,7 @@ if (params.microDecon_enable) {
     	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
     	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'abundance_removed.txt'
     	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'ASV_removed.txt'
+    	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_microDecon -> "cmd/${task.process}_complete.sh" }
 
     	input :
@@ -608,6 +612,7 @@ if (params.microDecon_enable) {
     		file 'abundance_removed.txt' into abund_removed
     		file 'ASV_removed.txt' into ASV_removed
     		file 'completecmd' into complete_cmd_microDecon
+                file 'v_microdecon.txt' into microdecon_version
 
     	when :
     		!params.stats_only && !params.dada2merge && params.microDecon_enable
@@ -618,6 +623,7 @@ if (params.microDecon_enable) {
     	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
     	microDecon.R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
     	cp ${baseDir}/bin/microDecon.R completecmd &>> microDecon.log 2>&1
+        Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"
 
     	"""
     }
@@ -703,7 +709,7 @@ if (params.microDecon_enable) {
 
     	shell :
     	"""
-    	qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
+        qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
     	q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd &> q2_phylogeny.log 2>&1
     	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
 
@@ -877,6 +883,7 @@ process prepare_data_for_stats {
 
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
     publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.rds'
+    publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern : 'v_*.txt'
 
     input :
         file metadata from metadata4stats
@@ -887,11 +894,33 @@ process prepare_data_for_stats {
         file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
         file 'metadata_stats.tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
         file 'phyloseq.rds' into phyloseq_rds, phyloseq_rds_alpha, phyloseq_rds_beta, phyloseq_rds_beta_rarefied, phyloseq_rds_beta_deseq2, phyloseq_rds_beta_css,phyloseq_rds_set
+        file 'version_ok' into version_collected
+        file 'v_*.txt' into r_lib_version
 
     script :
     """
     prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.stats_only} &> stats_prepare_data.log 2&>1
     Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
+    ## get statistics libraries version for report
+    Rscript -e "library(dplyr); write(x=as.character(packageVersion('dplyr')), file='v_dplyr.txt')"
+    Rscript -e "library(stringr); write(x=as.character(packageVersion('stringr')), file='v_stringr.txt')"
+    Rscript -e "library(phyloseq); x=as.character(packageVersion('phyloseq')); write(x, file='v_phyloseq.txt')"
+    Rscript -e "library(phangorn); write(x=as.character(packageVersion('phangorn')), file='v_phangorn.txt')"
+    Rscript -e "library(ggplot2); write(x=as.character(packageVersion('ggplot2')), file='v_ggplot2.txt')"
+    Rscript -e "library(svglite); write(x=as.character(packageVersion('svglite')), file='v_svglite.txt')"
+    Rscript -e "library(vegan); write(x=as.character(packageVersion('vegan')), file='v_vegan.txt')"
+    Rscript -e "library(RColorBrewer); write(x=as.character(packageVersion('RColorBrewer')), file='v_RColorBrewer.txt')"
+    Rscript -e "library(tidyr); write(x=as.character(packageVersion('tidyr')), file='v_tidyr.txt')"
+    Rscript -e "library(gridExtra); write(x=as.character(packageVersion('gridExtra')), file='v_gridExtra.txt')"
+    Rscript -e "library(egg); write(x=as.character(packageVersion('egg')), file='v_egg.txt')"
+    Rscript -e "library(reshape2); write(x=as.character(packageVersion('reshape2')), file='v_reshape2.txt')"
+    Rscript -e "library(BiocManager); write(x=as.character(packageVersion('BiocManager')), file='v_BiocManager.txt')"
+    Rscript -e "library(microbiome); write(x=as.character(packageVersion('microbiome')), file='v_microbiome.txt')"
+    Rscript -e "library(dendextend); write(x=as.character(packageVersion('dendextend')), file='v_dendextend.txt')"
+    Rscript -e "library(metagenomeSeq); write(x=as.character(packageVersion('metagenomeSeq')), file='v_metagenomeSeq.txt')"
+    Rscript -e "library(DESeq2); write(x=as.character(packageVersion('DESeq2')), file='v_DESeq2.txt')"
+    Rscript -e "library(UpSetR); write(x=as.character(packageVersion('UpSetR')), file='v_UpSetR.txt')"
+    touch 'version_ok'
     """
 }
 
@@ -1097,122 +1126,17 @@ process stats_desc_comp {
     """
 }
 
-/*
- * STEP 18 -  Save user parameters of the workflow
- */
-process workflow_params {
-
-    publishDir "${params.outdir}/conf", mode: 'copy', pattern : 'data.json'
-
-    output :
-        file 'data.json' into data_json
-
-    when :
-       params.report_enable
-
-    script :
-    """
-    #!/usr/bin/env python
-    import json
-    from shutil import copyfile
-
-    data = {}
-    data["projectName"] = '$params.projectName'
-    data["singleEnd"] = '$params.singleEnd'
-    data["manifest"] = '$params.input_manifest'
-    data["metadata"] = '$params.input_metadata'
-    data["outdir"] = '$params.outdir'
-    data["steps"] = {}
-    data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
-    data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
-    data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
-    data["steps"]["picrust2_enable"] = '$params.picrust2_enable'
-    data["steps"]["stats_alpha_enable"] = '$params.stats_alpha_enable'
-    data["steps"]["stats_beta_enable"] = '$params.stats_beta_enable'
-    data["steps"]["stats_desc_comp_enable"] = '$params.stats_desc_comp_enable'
-    data["steps"]["report_enable"] = '$params.report_enable'
-    data["steps"]["stats_only"] = '$params.stats_only'
-    data["steps"]["dada2merge"] = '$params.dada2merge'
-
-    data["integrity"] = {}
-    data["integrity"]["barcode_filter"] = '$params.barcode_filter'
-    data["integrity"]["primer_filter"] = '$params.primer_filter'
-
-    data["cutadapt"] = {}
-    data["cutadapt"]["primerF"] = '$params.primerF'
-    data["cutadapt"]["primerR"] = '$params.primerR'
-    data["cutadapt"]["errorRate"] = '$params.errorRate'
-    data["cutadapt"]["overlap"] = '$params.overlap'
- 
-    data["dada2"] = {}
-    data["dada2"]["FtrimLeft"] = '$params.FtrimLeft'
-    data["dada2"]["RtrimLeft"] = '$params.RtrimLeft'
-    data["dada2"]["FtruncLen"] = '$params.FtruncLen'
-    data["dada2"]["RtruncLen"] = '$params.RtruncLen'
-    data["dada2"]["FmaxEE"] = '$params.FmaxEE'
-    data["dada2"]["RmaxEE"] = '$params.RmaxEE'
-    data["dada2"]["minQ"] = '$params.minQ'
-    data["dada2"]["chimeras"] = '$params.chimeras'
-
-    data["dada2merge"] = {}
-    data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir'
-    data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir'
-
-    data["dbotu3"] = {}
-    data["dbotu3"]["gen_crit"] = '$params.gen_crit'
-    data["dbotu3"]["abund_crit"] = '$params.abund_crit'
-    data["dbotu3"]["pval_crit"] = '$params.pval_crit'
-
-    data["taxonomy"] = {}
-    data["taxonomy"]["database"] = '$params.database'
-    data["taxonomy"]["seqs_db"] = '$params.seqs_db'
-    data["taxonomy"]["taxo_db"] = '$params.taxo_db'
-    data["taxonomy"]["extract_db"] = '$params.extract_db'
-    data["taxonomy"]["confidence"] = '$params.confidence'
-
-    data["picrust2"] = {}
-    data["picrust2"]["method"] = '$params.method'
-    data["picrust2"]["nsti"] = '$params.nsti'
-
-    data["microdecon"] = {}
-    data["microdecon"]["control_list"] = '$params.control_list'
-    data["microdecon"]["nb_controls"] = '$params.nb_controls'
-    data["microdecon"]["nb_samples"] = '$params.nb_samples'
-
-    data["stats"] = {}
-    data["stats"]["ancom_var"] = '$params.ancom_var'
-    data["stats"]["kingdom"] = '$params.kingdom'
-    data["stats"]["taxa_nb"] = '$params.taxa_nb'
-    data["stats"]["hc_method"] = '$params.hc_method'
-    data["stats"]["alpha_div_group"] = '$params.alpha_div_group'
-    data["stats"]["beta_div_var"] = '$params.beta_div_var'
-    data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit'
-    data["stats"]["inasv_table"] = '$params.inasv_table'
-    data["stats"]["innewick"] = '$params.innewick'
-
-    #software versions
-    data["soft"] = {}
-    data["soft"]["samba"] = '$workflow.manifest.version'
-    data["soft"]["nextflow"] = '$workflow.nextflow.version'
-
-    with open('data.json', 'w') as outfile:
-       json.dump(data, outfile, sort_keys=True, indent=4)
-    """
-}
-
 SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate, checkIfExists:true) : Channel.empty()
 SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfExists:true) : Channel.empty()
 SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIfExists:true) : Channel.empty()
 SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExists:true) : Channel.empty()
-data_json.into { json ; SAMBAreport_okA }
-SAMBAreport_okB = params.stats_alpha_enable ? process_alpha_report : SAMBAreport_okA
-SAMBAreport_okC = params.stats_beta_enable ? process_beta_report : SAMBAreport_okB
-SAMBAreport_okD = params.dbotu3_enable ? process_desc_comp_report : SAMBAreport_okC
-SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okD
-
+SAMBAreport_okA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
+SAMBAreport_okB = params.stats_beta_enable ? process_beta_report : SAMBAreport_okA
+SAMBAreport_okC = params.dbotu3_enable ? process_desc_comp_report : SAMBAreport_okB
+SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okC
 
 /*
- * STEP 19 -  Generate analysis report
+ * STEP 18 -  Save user parameters of the workflow and Generate analysis report
  */
 if (params.report_enable) {    
     process report {
@@ -1223,28 +1147,123 @@ if (params.report_enable) {
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'style.css'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'nfcore-samba_logo.png'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'samba_wf.png'
+        publishDir "${params.outdir}/conf", mode: 'copy', pattern : 'data.json'
 
         input :
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
-            file json from json
             file SAMBAreport_ok from SAMBAreport_ok
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
-
-        output :
+            file 'version_ok' from version_collected
+ 
+       output :
             file 'style.css' into SAMBA_css_output
             file 'SAMBA_report.html' into Report
             file 'nfcore-samba_logo.png' into SAMBAlogo_output
             file 'samba_wf.png' into wf_image_output
+            file 'data.json' into data_json
 
         when :
            params.report_enable
-
-        shell :
+        
+        script :
         """
-        ${baseDir}/bin/SAMBAreport.py -t ${SAMBAtemplate} -p ${params.outdir}/${params.report_dirname} -c ${json}
-        cp ${wf_image} samba_wf.png
+        #!/usr/bin/env python
+        import os, json
+        from shutil import copyfile
+    
+        data = {}
+        data["projectName"] = '$params.projectName'
+        data["singleEnd"] = '$params.singleEnd'
+        data["manifest"] = '$params.input_manifest'
+        data["metadata"] = '$params.input_metadata'
+        data["outdir"] = '$params.outdir'
+        data["steps"] = {}
+        data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
+        data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
+        data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
+        data["steps"]["picrust2_enable"] = '$params.picrust2_enable'
+        data["steps"]["stats_alpha_enable"] = '$params.stats_alpha_enable'
+        data["steps"]["stats_beta_enable"] = '$params.stats_beta_enable'
+        data["steps"]["stats_desc_comp_enable"] = '$params.stats_desc_comp_enable'
+        data["steps"]["report_enable"] = '$params.report_enable'
+        data["steps"]["stats_only"] = '$params.stats_only'
+        data["steps"]["dada2merge"] = '$params.dada2merge'
+    
+        data["integrity"] = {}
+        data["integrity"]["barcode_filter"] = '$params.barcode_filter'
+        data["integrity"]["primer_filter"] = '$params.primer_filter'
+    
+        data["cutadapt"] = {}
+        data["cutadapt"]["primerF"] = '$params.primerF'
+        data["cutadapt"]["primerR"] = '$params.primerR'
+        data["cutadapt"]["errorRate"] = '$params.errorRate'
+        data["cutadapt"]["overlap"] = '$params.overlap'
+     
+        data["dada2"] = {}
+        data["dada2"]["FtrimLeft"] = '$params.FtrimLeft'
+        data["dada2"]["RtrimLeft"] = '$params.RtrimLeft'
+        data["dada2"]["FtruncLen"] = '$params.FtruncLen'
+        data["dada2"]["RtruncLen"] = '$params.RtruncLen'
+        data["dada2"]["FmaxEE"] = '$params.FmaxEE'
+        data["dada2"]["RmaxEE"] = '$params.RmaxEE'
+        data["dada2"]["minQ"] = '$params.minQ'
+        data["dada2"]["chimeras"] = '$params.chimeras'
+    
+        data["dada2merge"] = {}
+        data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir'
+        data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir'
+    
+        data["dbotu3"] = {}
+        data["dbotu3"]["gen_crit"] = '$params.gen_crit'
+        data["dbotu3"]["abund_crit"] = '$params.abund_crit'
+        data["dbotu3"]["pval_crit"] = '$params.pval_crit'
+    
+        data["taxonomy"] = {}
+        data["taxonomy"]["database"] = '$params.database'
+        data["taxonomy"]["seqs_db"] = '$params.seqs_db'
+        data["taxonomy"]["taxo_db"] = '$params.taxo_db'
+        data["taxonomy"]["extract_db"] = '$params.extract_db'
+        data["taxonomy"]["confidence"] = '$params.confidence'
+    
+        data["picrust2"] = {}
+        data["picrust2"]["method"] = '$params.method'
+        data["picrust2"]["nsti"] = '$params.nsti'
+    
+        data["microdecon"] = {}
+        data["microdecon"]["control_list"] = '$params.control_list'
+        data["microdecon"]["nb_controls"] = '$params.nb_controls'
+        data["microdecon"]["nb_samples"] = '$params.nb_samples'
+    
+        data["stats"] = {}
+        data["stats"]["ancom_var"] = '$params.ancom_var'
+        data["stats"]["kingdom"] = '$params.kingdom'
+        data["stats"]["taxa_nb"] = '$params.taxa_nb'
+        data["stats"]["hc_method"] = '$params.hc_method'
+        data["stats"]["alpha_div_group"] = '$params.alpha_div_group'
+        data["stats"]["beta_div_var"] = '$params.beta_div_var'
+        data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit'
+        data["stats"]["inasv_table"] = '$params.inasv_table'
+        data["stats"]["innewick"] = '$params.innewick'
+    
+        #software versions
+        data["soft"] = {}
+        data["soft"]["samba"] = '$workflow.manifest.version'
+        data["soft"]["nextflow"] = '$workflow.nextflow.version'
+        for elt in os.listdir("${params.outdir}/${params.report_dirname}/version"):
+            if elt.endswith(".txt"):
+                f=open(os.path.join("${params.outdir}/${params.report_dirname}/version",elt),"r")
+                tool_name=elt.replace("v_","").replace(".txt","")
+                version=f.readline().rstrip()
+                data["soft"][tool_name] = version
+    
+        with open('data.json', 'w') as outfile:
+           json.dump(data, outfile, sort_keys=True, indent=4)
+
+        os.system("${baseDir}/bin/SAMBAreport.py -t ${SAMBAtemplate} -p ${params.outdir}/${params.report_dirname} -c 'data.json'")
+        os.system("cp ${wf_image} samba_wf.png")
+        
         """
     }
 }

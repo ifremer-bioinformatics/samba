@@ -902,6 +902,7 @@ process prepare_data_for_stats {
     prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.stats_only} &> stats_prepare_data.log 2&>1
     Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
     ## get statistics libraries version for report
+    Rscript -e "write(x=as.character(paste0(R.Version()[c('major','minor')], collapse = '.')), file='v_R.txt')"
     Rscript -e "library(dplyr); write(x=as.character(packageVersion('dplyr')), file='v_dplyr.txt')"
     Rscript -e "library(stringr); write(x=as.character(packageVersion('stringr')), file='v_stringr.txt')"
     Rscript -e "library(phyloseq); x=as.character(packageVersion('phyloseq')); write(x, file='v_phyloseq.txt')"
@@ -924,37 +925,44 @@ process prepare_data_for_stats {
     """
 }
 
+Channel
+  .from(params.alpha_div_group)
+  .splitCsv(sep : ',', strip : true)
+  .flatten()
+  .set { alpha_list_var }
+
 /*
  * STEP 12 -  Alpha diversity community statistics analysis
  */
 process stats_alpha {
 
+    tag "$alpha_var"
     label 'r_stats_env'
-
+    
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots/${params.alpha_div_group}", mode: 'copy', pattern : 'barplot_*'
+    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots/${alpha_var}", mode: 'copy', pattern : 'barplot_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'rarefaction_curve*'
-
+    
     input :
-        file phyloseq_rds from phyloseq_rds_alpha
-
+       file phyloseq_rds from phyloseq_rds_alpha
+       each alpha_var from alpha_list_var
+   
     output :
         file 'alpha_div_values.txt' into alpha_div_values
-        file "alpha_div_plots_${params.alpha_div_group}*" into alpha_div_plots
+        file "alpha_div_plots_${alpha_var}*" into alpha_div_plots
         file 'index_significance_tests.txt' into index_significance_tests
-        file "barplot_*_${params.alpha_div_group}*" into barplots
+        file "barplot_*_${alpha_var}*" into barplots
         file 'rarefaction_curve*' into rarefaction_curve
         file 'process_alpha_report.ok' into process_alpha_report
-
-
+    
     when :
         params.stats_alpha_enable
-
+    
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R phyloseq.rds alpha_div_values.txt alpha_div_plots_${params.alpha_div_group} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${params.alpha_div_group} barplot_class_${params.alpha_div_group} barplot_order_${params.alpha_div_group} barplot_family_${params.alpha_div_group} barplot_genus_${params.alpha_div_group} ${params.alpha_div_group} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
     touch process_alpha_report.ok
     """
 }

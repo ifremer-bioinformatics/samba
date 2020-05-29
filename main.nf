@@ -96,7 +96,7 @@ def helpMessage() {
 
 	--kingdom [str]			Kingdom to be displayed in barplots.
 	--taxa_nb [str]			Number of taxa to be displayed in barplots.
-	--alpha_div_group [str]	 	According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
+	--alpha_div_group [str]	 	According to your metadata file, list the column names corresponding to the variables to group samples for Alpha diversity.
 	--beta_div_var [str]		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
 	--desc_comp_crit [str]		According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
 	--hc_method [str]		Hierarchical clustering method (default = 'ward.D2').
@@ -766,6 +766,12 @@ seqs_picrust2A = params.dada2merge ? merge_seqs_picrust2 : dada2_seqs_picrust2
 seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
 seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
 
+Channel
+  .from(params.beta_div_var)
+  .splitCsv(sep : ',', strip : true)
+  .flatten()
+  .into { beta_var_picrust2 ; beta_var_nn ; beta_var_rare ; beta_var_deseq ; beta_var_css }
+
 /*
  * STEP 9 -  Run functional predictions
  */
@@ -796,7 +802,6 @@ if (params.picrust2_enable) {
     		file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
     		file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
     		file 'complete_picrust2_cmd' into complete_picrust2_cmd
-                
 
     	when :
     		!params.stats_only
@@ -810,6 +815,7 @@ if (params.picrust2_enable) {
     /* Statistical analysis of functional predictions  */
     process q2_picrust2_stats {
 
+        tag "$beta_var"
         label 'r_stats_env'
 
         publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
@@ -820,6 +826,8 @@ if (params.picrust2_enable) {
             file ko_metagenome from KO_predictions_tsv
             file metacyc_predictions_ from pathway_predictions_tsv
             file metadata from metadata4picrust2
+            each beta_var from beta_var_picrust2
+
         output :
             file '*functional_predictions_NMDS*' into functional_pred_NMDS
             file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
@@ -829,7 +837,7 @@ if (params.picrust2_enable) {
 
         script :
         """
-        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${params.beta_div_var} functional_predictions_NMDS_${params.beta_div_var} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${beta_var} functional_predictions_NMDS_${beta_var} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
         cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
         """
     }
@@ -839,11 +847,18 @@ table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
 table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
 table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
 
+Channel
+  .from(params.ancom_var)
+  .splitCsv(sep : ',', strip : true)
+  .flatten()
+  .set { ancom_var_list }
+
 /*
  * STEP 10 -  Differential abundance testing with ANCOM
  */
 process q2_ancom {
-
+     
+    tag "$ancom_var"
     label 'qiime2_env'
 
     publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
@@ -854,6 +869,8 @@ process q2_ancom {
         file table4ancom from table_ancom
         file metadata from metadata4ancom
         file taxonomy4ancom from data_taxonomy
+        each ancom_var from ancom_var_list
+
     output :
         file 'compo_table*.qza' into compo_table
         file 'ancom_*.qzv' into ancom_table
@@ -866,7 +883,7 @@ process q2_ancom {
 
     script :
     """
-    q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${params.ancom_var} ancom_${params.ancom_var}.qzv export_ancom_${params.ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${params.ancom_var}_family.qzv export_ancom_${params.ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${params.ancom_var}_genus.qzv export_ancom_${params.ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
+    q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
     """
 }
 
@@ -967,11 +984,13 @@ process stats_alpha {
     """
 }
 
+
 /*
  * STEP 13 -  Beta diversity (non normalized) community statistics analysis
  */
 process stats_beta {
 
+    tag "$beta_var"
     label 'r_stats_env'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
@@ -984,11 +1003,12 @@ process stats_beta {
     input :
         file phyloseq_rds from phyloseq_rds_beta
         file metadata from metadata_beta
+        each beta_var from beta_var_nn
 
     output :
-        file "NMDS_${params.beta_div_var}*" into NMDS
-        file "PCoA_${params.beta_div_var}*" into PCoA
-        file "hclustering_${params.beta_div_var}*" into hclustering
+        file "NMDS_${beta_var}*" into NMDS
+        file "PCoA_${beta_var}*" into PCoA
+        file "hclustering_${beta_var}*" into hclustering
         file 'variance_significance_tests_*' into variance_significance_tests
         file 'pie_ExpVar_*' into pie_ExpVar
         file 'process_beta_report.ok' into process_beta_report
@@ -998,7 +1018,7 @@ process stats_beta {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_${params.beta_div_var}_ PCoA_${params.beta_div_var}_ ${params.hc_method} hclustering_${params.beta_div_var}_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
     touch process_beta_report.ok
     """
 }
@@ -1008,6 +1028,7 @@ process stats_beta {
  */
 process stats_beta_rarefied {
 
+    tag "$beta_var"
     label 'r_stats_env'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
@@ -1020,12 +1041,13 @@ process stats_beta_rarefied {
     input :
         file phyloseq_rds from phyloseq_rds_beta_rarefied
         file metadata from metadata_beta_rarefied
+        each beta_var from beta_var_rare
 
     output :
         file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
-        file "NMDS_rarefied_${params.beta_div_var}*" into NMDS_rarefied
-        file "PCoA_rarefied_${params.beta_div_var}*" into PCoA_rarefied
-        file "hclustering_rarefied_${params.beta_div_var}*" into hclustering_rarefied
+        file "NMDS_rarefied_${beta_var}*" into NMDS_rarefied
+        file "PCoA_rarefied_${beta_var}*" into PCoA_rarefied
+        file "hclustering_rarefied_${beta_var}*" into hclustering_rarefied
         file 'variance_significance_tests_rarefied_*' into variance_significance_tests_rarefied
         file 'pie_ExpVar_rarefied_*' into pie_ExpVar_rarefied
 
@@ -1034,7 +1056,7 @@ process stats_beta_rarefied {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_rarefied_${params.beta_div_var}_ PCoA_rarefied_${params.beta_div_var}_ ${params.hc_method} hclustering_rarefied_${params.beta_div_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -1043,6 +1065,7 @@ process stats_beta_rarefied {
  */
 process stats_beta_deseq2 {
 
+    tag "$beta_var"
     label 'r_stats_env'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
@@ -1055,12 +1078,13 @@ process stats_beta_deseq2 {
     input :
         file phyloseq_rds from phyloseq_rds_beta_deseq2
         file metadata from metadata_beta_deseq2
+        each beta_var from beta_var_deseq
 
     output :
         file 'Final_DESeq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        file "NMDS_DESeq2_${params.beta_div_var}*" into NMDS_deseq2
-        file "PCoA_DESeq2_${params.beta_div_var}*" into PCoA_deseq2
-        file "hclustering_DESeq2_${params.beta_div_var}*" into hclustering_deseq2
+        file "NMDS_DESeq2_${beta_var}*" into NMDS_deseq2
+        file "PCoA_DESeq2_${beta_var}*" into PCoA_deseq2
+        file "hclustering_DESeq2_${beta_var}*" into hclustering_deseq2
         file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
         file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
 
@@ -1069,7 +1093,7 @@ process stats_beta_deseq2 {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${params.beta_div_var}_ PCoA_DESeq2_${params.beta_div_var}_ ${params.hc_method} hclustering_DESeq2_${params.beta_div_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -1078,6 +1102,7 @@ process stats_beta_deseq2 {
  */
 process stats_beta_css {
 
+    tag "$beta_var"
     label 'r_stats_env'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
@@ -1090,12 +1115,13 @@ process stats_beta_css {
     input :
         file phyloseq_rds from phyloseq_rds_beta_css
         file metadata from metadata_beta_css
+        each beta_var from beta_var_css
 
     output :
         file 'Final_CSS_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        file "NMDS_CSS_${params.beta_div_var}*" into NMDS_css
-        file "PCoA_CSS_${params.beta_div_var}*" into PCoA_css
-        file "hclustering_CSS_${params.beta_div_var}*" into hclustering_css
+        file "NMDS_CSS_${beta_var}*" into NMDS_css
+        file "PCoA_CSS_${beta_var}*" into PCoA_css
+        file "hclustering_CSS_${beta_var}*" into hclustering_css
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
         file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
 
@@ -1104,24 +1130,32 @@ process stats_beta_css {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${params.beta_div_var} ${metadata} $workflow.projectDir NMDS_CSS_${params.beta_div_var}_ PCoA_CSS_${params.beta_div_var}_ ${params.hc_method} hclustering_CSS_${params.beta_div_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
     """
 }
+
+Channel
+  .from(params.desc_comp_crit)
+  .splitCsv(sep : ',', strip : true)
+  .flatten()
+  .set { desc_comp_list }
 
 /*
  * STEP 17 -  Descriptive comparisons statistics analysis
  */
 process stats_desc_comp {
 
+    tag "$desc_comp_var"
     label 'r_stats_env'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/descriptive_comparison", mode: 'copy', pattern : 'upset_plot*'
 
     input :
         file phyloseq_rds from phyloseq_rds_set
+        each desc_comp_var from desc_comp_list
 
     output :
-        file "upset_plot_${params.desc_comp_crit}*" into upset_plot
+        file "upset_plot_${desc_comp_var}*" into upset_plot
         file 'process_desc_comp_report.ok' into process_desc_comp_report
 
     when :
@@ -1129,7 +1163,7 @@ process stats_desc_comp {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${params.desc_comp_crit} upset_plot_${params.desc_comp_crit} &> stats_desc_comp.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${desc_comp_var} upset_plot_${desc_comp_var} &> stats_desc_comp.log 2>&1
     touch process_desc_comp_report.ok
     """
 }

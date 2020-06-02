@@ -176,7 +176,7 @@ Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](h
 
 ### `--singleEnd`
 
-Set to true to specify that the inputs are single-end reads. Default is paired-End.
+Set to true to specify that the inputs are single-end reads. Default is paired-end reads.
 
 ### `--projectName`
 
@@ -214,7 +214,7 @@ Cutadapt error rate allowed to match primers (default : 0.1).
 
 ### `--overlap`
 
-Cutadapt overlaping length between primer and read (default : 18). 
+Cutadapt overlaping length between primer and read (default : 18 for test dataset, must be changed for user dataset). 
 
 ## QC and feature table
 
@@ -246,7 +246,7 @@ Reverse reads with higher than maxEE "expected errors" will be discarded (defaul
 
 ### `--minQ`
 
-After truncation, reads with a quality score less than minQ will be discarded (default = 10).
+Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
 
 ### `--chimeras`
 
@@ -254,11 +254,11 @@ Chimera detection method : default = "consensus". Set to "pooled" if the samples
 
 ## Merge ASV tables 
 
-This process is optionnal and based on [Qiime2/feature-table function](https://docs.qiime2.org/2019.10/plugins/available/feature-table/). The workflow can begin at this step if you already have Dada2 ASV tables that you want to merge to perform the analysis.
+This process is optional and based on [Qiime2/feature-table function](https://docs.qiime2.org/2019.10/plugins/available/feature-table/). The workflow can begin at this step if you already have Dada2 ASV tables that you want to merge to perform the analysis.
 
 ### `--dada2merge`
 
-Set to true to merge Dada2 ASV tables.
+Set to true to merge DADA2 ASV tables.
 
 ### `--merge_tabledir`
 
@@ -310,7 +310,7 @@ Path to preformatted QIIME2 format database (required if extract_db = false).
 
 ### `--confidence`
 
-RDP confidence threshold (default = 90).
+Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.9).
 
 ## Samples decontamination
 
@@ -326,7 +326,7 @@ Comma separated list of control samples (e.g : "sample1,sample4,sample7") (requi
 
 ### `--nb_controls`
 
-Number of controled samples listed (required if microDecon_enable = true).
+Number of control sample listed (required if microDecon_enable = true).
 
 ### `--nb_samples`
 
@@ -371,7 +371,7 @@ Kingdom to be displayed in barplots (default = "Bacteria").
 
 ### `--taxa_nb`
 
-Number of taxa to be displayed in barplots.
+Number of top taxa to be displayed in barplots.
 
 ### `--alpha_div_group`
 

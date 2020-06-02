@@ -45,7 +45,7 @@ def helpMessage() {
 	--primerF [str]			Forward primer (to be used in Cutadapt cleaning step).
 	--primerR [str]			Reverse primer (to be used in Cutadapt cleaning step).
 	--errorRate [str]		Cutadapt error rate allowed to match primers (default : 0.1).
-	--overlap [str]			Cutadapt overlaping length between primer and read (default : 18).
+	--overlap [str]			Cutadapt overlaping length between primer and read (default : 18 for test dataset, must be changed for user dataset).
 
 	ASVs inference:
 	--FtrimLeft [str]		The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
@@ -54,11 +54,11 @@ def helpMessage() {
 	--RtruncLen [str]		Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
 	--FmaxEE [str]			Forward reads with higher than maxEE "expected errors" will be discarded (default = 2).
 	--RmaxEE [str]			Reverse with higher than maxEE "expected errors" will be discarded (default = 2).
-	--minQ [str]			After truncation, reads contain a quality score less than minQ will be discarded (default = 10).
+	--minQ [str]			Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
 	--chimeras [str]		Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification.
 
 	Merge ASVs tables:
-	--dada2merge [bool]		Set to true to merge Dada2 ASVs tables.
+	--dada2merge [bool]		Set to true to merge DADA2 ASVs tables.
 	--merge_tabledir [path]		Path to the directory containing the ASVs tables to merge (this directory must contain only the ASVs tables to merge).
 	--merge_repseqsdir [path]	Path to the directory containing the representative sequences to merge (this directory must constain only the representative sequences to merge).
 
@@ -73,18 +73,18 @@ def helpMessage() {
 	--seqs_db [file]		Path to reference database (required if extract_db = true).
 	--taxo_db [file]		Path to taxonomic reference database (required if extract_db = true).
 	--database [file]		Path to preformatted QIIME2 format database (required if extract_db = false).
-	--confidence [str]		RDP confidence threshold (default = 90).
+	--confidence [str]		Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.9).
 
 	Decontamination:
-        --microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
+    --microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
 	--control_list [str]		Comma separated list of control samples (e.g : "sample1,sample4,sample7") (required if microDecon_enable = true).
-	--nb_controls [str]		Number of controled samples listed (required if microDecon_enable = true).
+	--nb_controls [str]		Number of control sample listed (required if microDecon_enable = true).
 	--nb_samples [str]		Number of samples that are not control samples (required if microDecon_enable = true).
 
 	Predict functionnal abundance:
-        --picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
+    --picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
 	--method [str]			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
-	--nsti [str]			Max nsti value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
+	--nsti [str]			Max NSTI value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
 	Differential abundance testing:
 	--ancor_var [str]	        According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis.

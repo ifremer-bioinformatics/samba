@@ -87,7 +87,7 @@ def helpMessage() {
 	--nsti [str]			Max NSTI value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
 	Differential abundance testing:
-	--ancor_var [str]	        According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis.
+	--ancom_var [str]	        According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
 
 	Statistics:
 	--stats_alpha_enable [bool]	Set to false to deactivate Alpha diversity statistics step. (default = true)
@@ -96,9 +96,9 @@ def helpMessage() {
 
 	--kingdom [str]			Kingdom to be displayed in barplots.
 	--taxa_nb [str]			Number of taxa to be displayed in barplots.
-	--alpha_div_group [str]	 	According to your metadata file, list the column names corresponding to the variables to group samples for Alpha diversity.
-	--beta_div_var [str]		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
-	--desc_comp_crit [str]		According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs.
+	--alpha_div_group [str]	 	According to your metadata file, list the column names corresponding to the variables to group samples for Alpha diversity (comma-separated list).
+	--beta_div_var [str]		According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity (comma-separated list).
+	--desc_comp_crit [str]		According to your metadata file, select the column name corresponding to the variable of interest for Descriptive comparisons graphs (comma-separated list).
 	--hc_method [str]		Hierarchical clustering method (default = 'ward.D2').
 
 	--stats_only [bool]		Perform only statistical analysis (ASV table and newick tree required). Set to true to activate. (default = false)

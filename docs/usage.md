@@ -354,7 +354,7 @@ Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/
 
 ### `--ancom_var`
 
-According to your metadata file, select the column name corresponding to the variable to group samples for ANCOM analysis. 
+According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
 
 ## Statistics
 
@@ -375,7 +375,7 @@ Number of top taxa to be displayed in barplots.
 
 ### `--alpha_div_group`
 
-According to your metadata file, select the column name corresponding to the variable to group samples for Alpha diversity.
+According to your metadata file, list the column names corresponding to the variables to group samples for Alpha diversity (comma-separated list).
 
 ### `--stats_beta_enable`
 
@@ -383,7 +383,7 @@ Set to false to deactivate Beta diversity statistics steps. (default = true)
 
 ### `--beta_div_var`
 
-According to your metadata file, select the column name corresponding to the variable of interest for Beta diversity.
+According to your metadata file, list the column names corresponding to the variables of interest for Beta diversity (comma-separated list).
 
 ### `--hc_method`
 
@@ -395,7 +395,7 @@ Set to false to deactivate Descriptive comparisons steps (default = true).
 
 ### `--desc_comp_crit`
 
-According to your metadata file, select the column name corresponding to the variable of interest for descriptive comparisons graphs.
+According to your metadata file, list the column names corresponding to the variables of interest for descriptive comparisons graphs (comma-separated list).
 
 ## Run the statistics steps only
 

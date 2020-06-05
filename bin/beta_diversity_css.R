@@ -47,7 +47,8 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
     
     ## Ordination process ####
     metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
-    
+    metadata = metadata[rownames(metadata) %in% rownames(sample_data(PHYLOSEQ)), ]
+
     if (distance == "jaccard" | distance == "bray") {    
       ord_css_nmds = ordinate(PHYLOSEQ_css,"NMDS", distance, trymax = 1000)
       ord_css_pcoa = ordinate(PHYLOSEQ_css,"PCoA", distance, trymax = 1000)

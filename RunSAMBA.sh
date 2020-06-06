@@ -8,7 +8,7 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 if [ "$1" != "-resume" ]
 then
     #nextflow temp directory
-    export NXF_TEMP=$BASEDIR/.nfx_temp
+    export NXF_TEMP=$BASEDIR/.nxf_temp
     mkdir -p $NXF_TEMP
 fi
 

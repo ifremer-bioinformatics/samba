@@ -76,13 +76,13 @@ def helpMessage() {
 	--confidence [str]		Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.9).
 
 	Decontamination:
-    --microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
+        --microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
 	--control_list [str]		Comma separated list of control samples (e.g : "sample1,sample4,sample7") (required if microDecon_enable = true).
 	--nb_controls [str]		Number of control sample listed (required if microDecon_enable = true).
 	--nb_samples [str]		Number of samples that are not control samples (required if microDecon_enable = true).
 
 	Predict functionnal abundance:
-    --picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
+        --picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
 	--method [str]			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
 	--nsti [str]			Max NSTI value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 

@@ -33,7 +33,7 @@ and processes data using the following steps:
 **\[OPTIONAL\]**
 
 Bash script used to check raw sequencing data and metadata files integrity.
-- Demultiplexing control checks if barcodes are the same in reads names within a sample file.
+- Demultiplexing control checks if barcodes are the same in reads names within a sample file and corresponding to the metadata file
 - Multiple sequencer detection checks if sequencer names are the same in the reads names within a sample file.
 - The primer ratio control checks if at least 70% of the raw reads sequences within a sample contain the sequencing primer.
 - The headers of the metadata file are checked in order to fit to the QIIME2 metadata requirements.

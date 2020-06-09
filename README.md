@@ -46,7 +46,7 @@ The nf-core/samba pipeline comes with documentation about the pipeline, found in
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
 
-![SAMBA Workflow](./docs/images/samba-v2.0.0.png)
+![SAMBA Workflow](./docs/images/samba-v2.0.0.svg)
 
 ## Credits
 

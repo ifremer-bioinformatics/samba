@@ -790,6 +790,7 @@ if (params.picrust2_enable) {
     process q2_picrust2_analysis {
 
     	label 'qiime2_env'
+        label 'parallel'
 
     	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
     	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
@@ -870,6 +871,7 @@ process q2_ancom {
      
     tag "$ancom_var"
     label 'qiime2_env'
+    label 'parallel'
 
     publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'

@@ -52,7 +52,7 @@ Here is an overview of the many steps available in samba pipeline:
 
 At the end of samba pipeline execution, you get an interactive HTML report that's look like this one:
 
-![report](images/samba-report.gif)
+![SAMBA report](docs/images/samba-report.gif)
 
 Full report description is available in [samba pipeline documentation](docs/output.md).
 

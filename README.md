@@ -32,7 +32,7 @@ iv. Start running your own analysis!
 nextflow run nf-core/samba -profile <docker/singularity/conda/institute>,custom
 ```
 
-See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
+See [usage docs](docs/usage.md) for a complete description of all of the options available when running the pipeline.
 
 ## Documentation
 
@@ -46,7 +46,15 @@ The nf-core/samba pipeline comes with documentation about the pipeline, found in
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
 
+Here is an overview of the many steps available in samba pipeline:
+
 ![SAMBA Workflow](./docs/images/samba-v2.0.0.png)
+
+At the end of samba pipeline execution, you get an interactive HTML report that's look like this one:
+
+![report](images/samba-report.gif)
+
+Full report description is available in [samba pipeline documentation](docs/output.md).
 
 ## Credits
 

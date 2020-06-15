@@ -1,6 +1,6 @@
 # ![nf-core/samba](./docs/images/nfcore-samba_logo.png)
 
-**Standardized and Automated MetaBarcoding Analyses workflow (Ifremer SeBiMER)**.
+**Standardized and Automated MetaBarcoding Analyses workflow (SAMBA)**.
 
 [![GitHub Actions CI Status](https://github.com/nf-core/samba/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/samba/actions)
 [![GitHub Actions Linting Status](https://github.com/nf-core/samba/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/samba/actions)
@@ -50,7 +50,7 @@ The nf-core/samba pipeline comes with documentation about the pipeline, found in
 
 ## Credits
 
-nf-core/samba was originally written by [IFREMER-IRSI-SeBiMER](https://wwz.ifremer.fr/Recherche/Departements-scientifiques/Departement-Infrastructures-de-Recherche-et-Systemes-d-Information/Activites/Bioinformatique).
+nf-core/samba is written by [SeBiMER](https://ifremer-bioinformatics.github.io/), the Bioinformatics Core Facility of [IFREMER](https://wwz.ifremer.fr/en/).
 
 ## Contributions and Support
 
@@ -74,6 +74,6 @@ You can cite the `nf-core` publication as follows:
 
 ### References 
 
-References databases (SILVA 132) are available on IFREMER-IRSI-SeBiMER [FTP](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.10/).
+References databases (SILVA 132) are available on IFREMER FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.10/](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/qiime2/2019.10/).
 
 Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils/), [associated publication](https://msystems.asm.org/content/2/3/e00195-16).

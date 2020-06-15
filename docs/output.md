@@ -2,6 +2,18 @@
 
 This document describes the output produced by the pipeline.
 
+## Global analysis report
+
+All samba workflow results are stored in a global analysis report available in **`results/[projectName]/00_report/SAMBA_report.html`**. This report is based on a [Jinja2](https://jinja.palletsprojects.com) template and gives a synthesis of the community profiles and characteristics of your dataset :
+- Bioinformatic processes are described with software versions and used parameters and important results for each step.
+- Statistical analyses results can be quickly compared for each variable of interest to understand environmental or experiments effects and samples similarities and differences.
+
+Here is a sample report produced with samba pipeline (animated GIF image):
+
+![report](images/samba-report.gif)
+
+All sections below described the content of such a report.
+
 ## Pipeline overview
 The pipeline is built using [Nextflow](https://www.nextflow.io/)
 and processes data using the following steps:
@@ -225,10 +237,3 @@ The **output directory : `results/[projectName]/00_report/R/FIGURES/descriptive_
 In the test dataset, this graph enables to compare the number of ASV and their abundance between samples group selected variable regarding to the total of ASV by sample groups :
 ![UpSetR graph](images/upset_plot_transect_name.png)
 
-## Global analysis report
-
-All samba workflow results are stored in a global analysis available in **`results/[projectName]/00_report/SAMBA_report.html`**. This report is based on a [Jinja2](https://jinja.palletsprojects.com) template and gives a synthesis of the community profiles and characteristics of your dataset :
-- Bioinformatic processes are described with software versions and used parameters and important results for each step.
-- Statistical analyses results can be quickly compared for each variable of interest to understand environmental or experiments effects and samples similarities and differences.
-
-![report](images/samba-report.gif)

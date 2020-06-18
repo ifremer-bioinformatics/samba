@@ -520,11 +520,23 @@
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_family/index.html">family level</a> ;
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_genus/index.html">genus level</a>
             <br>
-            - Number of significantly differentially abundant ASVs are: {{r.ancom[v].base}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}/ancom.tsv">[Full list]</a>
+            {% if r.ancom[v].base|length > 0 %}
+            - Number of significantly differentially abundant ASVs: <span class="highlight">{{r.ancom[v].base}}</span> <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}/ancom.tsv">[Full list]</a>
+            {% else %}             
+            - No significantly differentially abundant ASVs
+            {% endif %}
             <br>
-            - Number of significantly differentially abundant family are: {{r.ancom[v].family}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_family/ancom.tsv">[Full list]</a>
+            {% if r.ancom[v].family|length > 0 %}
+            - Number of significantly differentially abundant family: <span class="highlight">{{r.ancom[v].family}}</span> <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_family/ancom.tsv">[Full list]</a>
+            {% else %}             
+            - No significantly differentially abundant family
+            {% endif %}
             <br>
-            - Number of significantly differentially abundant genus are: {{r.ancom[v].genus}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_genus/ancom.tsv">[Full list]</a>
+            {% if r.ancom[v].genus|length > 0 %}
+            - Number of significantly differentially abundant genus: <span class="highlight"> {{r.ancom[v].genus}}</span> <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_genus/ancom.tsv">[Full list]</a>
+            {% else %}             
+            - No significantly differentially abundant genus
+            {% endif %}
         </ul>
         {% endfor %}
         <!--  end  -->

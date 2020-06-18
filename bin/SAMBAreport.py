@@ -181,9 +181,9 @@ def main(args):
         var_path_genus = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_genus'))
         # ASV DE
         results['ancom'][var] = {}
-        results['ancom'][var]['base'] = get_true_from_csv(os.path.join(var_path_base, 'ancom.tsv'))
-        results['ancom'][var]['family'] = get_true_from_csv(os.path.join(var_path_family, 'ancom.tsv'))
-        results['ancom'][var]['genus'] = get_true_from_csv(os.path.join(var_path_genus, 'ancom.tsv'))
+        results['ancom'][var]['base'] = len(get_true_from_csv(os.path.join(var_path_base, 'ancom.tsv')))
+        results['ancom'][var]['family'] = len(get_true_from_csv(os.path.join(var_path_family, 'ancom.tsv')))
+        results['ancom'][var]['genus'] = len(get_true_from_csv(os.path.join(var_path_genus, 'ancom.tsv')))
 
     # _____________________________________________________________
     ## Alpha diversity

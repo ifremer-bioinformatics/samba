@@ -520,41 +520,9 @@
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_family/index.html">family level</a> ;
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_genus/index.html">genus level</a>
             <br>
-            {% if r.ancom[v].base|length > 0 %}
-            - Significantly differentially abundant ASVs are:
-            {% for asv in r.ancom[v].base %}
-            <ul>
-                <li><span class="highlight">{{ asv }}</span></li>
-            </ul>
-            {% endfor %}
-            {% else %}
-            - No significantly differentially abundant ASVs
-            <br>
-            {% endif %}
-            {% if r.ancom[v].family|length > 0 %}
-            - Significantly differentially abundant family are:
-            {% for asv in r.ancom[v].family %}
-            <ul>
-                <li><span class="highlight">{{ asv }}</span></li>
-            </ul>
-            {% endfor %}
-            {% else %}
-            - No significantly differentially abundant family
-            <br>
-            {% endif %}
-            {% if r.ancom[v].genus|length > 0 %}
-           - Significantly differentially abundant genus are:
-            {% for asv in r.ancom[v].genus %}
-            <ul>
-                <li><span class="highlight">{{ asv }}</span></li>
-            </ul>
-            {% endfor %}
-            {% else %}
-           - No significantly differentially abundant genus
-            <br>
-            {% endif %}
-        </ul>
-        {% endfor %}
+            - Number of significantly differentially abundant ASVs are: {{r.ancom[v].base}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}/ancom.tsv">[Full list]</a>
+            - Number of significantly differentially abundant family are: {{r.ancom[v].family}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_family/ancom.tsv">[Full list]</a>
+            - Number of significantly differentially abundant genus are: {{r.ancom[v].genus}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_genus/ancom.tsv">[Full list]</a>
         <!--  end  -->
         <br>
         <!--  end ancom  -->

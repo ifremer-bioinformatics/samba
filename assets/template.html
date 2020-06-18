@@ -152,7 +152,7 @@
             </tr>
             <tr>
                 <td>
-                    <u><a class="link" target="_blank" href="https://qiime2.org/">QIIME 2</a></u>
+                    <a class="link" target="_blank" href="https://qiime2.org/">QIIME 2</a>
                     <ul>
                         <li><a class="link" target="_blank" href="https://github.com/cduvallet/q2-dbotu">q2-dbotu</a></li>
                         <li><a class="link" target="_blank" href="https://library.qiime2.org/plugins/q2-picrust2/13/">q2-picrust2</a></li>
@@ -162,7 +162,7 @@
             </tr>
             <tr>
                 <td>
-                    <u><a class="link" target="_blank" href="https://cran.r-project.org/">R</a></u>
+                    <a class="link" target="_blank" href="https://cran.r-project.org/">R</a>
                 </td>
                 <td style="text-align: center">{{d.soft.R}}</td>
             </tr>
@@ -292,10 +292,10 @@
         <ul style="margin: 0 ; padding: 1 ;">
             {% if d.singleEnd == 'false' %}
             <li class="cmdline">Mode: <span class="highlight">Paired-end</span></li>
-            <li class="cmdline">Number of bases trimmed in 5' of forward reads: <span class="highlight">{{d.dada2.trimLeft}}</span></li>
-            <li class="cmdline">Number of bases trimmed in 5' of reverse reads: <span class="highlight">{{d.dada2.trimRigth}}</span></li>
-            <li class="cmdline">Length to trim forward reads: <span class="highlight">{{d.dada2.FtruncLen}}</span></li>
-            <li class="cmdline">Length to trim reverse reads: <span class="highlight">{{d.dada2.RtruncLen}}</span></li>
+            <li class="cmdline">Number of bases trimmed in 5' of forward reads: <span class="highlight">{{d.dada2.FtrimLeft}}</span></li>
+            <li class="cmdline">Number of bases trimmed in 5' of reverse reads: <span class="highlight">{{d.dada2.RtrimLeft}}</span></li>
+            <li class="cmdline">Length to trim forward reads (0 for no trimming): <span class="highlight">{{d.dada2.FtruncLen}}</span></li>
+            <li class="cmdline">Length to trim reverse reads (0 for no trimming): <span class="highlight">{{d.dada2.RtruncLen}}</span></li>
             <li class="cmdline">Max error rate allowed in forward reads: <span class="highlight">{{d.dada2.FmaxEE}}</span></li>
             <li class="cmdline">Max error rate allowed in reverse reads: <span class="highlight">{{d.dada2.RmaxEE}}</span></li>
             {% else %}
@@ -416,7 +416,7 @@
             <li>All ASVs listed <a class="link" target="_blank" href="./microDecon/ASV_removed.txt">here</a> were removed because they were in the majority in the control samples         </li>
             <li>For all ASVs listed <a class="link" target="_blank" href="./microDecon/abundance_removed.txt">here</a>, a proportion of sequences were removed in each sample. Note that this file also contains the ASVs unique to the controls which have therefore been removed.</li>
             <br>
-            <font color="red"><b>A total of {{ r.microdecon.asv_count }} ASVs remain after this step. MicroDecon removed {{ r.microdecon.asv_rm }} ASVs essentially ASVs unique to controls ({{ r.microdecon.asv_rm_ctrl }} of {{ r.microdecon.asv_rm }}).</b></font>
+            <font color="red"><b>A total of {{ r.microdecon.asv_count }} ASVs remain after this step. MicroDecon removed {{ r.microdecon.asv_rm }} ASVs ({{ r.microdecon.asv_rm_ctrl }} ASVs were unique to controls).</b></font>
         </ul>
         <br>
         {% endif %}

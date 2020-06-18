@@ -45,7 +45,7 @@ def count_seq_fasta(fasta):
 
 def count_lines_file(file):
     with open(file) as f:
-        count = sum(1 for _ in f)
+        count = sum(1 for line in f)
     return count
 
 def collect_from_folder(path):
@@ -145,7 +145,7 @@ def main(args):
         results['microdecon']['asv_count'] = count_seq_fasta(microdecon_fasta)
         results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
         # -1 to rm header line count
-        results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - results['microdecon']['asv_rm'] - 1
+        results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - 1
 
     # _____________________________________________________________
     ## piCrust

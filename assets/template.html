@@ -520,19 +520,19 @@
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_family/index.html">family level</a> ;
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_genus/index.html">genus level</a>
             <br>
-            {% if r.ancom[v].base|length > 0 %}
+            {% if r.ancom[v].base > 0 %}
             - Number of significantly differentially abundant ASVs: <span class="highlight">{{r.ancom[v].base}}</span> <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}/ancom.tsv">[Full list]</a>
             {% else %}             
             - No significantly differentially abundant ASVs
             {% endif %}
             <br>
-            {% if r.ancom[v].family|length > 0 %}
+            {% if r.ancom[v].family > 0 %}
             - Number of significantly differentially abundant family: <span class="highlight">{{r.ancom[v].family}}</span> <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_family/ancom.tsv">[Full list]</a>
             {% else %}             
             - No significantly differentially abundant family
             {% endif %}
             <br>
-            {% if r.ancom[v].genus|length > 0 %}
+            {% if r.ancom[v].genus > 0 %}
             - Number of significantly differentially abundant genus: <span class="highlight"> {{r.ancom[v].genus}}</span> <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_genus/ancom.tsv">[Full list]</a>
             {% else %}             
             - No significantly differentially abundant genus

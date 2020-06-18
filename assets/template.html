@@ -521,8 +521,11 @@
             <a class="link" target="_blank" href="./ancom_output/export_ancom_{{d.stats.ancom_var}}_genus/index.html">genus level</a>
             <br>
             - Number of significantly differentially abundant ASVs are: {{r.ancom[v].base}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}/ancom.tsv">[Full list]</a>
+            <br>
             - Number of significantly differentially abundant family are: {{r.ancom[v].family}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_family/ancom.tsv">[Full list]</a>
+            <br>
             - Number of significantly differentially abundant genus are: {{r.ancom[v].genus}} <a class="link" target="_blank" href="./ancom_output/export_ancom_{{v}}_genus/ancom.tsv">[Full list]</a>
+        </ul>
         {% endfor %}
         <!--  end  -->
         <br>

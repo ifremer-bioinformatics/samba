@@ -1246,60 +1246,60 @@ if (params.report_enable) {
         data["steps"]["dada2merge"] = '$params.dada2merge'
     
         data["integrity"] = {}
-        data["integrity"]["barcode_filter"] = '$params.barcode_filter'
-        data["integrity"]["primer_filter"] = '$params.primer_filter'
+        data["integrity"]["barcode_filter"] = '$params.barcode_filter' or None
+        data["integrity"]["primer_filter"] = '$params.primer_filter' or None
     
         data["cutadapt"] = {}
-        data["cutadapt"]["primerF"] = '$params.primerF'
-        data["cutadapt"]["primerR"] = '$params.primerR'
-        data["cutadapt"]["errorRate"] = '$params.errorRate'
-        data["cutadapt"]["overlap"] = '$params.overlap'
+        data["cutadapt"]["primerF"] = '$params.primerF' or None
+        data["cutadapt"]["primerR"] = '$params.primerR' or None
+        data["cutadapt"]["errorRate"] = '$params.errorRate' or None
+        data["cutadapt"]["overlap"] = '$params.overlap' or None
      
         data["dada2"] = {}
-        data["dada2"]["FtrimLeft"] = '$params.FtrimLeft'
-        data["dada2"]["RtrimLeft"] = '$params.RtrimLeft'
-        data["dada2"]["FtruncLen"] = '$params.FtruncLen'
-        data["dada2"]["RtruncLen"] = '$params.RtruncLen'
-        data["dada2"]["FmaxEE"] = '$params.FmaxEE'
-        data["dada2"]["RmaxEE"] = '$params.RmaxEE'
-        data["dada2"]["minQ"] = '$params.minQ'
-        data["dada2"]["chimeras"] = '$params.chimeras'
+        data["dada2"]["FtrimLeft"] = '$params.FtrimLeft' or None
+        data["dada2"]["RtrimLeft"] = '$params.RtrimLeft' or None
+        data["dada2"]["FtruncLen"] = '$params.FtruncLen' or None
+        data["dada2"]["RtruncLen"] = '$params.RtruncLen' or None
+        data["dada2"]["FmaxEE"] = '$params.FmaxEE' or None
+        data["dada2"]["RmaxEE"] = '$params.RmaxEE' or None
+        data["dada2"]["minQ"] = '$params.minQ' or None
+        data["dada2"]["chimeras"] = '$params.chimeras' or None
     
         data["dada2merge"] = {}
-        data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir'
-        data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir'
+        data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir' or None
+        data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir' or None
     
         data["dbotu3"] = {}
-        data["dbotu3"]["gen_crit"] = '$params.gen_crit'
-        data["dbotu3"]["abund_crit"] = '$params.abund_crit'
-        data["dbotu3"]["pval_crit"] = '$params.pval_crit'
+        data["dbotu3"]["gen_crit"] = '$params.gen_crit' or None
+        data["dbotu3"]["abund_crit"] = '$params.abund_crit' or None
+        data["dbotu3"]["pval_crit"] = '$params.pval_crit' or None
     
         data["taxonomy"] = {}
-        data["taxonomy"]["database"] = '$params.database'
-        data["taxonomy"]["seqs_db"] = '$params.seqs_db'
-        data["taxonomy"]["taxo_db"] = '$params.taxo_db'
+        data["taxonomy"]["database"] = '$params.database' or None
+        data["taxonomy"]["seqs_db"] = '$params.seqs_db' or None
+        data["taxonomy"]["taxo_db"] = '$params.taxo_db' or None
         data["taxonomy"]["extract_db"] = '$params.extract_db'
-        data["taxonomy"]["confidence"] = '$params.confidence'
+        data["taxonomy"]["confidence"] = '$params.confidence' or None
     
         data["picrust2"] = {}
-        data["picrust2"]["method"] = '$params.method'
-        data["picrust2"]["nsti"] = '$params.nsti'
+        data["picrust2"]["method"] = '$params.method' or None
+        data["picrust2"]["nsti"] = '$params.nsti' or None
     
         data["microdecon"] = {}
-        data["microdecon"]["control_list"] = '$params.control_list'
-        data["microdecon"]["nb_controls"] = '$params.nb_controls'
-        data["microdecon"]["nb_samples"] = '$params.nb_samples'
+        data["microdecon"]["control_list"] = '$params.control_list' or None
+        data["microdecon"]["nb_controls"] = '$params.nb_controls' or None
+        data["microdecon"]["nb_samples"] = '$params.nb_samples' or None
     
         data["stats"] = {}
-        data["stats"]["ancom_var"] = '$params.ancom_var'
-        data["stats"]["kingdom"] = '$params.kingdom'
-        data["stats"]["taxa_nb"] = '$params.taxa_nb'
-        data["stats"]["hc_method"] = '$params.hc_method'
-        data["stats"]["alpha_div_group"] = '$params.alpha_div_group'
-        data["stats"]["beta_div_var"] = '$params.beta_div_var'
-        data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit'
-        data["stats"]["inasv_table"] = '$params.inasv_table'
-        data["stats"]["innewick"] = '$params.innewick'
+        data["stats"]["ancom_var"] = '$params.ancom_var' or None
+        data["stats"]["kingdom"] = '$params.kingdom' or None
+        data["stats"]["taxa_nb"] = '$params.taxa_nb' or None
+        data["stats"]["hc_method"] = '$params.hc_method' or None
+        data["stats"]["alpha_div_group"] = '$params.alpha_div_group' or None
+        data["stats"]["beta_div_var"] = '$params.beta_div_var' or None
+        data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit' or None
+        data["stats"]["inasv_table"] = '$params.inasv_table' or None
+        data["stats"]["innewick"] = '$params.innewick' or None
     
         #software versions
         data["soft"] = {}

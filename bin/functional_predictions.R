@@ -56,6 +56,7 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
     geom_text(data=pred_nmds_data,aes(x=MDS1,y=MDS2,label=samples),size=3,vjust=2) +
     stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=metadata),lty=2) +
     scale_color_brewer(palette="Set1") +
+    scale_fill_brewer(palette="Set1") +
     theme(legend.title = element_blank()) +
     theme(axis.text = element_text(colour = "black", size = 10)) +
     labs(caption = paste("Stress:",pred_nmds_stress,

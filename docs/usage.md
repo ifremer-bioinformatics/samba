@@ -164,12 +164,12 @@ Profiles are also available to configure the samba workflow and can be combined 
 
 ### `--input_metadata`
 
-Path to input file with project samples metadata (csv format). 
+Path to input file with project samples metadata (tsv format). 
 Headers of metadata file must follow the Qiime2 requirements [Qiime2 metadata](https://docs.qiime2.org/2019.10/tutorials/metadata/).
 
 ### `--input_manifest`
 
-Path to input file with samples reads files paths (csv format). 
+Path to input file with samples reads files paths (tsv format). 
 Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](https://docs.qiime2.org/2019.10/tutorials/importing/#manifest-file).
 
 ## Generic arguments

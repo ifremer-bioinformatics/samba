@@ -11,10 +11,10 @@ ready=${args[1]}
 if [ ! -d "$BASEDIR/training_dataset" ] || ([ -d "$BASEDIR/training_dataset" ] && [ ! "$(ls -A $BASEDIR/training_dataset)" ])
   then 
      mkdir -p $BASEDIR/training_dataset
-     wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/q2* -P $BASEDIR/training_dataset
+     wget -r -nc -l2 -nH --cut-dirs=7 -A 'q2*' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/ -P $BASEDIR/training_dataset
      sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest
      sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/q2_manifest.single
-     wget -r -nc -l2 -nH --cut-dirs=7 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/dna-sequence-raw/*_subsampled.fastq.gz -P $BASEDIR/training_dataset
+     wget -r -nc -l2 -nH --cut-dirs=7 -A '*_subsampled.fastq.gz' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/dna-sequence-raw/ -P $BASEDIR/training_dataset
 fi
 #download taxonomic database
 DB=$BASEDIR/tax.databases.test/DATABASE_silva_v132_99_16S.qza

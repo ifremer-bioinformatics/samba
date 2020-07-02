@@ -22,6 +22,9 @@ final_asv_taxo_tsv=${args[12]}
 database=${args[13]}
 seqs_db_filtered=${args[14]}
 logcmd=${args[15]}
+tmpdir=${args[17]}
+
+export TMPDIR="$tmp"
 
 if [ "$extract_db" = true ]; then
     seqs_db=${args[16]}

@@ -962,29 +962,40 @@ newick = params.stats_only ? newick_only : newick_phylo
 // process lr_mapping {
 //   label 'lr_mapping'
 //
+//   publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.sam'
+//   publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
+//
 //   input:
 //     set sample, file(fastq) from longreads_ch
 //
 //   output:
 //     file "*.sam" into lr_mapped
+//     file 'lr_mapping.ok' into process_lr_mapping_report
+//     file 'v_minimap2.txt' into v_minimap2_version
 //
-//   shell:
+//   script:
 //     """
-//     minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam
+//     lr_minimap2.sh -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam 2> lr_minimap2.log
+//     touch lr_mapping.ok
+//     minimap2 --version > v_minimap2.txt
 //     """
 // }
 //
 // process lr_get_taxonomy {
+//
+//   publishDir "${params.outdir}/${params.lr_taxonomy_dirname}", mode: 'copy', pattern: '*.tax'
 //
 //   input:
 //     file '*' from lr_mapped.collect()
 //
 //   output:
 //     file "*.tax" into lr_taxify
+//     file 'lr_get_taxonomy.ok' into process_lr_taxonomy_report
 //
 //   shell:
 //     """
-//     add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax
+//     add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax &> add_taxonomy_minimap2.log 2&>1
+//     touch lr_get_taxonomy.ok
 //     """
 // }
 

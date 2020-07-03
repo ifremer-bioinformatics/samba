@@ -25,7 +25,7 @@ logcmd=${args[15]}
 tmpdir=${args[17]}
 
 mkdir -p ${tmpdir}
-export TMPDIR="$tmp"
+export TMPDIR="$tmpdir"
 
 if [ "$extract_db" = true ]; then
     seqs_db=${args[16]}

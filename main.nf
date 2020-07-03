@@ -23,10 +23,11 @@ def helpMessage() {
 	Mandatory arguments:
 	--input_metadata [file]		Path to input file with project samples metadata (csv format).
 	--input_manifest [file]		Path to input file with samples reads files paths (csv format).
-      	-profile [str]			Configuration profile to use. Can use multiple (comma separated).
+	-profile [str]			Configuration profile to use. Can use multiple (comma separated).
 					Available: conda, docker, singularity, test, custom.
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
+	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio). Not available yet.
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.
@@ -76,13 +77,13 @@ def helpMessage() {
 	--confidence [str]		Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.9).
 
 	Decontamination:
-        --microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
+	--microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
 	--control_list [str]		Comma separated list of control samples (e.g : "sample1,sample4,sample7") (required if microDecon_enable = true).
 	--nb_controls [str]		Number of control sample listed (required if microDecon_enable = true).
 	--nb_samples [str]		Number of samples that are not control samples (required if microDecon_enable = true).
 
 	Predict functionnal abundance:
-        --picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
+	--picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
 	--method [str]			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
 	--nsti [str]			Max NSTI value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
@@ -107,6 +108,12 @@ def helpMessage() {
 
 	Final analysis report:
 	--report_enable	[bool]		Set to false to deactivate report creation. (default = true)
+
+	Long reads options:
+	--lr_type [str]		Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
+	--lr_tax_fna [file]		Path to reference database indexed with Minimap2 (required).
+	--lr_taxo_flat [file]		Path to taxonomic reference file (required).
+	--lr_rank [int]			Minimal rank level to keep a hit as assigned [5]. 1:Kingdom, 2:Phylum, 3:Class, 4:Order, 5:Family, 6:Genus, 7:Species
 
     """.stripIndent()
 }
@@ -254,6 +261,26 @@ if (params.microDecon_enable && !params.control_list) {
    exit 1
 }
 
+// TODO
+//If pipeline runs for long reads
+// Fully disable qiime2 pipeline, keep stats and reporting
+// Create a specific channel
+// if (!params.stats_only && params.longreads) {
+//   longreads_ch = Channel.fromPath(params.manifest)
+//                         .splitCsv(header: true, sep:'\t')
+//                         .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+//
+// Force to false other processes options
+//   params.data_integrity_enable = false
+//   params.qiime2 = false
+//   params.dada2merge = false
+//   params.dbotu3_enable = false
+//   params.microDecon_enable = false
+//   params.ancom_enable = false
+//   params.asv = false
+//   params.picrust2_enable = false
+// }
+
 /*
  * PIPELINE INFO
  */
@@ -284,6 +311,10 @@ if (params.picrust2_enable) summary['Prediction'] = "Functionnal prediction proc
 if (params.stats_alpha_enable) summary['Alpha div'] = "Alpha diversity indexes process enabled"
 if (params.stats_beta_enable) summary['Beta div'] = "Beta diversity statistics processes enabled"
 if (params.stats_desc_comp_enable) summary["Desc comp"] = "Descriptive comparisons statistics process enabled"
+// TODO
+// if (params.longreads) summary["Long reads"] = "TODO"
+// if (params.nanopore) summary["Nanopore"] = "TODO"
+// if (params.pacbio) summary["PacBio"] = "TODO"
 
 if (params.email || params.email_on_fail) {
     summary['E-mail Address']    = params.email
@@ -314,7 +345,7 @@ Channel.from(summary.collect{ [it.key, it.value] })
 // Check the hostnames against configured profiles
 checkHostname()
 
-/* 
+/*
  * STEP 0 - Get test data if running in test profile
 */
 if (workflow.profile.contains('test')) {
@@ -354,7 +385,7 @@ if (params.data_integrity_enable) {
 
     	when :
     		params.data_integrity_enable && !params.stats_only && !params.dada2merge
-
+        // TODO: disable when long reads
     	script :
     	"""
     	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
@@ -399,6 +430,7 @@ process q2_import {
 
 	when :
 		!params.stats_only && !params.dada2merge
+    // TODO: disable when longreads
 
 	script :
 	"""
@@ -431,6 +463,7 @@ process q2_cutadapt {
 
 	when :
 		!params.stats_only && !params.dada2merge
+    // TODO: disable when long reads
 
 	script :
 	"""
@@ -444,7 +477,7 @@ process q2_cutadapt {
 process q2_dada2 {
 
 	label 'qiime2_env'
-        label 'parallel'
+  label 'parallel'
 
 	publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -466,6 +499,7 @@ process q2_dada2 {
 
 	when :
 		!params.stats_only && !params.dada2merge
+    // TODO: disable when long reads
 
 	script :
 	"""
@@ -480,8 +514,8 @@ if (params.dbotu3_enable) {
     /* Run dbotu3 */
     process q2_dbotu3 {
 
-    	label 'qiime2_env'
-        label 'parallel'
+      label 'qiime2_env'
+      label 'parallel'
 
     	publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -503,6 +537,7 @@ if (params.dbotu3_enable) {
 
     	when :
     		!params.stats_only && !params.dada2merge && params.dbotu3_enable
+        // TODO: disable when long reads
 
     	script :
     	"""
@@ -535,6 +570,7 @@ if (params.dada2merge) {
 
             when :
                 params.dada2merge
+                // TODO: disable when long reads
 
             script :
             """
@@ -543,6 +579,8 @@ if (params.dada2merge) {
     }
 }
 
+
+// TODO: when long reads?
 outputA = params.dada2merge ? merge_output : dada2_output
 output_ch = params.dbotu3_enable ? dbotu3_output : outputA
 output_ch.into { taxonomy_output ; decontam_output }
@@ -585,6 +623,7 @@ process q2_taxonomy {
 
 	when :
 	!params.stats_only
+  // TODO: disable when long reads
 
 	script :
         def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
@@ -623,6 +662,7 @@ if (params.microDecon_enable) {
 
     	when :
     		!params.stats_only && !params.dada2merge && params.microDecon_enable
+        // TODO: disable when long reads
 
     	shell :
     	"""
@@ -651,6 +691,7 @@ if (params.microDecon_enable) {
 
     	when :
     		!params.stats_only && !params.dada2merge && params.microDecon_enable
+        // TODO: disable when long reads
 
     	shell :
     	"""
@@ -678,6 +719,7 @@ if (params.microDecon_enable) {
 
     	when :
     		!params.stats_only && !params.dada2merge && params.microDecon_enable
+        // TODO: disable when long reads
 
     	shell :
     	"""
@@ -715,6 +757,7 @@ if (params.microDecon_enable) {
 
     	when :
     		!params.stats_only && !params.dada2merge && params.microDecon_enable
+        // TODO: disable when long reads
 
     	shell :
     	"""
@@ -726,6 +769,7 @@ if (params.microDecon_enable) {
     }
 }
 
+// TODO: when long reads?
 seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
 seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
 seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
@@ -760,6 +804,7 @@ process q2_phylogeny {
 
 	when :
 	    !params.stats_only
+      // TODO: disable when long reads
 
 	script :
 	"""
@@ -768,6 +813,7 @@ process q2_phylogeny {
 	"""
 }
 
+// TODO: when long reads?
 table_picrust2A = params.dada2merge ? merge_table_picrust2 : dada2_table_picrust2
 table_picrust2B = params.dbotu3_enable ? dbotu3_table_picrust2 : table_picrust2A
 table_picrust2 = params.microDecon_enable ? decontam_table_picrust2 : table_picrust2B
@@ -816,6 +862,7 @@ if (params.picrust2_enable) {
 
     	when :
     		!params.stats_only
+        // TODO: disable when long reads
 
     	script :
     	"""
@@ -845,6 +892,7 @@ if (params.picrust2_enable) {
 
         when :
             !params.stats_only
+            // TODO: disable when long reads
 
         script :
         """
@@ -854,6 +902,7 @@ if (params.picrust2_enable) {
     }
 }
 
+// TODO: when long reads?
 table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
 table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
 table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
@@ -868,7 +917,7 @@ Channel
  * STEP 10 -  Differential abundance testing with ANCOM
  */
 process q2_ancom {
-     
+
     tag "$ancom_var"
     label 'qiime2_env'
     label 'parallel'
@@ -892,6 +941,7 @@ process q2_ancom {
 
     when :
         !params.stats_only
+        // TODO: disable when long reads
 
     script :
     """
@@ -899,9 +949,45 @@ process q2_ancom {
     """
 }
 
+// TODO: when long reads?
 tsvA= params.microDecon_enable ? decontam_table : biom_tsv
 tsv = params.stats_only ? tsv_only : tsvA
 newick = params.stats_only ? newick_only : newick_phylo
+
+
+/* _______________________________________________________________ */
+/*                      Long reads part                            */
+/* _______________________________________________________________ */
+
+// process lr_mapping {
+//   label 'lr_mapping'
+//
+//   input:
+//     set sample, file(fastq) from longreads_ch
+//
+//   output:
+//     file "*.sam" into lr_mapped
+//
+//   shell:
+//     """
+//     minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam
+//     """
+// }
+//
+// process lr_get_taxonomy {
+//
+//   input:
+//     file '*' from lr_mapped.collect()
+//
+//   output:
+//     file "*.tax" into lr_taxify
+//
+//   shell:
+//     """
+//     add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax
+//     """
+// }
+
 
 /*
  * STEP 11 -  Prepare data for statistics steps
@@ -967,17 +1053,17 @@ process stats_alpha {
 
     tag "$alpha_var"
     label 'r_stats_env'
-    
+
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots/${alpha_var}", mode: 'copy', pattern : 'barplot_*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'rarefaction_curve*'
-    
+
     input :
        file phyloseq_rds from phyloseq_rds_alpha
        each alpha_var from alpha_list_var
-   
+
     output :
         file 'alpha_div_values.txt' into alpha_div_values
         file "alpha_div_plots_${alpha_var}*" into alpha_div_plots
@@ -985,10 +1071,10 @@ process stats_alpha {
         file "barplot_*_${alpha_var}*" into barplots
         file 'rarefaction_curve*' into rarefaction_curve
         file 'process_alpha_report.ok' into process_alpha_report
-    
+
     when :
         params.stats_alpha_enable
-    
+
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
@@ -1192,7 +1278,7 @@ SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBArep
 /*
  * STEP 18 -  Save user parameters of the workflow and Generate analysis report
  */
-if (params.report_enable) {    
+if (params.report_enable) {
     process report {
 
         label 'jinja2_env'
@@ -1210,7 +1296,7 @@ if (params.report_enable) {
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
- 
+
        output :
             file 'style.css' into SAMBA_css_output
             file 'SAMBA_report.html' into Report
@@ -1220,13 +1306,13 @@ if (params.report_enable) {
 
         when :
            params.report_enable
-        
+
         script :
         """
         #!/usr/bin/env python
         import os, json
         from shutil import copyfile
-    
+
         data = {}
         data["projectName"] = '$params.projectName'
         data["singleEnd"] = '$params.singleEnd'
@@ -1244,17 +1330,17 @@ if (params.report_enable) {
         data["steps"]["report_enable"] = '$params.report_enable'
         data["steps"]["stats_only"] = '$params.stats_only'
         data["steps"]["dada2merge"] = '$params.dada2merge'
-    
+
         data["integrity"] = {}
         data["integrity"]["barcode_filter"] = '$params.barcode_filter' or None
         data["integrity"]["primer_filter"] = '$params.primer_filter' or None
-    
+
         data["cutadapt"] = {}
         data["cutadapt"]["primerF"] = '$params.primerF' or None
         data["cutadapt"]["primerR"] = '$params.primerR' or None
         data["cutadapt"]["errorRate"] = '$params.errorRate' or None
         data["cutadapt"]["overlap"] = '$params.overlap' or None
-     
+
         data["dada2"] = {}
         data["dada2"]["FtrimLeft"] = '$params.FtrimLeft' or None
         data["dada2"]["RtrimLeft"] = '$params.RtrimLeft' or None
@@ -1264,32 +1350,32 @@ if (params.report_enable) {
         data["dada2"]["RmaxEE"] = '$params.RmaxEE' or None
         data["dada2"]["minQ"] = '$params.minQ' or None
         data["dada2"]["chimeras"] = '$params.chimeras' or None
-    
+
         data["dada2merge"] = {}
         data["dada2merge"]["merge_tabledir"] = '$params.merge_tabledir' or None
         data["dada2merge"]["merge_repseqsdir"] = '$params.merge_repseqsdir' or None
-    
+
         data["dbotu3"] = {}
         data["dbotu3"]["gen_crit"] = '$params.gen_crit' or None
         data["dbotu3"]["abund_crit"] = '$params.abund_crit' or None
         data["dbotu3"]["pval_crit"] = '$params.pval_crit' or None
-    
+
         data["taxonomy"] = {}
         data["taxonomy"]["database"] = '$params.database' or None
         data["taxonomy"]["seqs_db"] = '$params.seqs_db' or None
         data["taxonomy"]["taxo_db"] = '$params.taxo_db' or None
         data["taxonomy"]["extract_db"] = '$params.extract_db'
         data["taxonomy"]["confidence"] = '$params.confidence' or None
-    
+
         data["picrust2"] = {}
         data["picrust2"]["method"] = '$params.method' or None
         data["picrust2"]["nsti"] = '$params.nsti' or None
-    
+
         data["microdecon"] = {}
         data["microdecon"]["control_list"] = '$params.control_list' or None
         data["microdecon"]["nb_controls"] = '$params.nb_controls' or None
         data["microdecon"]["nb_samples"] = '$params.nb_samples' or None
-    
+
         data["stats"] = {}
         data["stats"]["ancom_var"] = '$params.ancom_var' or None
         data["stats"]["kingdom"] = '$params.kingdom' or None
@@ -1300,7 +1386,7 @@ if (params.report_enable) {
         data["stats"]["desc_comp_crit"] = '$params.desc_comp_crit' or None
         data["stats"]["inasv_table"] = '$params.inasv_table' or None
         data["stats"]["innewick"] = '$params.innewick' or None
-    
+
         #software versions
         data["soft"] = {}
         data["soft"]["samba"] = '$workflow.manifest.version'
@@ -1311,13 +1397,13 @@ if (params.report_enable) {
                 tool_name=elt.replace("v_","").replace(".txt","")
                 version=f.readline().rstrip()
                 data["soft"][tool_name] = version
-    
+
         with open('data.json', 'w') as outfile:
            json.dump(data, outfile, sort_keys=True, indent=4)
 
         os.system("${baseDir}/bin/SAMBAreport.py -t ${SAMBAtemplate} -p ${params.outdir}/${params.report_dirname} -c 'data.json'")
         os.system("cp ${wf_image} samba_wf.png")
-        
+
         """
     }
 }

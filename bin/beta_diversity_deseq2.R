@@ -1,4 +1,6 @@
 #!/usr/bin/env Rscript
+Sys.setenv("OMP_NUM_THREADS" = 4)
+
 ###############################################################################
 ##                                                                           ##
 ## Purpose of script: Automated Statistical Analyses of Metabarcoding Data   ##

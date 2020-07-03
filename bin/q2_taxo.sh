@@ -24,6 +24,7 @@ seqs_db_filtered=${args[14]}
 logcmd=${args[15]}
 tmpdir=${args[17]}
 
+mkdir -p ${tmpdir}
 export TMPDIR="$tmp"
 
 if [ "$extract_db" = true ]; then

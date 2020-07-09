@@ -350,7 +350,6 @@ checkHostname()
 */
 if (workflow.profile.contains('test')) {
    process get_test_data {
-      label 'test_data'
       label 'internet_access'
       output :
          file 'data_is_ready' into ready_integrity, ready_import
@@ -410,7 +409,6 @@ if (params.data_integrity_enable) {
 process q2_import {
 
 	label 'qiime2_env'
-        label 'parallel'
 
 	publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -446,7 +444,6 @@ process q2_import {
 process q2_cutadapt {
 
 	label 'qiime2_env'
-        label 'parallel'
 
 	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -477,7 +474,6 @@ process q2_cutadapt {
 process q2_dada2 {
 
 	label 'qiime2_env'
-  label 'parallel'
 
 	publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -515,7 +511,6 @@ if (params.dbotu3_enable) {
     process q2_dbotu3 {
 
       label 'qiime2_env'
-      label 'parallel'
 
     	publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
@@ -553,7 +548,6 @@ if (params.dada2merge) {
     process q2_dada2_merge {
 
             label 'qiime2_env'
-            label 'parallel'
 
             publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
             publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
@@ -594,7 +588,6 @@ seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
 process q2_taxonomy {
 
 	label 'qiime2_env'
-        label 'parallel'
 
 	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
 	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
@@ -678,7 +671,6 @@ if (params.microDecon_enable) {
     process microDecon_step2 {
 
     	label 'qiime2_env'
-        label 'parallel'
 
     	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
     	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
@@ -732,7 +724,6 @@ if (params.microDecon_enable) {
     process microDecon_step4 {
 
     	label 'qiime2_env'
-        label 'parallel'
 
     	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
     	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
@@ -780,7 +771,6 @@ seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
 process q2_phylogeny {
 
 	label 'qiime2_env'
-        label 'parallel'
 
 	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
 	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
@@ -836,7 +826,6 @@ if (params.picrust2_enable) {
     process q2_picrust2_analysis {
 
     	label 'qiime2_env'
-        label 'parallel'
 
     	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
     	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
@@ -920,7 +909,6 @@ process q2_ancom {
 
     tag "$ancom_var"
     label 'qiime2_env'
-    label 'parallel'
 
     publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'

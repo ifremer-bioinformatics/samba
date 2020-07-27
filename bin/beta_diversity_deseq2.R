@@ -94,6 +94,7 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_
     
     ### Explained variance graphs ####
     ExpVar_perc = adonis_all_deseq2$aov.tab$R2[-length(adonis_all_deseq2$aov.tab$R2)]*100
+    ExpVar_perc[ExpVar_perc < 0] <- 0
     ExpVar_name = rownames(adonis_all_deseq2$aov.tab)[-length(rownames(adonis_all_deseq2$aov.tab))]
     ExpVar_piedata = data.frame(ExpVar_name,ExpVar_perc)
     ExpVar_piedata = ExpVar_piedata[order(ExpVar_piedata$ExpVar_perc),]

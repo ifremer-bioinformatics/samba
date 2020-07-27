@@ -88,6 +88,7 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
 
     ### Explained variance graphs ####
     ExpVar_perc = adonis_all_css$aov.tab$R2[-length(adonis_all_css$aov.tab$R2)]*100
+    ExpVar_perc[ExpVar_perc < 0] <- 0
     ExpVar_name = rownames(adonis_all_css$aov.tab)[-length(rownames(adonis_all_css$aov.tab))]
     ExpVar_piedata = data.frame(ExpVar_name,ExpVar_perc)
     ExpVar_piedata = ExpVar_piedata[order(ExpVar_piedata$ExpVar_perc),]

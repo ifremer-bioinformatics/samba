@@ -79,6 +79,7 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, varia
     
     ### Explained variance graphs ####
     ExpVar_perc = adonis_all_rarefied$aov.tab$R2[-length(adonis_all_rarefied$aov.tab$R2)]*100
+    ExpVar_perc[ExpVar_perc < 0] <- 0
     ExpVar_name = rownames(adonis_all_rarefied$aov.tab)[-length(rownames(adonis_all_rarefied$aov.tab))]
     ExpVar_piedata = data.frame(ExpVar_name,ExpVar_perc)
     ExpVar_piedata = ExpVar_piedata[order(ExpVar_piedata$ExpVar_perc),]

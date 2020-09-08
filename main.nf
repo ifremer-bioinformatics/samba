@@ -961,9 +961,9 @@ newick = params.stats_only ? newick_only : newick_phylo
 //     file 'lr_mapping.ok' into process_lr_mapping_report
 //     file 'v_minimap2.txt' into v_minimap2_version
 //
-//   script:
+//   shell:
 //     """
-//     lr_minimap2.sh -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam 2> lr_minimap2.log
+//     minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam 2> lr_minimap2.log
 //     touch lr_mapping.ok
 //     minimap2 --version > v_minimap2.txt
 //     """

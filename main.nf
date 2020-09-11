@@ -84,6 +84,7 @@ def helpMessage() {
 
 	Predict functionnal abundance:
 	--picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
+    --picrust_var [str] According to your metadata file, list the column names corresponding to the variables to group samples for functional predictions (comma-separated list).
 	--method [str]			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
 	--nsti [str]			Max NSTI value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
@@ -885,7 +886,7 @@ if (params.picrust2_enable) {
 
         script :
         """
-        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${beta_var} functional_predictions_NMDS_${beta_var} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_var} functional_predictions_NMDS_${picrust_var} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
         cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
         """
     }

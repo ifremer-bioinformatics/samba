@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 from __future__ import print_function
-# import os
-# import glob
 import re
 import gzip
 import argparse
 import sys
 from Bio import SeqIO
-from joblib import Parallel, delayed
+# from joblib import Parallel, delayed
+import multiprocessing as mp
 
 # For errors / warnings
 def eprint(*args, **kwargs):
@@ -18,12 +17,8 @@ def getArgs():
     parser = argparse.ArgumentParser(description="")
     parser.add_argument('-a',dest="manifest",type=str,required=True,help='q2_manifest file')
     parser.add_argument('-e',dest="metadata",type=str,required=True,help='q2_metadata file')
-    # parser.add_argument('-s',dest="summary",type=str,required=True,help='Summary file')
-    # parser.add_argument('-b',dest="barcode",type=str,required=True,help='Barcode sequence')
-    # parser.add_argument('-i',dest="sampleid",type=str,required=True,help='Sample ID')
+    parser.add_argument('-c',dest="threads",type=int,default=4,help='Number of threads [%(default)s]')
     parser.add_argument('-t',dest="type",type=str,default='paired', choices=['paired','single'],help='Sequencing format [%(default)s]')
-    # parser.add_argument('-x',dest="barcodefilter",type=int,required=True,help='Barcode percentage filter')
-    # parser.add_argument('-y',dest="primerfilter",type=int,required=True,help='Primer percentage filter')
 
     arg = parser.parse_args()
     return arg
@@ -70,36 +65,37 @@ def collect_manifest(manifest_file, collect_data, data_type):
                 collect_data[sampleid]['R1'] = R1
     return collect_data
 
-def check_fastq(collect_data, data_type):
-    for sample in collect_data.keys():
-        print("\tanalyse sample: "+sample)
-        barcode = collect_data[sample]['barcode']
-        # by default, single-end
-        reads = ['R1']
-        # in case of paired, add R2 analysis
-        if data_type == 'paired':
-            reads.append('R2')
-        # check fastq
-        for r in reads:
-            R=collect_data[sample][r]
-            if r == 'R1':
-                primer=collect_data[sample]['primerF']
-            else:
-                primer=collect_data[sample]['primerR']
-            instrument, index, reads_count, primer = read_fastq(R, primer)
-            collect_data[sample]['reads_count_'+r] = reads_count
-            collect_data[sample]['instrument_'+r] = instrument
-            collect_data[sample]['nb_instrument_'+r] = len(instrument)
-            collect_data[sample]['index_'+r] = index
-            collect_data[sample]['primer_'+r] = primer
-            collect_data[sample]['perc_primer_'+r] = round(primer * 100 / reads_count, 2)
-            collect_data[sample]['nb_barcode_'+r] = len(index)
-            collect_data[sample]['barcode_seq_'+r] = 'FALSE'
-            if len(index) == 1:
-                if index[0] == barcode:
-                    collect_data[sample]['barcode_seq_'+r]  = 'TRUE'
+def check_fastq(collect_data, sample, data_type):
+    out = {}
+    print("\tanalyse sample: "+sample)
+    barcode = collect_data[sample]['barcode']
+    # by default, single-end
+    reads = ['R1']
+    # in case of paired, add R2 analysis
+    if data_type == 'paired':
+        reads.append('R2')
+    # check fastq
+    for r in reads:
+        R=collect_data[sample][r]
+        if r == 'R1':
+            primer=collect_data[sample]['primerF']
+        else:
+            primer=collect_data[sample]['primerR']
+        instrument, index, reads_count, primer = read_fastq(R, primer)
+        collect_data[sample]['reads_count_'+r] = reads_count
+        collect_data[sample]['instrument_'+r] = instrument
+        collect_data[sample]['nb_instrument_'+r] = len(instrument)
+        collect_data[sample]['index_'+r] = index
+        collect_data[sample]['primer_'+r] = primer
+        collect_data[sample]['perc_primer_'+r] = round(primer * 100 / reads_count, 2)
+        collect_data[sample]['nb_barcode_'+r] = len(index)
+        collect_data[sample]['barcode_seq_'+r] = 'FALSE'
+        if len(index) == 1:
+            if index[0] == barcode:
+                collect_data[sample]['barcode_seq_'+r]  = 'TRUE'
     # return updated dict
-    return collect_data
+    out[sample] = collect_data[sample]
+    return out
 
 def read_fastq(fastq, primer):
     primer = re.sub(r"([RYSWKMBDHVN])", r".", primer)
@@ -143,7 +139,7 @@ def write_report(collect_data, data_type):
             report.write(sample+'\t'+'{reads_count_R1}\t{barcode}\t{nb_barcode_R1}\t{barcode_seq_R1}\t{nb_instrument_R1}\t{primer_R1}\t{perc_primer_R1}\n'.format(**val))
 
 def main(args):
-
+    
     # Collect metadata infos and check variable names
     print("Step 1 - parse and collect data from q2_metadata")
     collect_data, data_type = collect_check_metadata(args.metadata, args.type)
@@ -152,10 +148,17 @@ def main(args):
     collect_data = collect_manifest(args.manifest, collect_data, data_type)
     # Check fastq integrity
     print("Step 3 - check fastq integrity")
-    collect_data = check_fastq(collect_data, data_type)
+    pool = mp.Pool(args.threads)
+    collect_data_para = pool.starmap(check_fastq, [(collect_data, sample,data_type) for sample in collect_data.keys()])
+    pool.close()
+    # Clean all this mess
+    collect_data_out = {}
+    for result in collect_data_para:
+        for sample, vals in result.items():
+            collect_data_out[sample] = vals
     # Validate and report fastq intergrity
     print("Step 4 - write integrity report")
-    write_report(collect_data, data_type)
+    write_report(collect_data_out, data_type)
 
 if __name__ == '__main__':
     args = getArgs()

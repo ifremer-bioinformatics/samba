@@ -128,6 +128,8 @@ if (params.help) {
 /*
  * SET UP CONFIGURATION VARIABLES
  */
+import java.text.SimpleDateFormat
+def date = new Date()
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -1315,6 +1317,7 @@ if (params.report_enable) {
 
         data = {}
         data["projectName"] = '$params.projectName'
+        data["run_date"] = '$date'
         data["singleEnd"] = '$params.singleEnd'
         data["manifest"] = '$params.input_manifest'
         data["metadata"] = '$params.input_metadata'

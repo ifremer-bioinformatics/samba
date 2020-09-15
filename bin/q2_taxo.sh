@@ -35,6 +35,7 @@ if [ "$extract_db" = true ]; then
         --i-sequences $seqs_db \
         --p-f-primer $Fprimer \
         --p-r-primer $Rprimer \
+        --p-n-jobs $cpus \
         --o-reads $seqs_db_filtered"
     echo $cmd > $logcmd
     eval $cmd

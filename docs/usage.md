@@ -53,6 +53,7 @@
   * [`--nb_samples`](#--nb_samples)
 * [Funtional predictions](#functional-predictions)
   * [`--picrust2_enable`](#--picrust2_enable)
+  * [`--picrust_var`](#--picrust_var)
   * [`--method`](#--method)
   * [`--nsti`](#--nsti)
 * [Differential abundance](#differential-abundance)
@@ -339,6 +340,10 @@ This step is optional and based on [Qiime2/PICRUSt2](https://github.com/gavinmdo
 ### `--picrust2_enable`
 
 Set to true to enable functionnal prediction step. (default = false)
+
+### `--picrust_var`
+
+According to your metadata file, list the column names corresponding to the variables to group samples for functional predictions (comma-separated list).
 
 ### `--method`
 

@@ -128,6 +128,8 @@ if (params.help) {
 /*
  * SET UP CONFIGURATION VARIABLES
  */
+import java.text.SimpleDateFormat
+def date = new Date()
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -799,7 +801,7 @@ process q2_phylogeny {
 
 	script :
 	"""
-	q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd &> q2_phylogeny.log 2>&1
+	q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
 	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
 	"""
 }
@@ -1315,6 +1317,7 @@ if (params.report_enable) {
 
         data = {}
         data["projectName"] = '$params.projectName'
+        data["run_date"] = '$date'
         data["singleEnd"] = '$params.singleEnd'
         data["manifest"] = '$params.input_manifest'
         data["metadata"] = '$params.input_metadata'

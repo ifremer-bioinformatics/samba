@@ -1,0 +1,5 @@
+name: nf-core-biopython-1.78
+channels:
+  - conda-forge
+dependencies:
+  - biopython=1.78

@@ -51,6 +51,12 @@
         <div class="sidebar-header" style="text-align: center;">
             <i class="fas fa-home fa-2x"></i><a href="#home" style="font-weight: bold; font-size: 2.0rem"> Home</a>
         </div>
+        <div style="text-align: left; padding: 10px">
+            Project name : {{ d.projectName }}
+        </div>
+        <div style="text-align: left; padding: 10px">
+            Run date : {{ d.run_date }}
+        </div>
         <ul class="list-unstyled components">
             <li><a href="#description">Description</a></li>
             {% if d.steps.stats_only == 'false' %}

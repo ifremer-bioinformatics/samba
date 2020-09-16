@@ -53,6 +53,7 @@
   * [`--nb_samples`](#--nb_samples)
 * [Funtional predictions](#functional-predictions)
   * [`--picrust2_enable`](#--picrust2_enable)
+  * [`--picrust_var`](#--picrust_var)
   * [`--method`](#--method)
   * [`--nsti`](#--nsti)
 * [Differential abundance](#differential-abundance)
@@ -170,7 +171,8 @@ Headers of metadata file must follow the Qiime2 requirements [Qiime2 metadata](h
 ### `--input_manifest`
 
 Path to input file with samples reads files paths (tsv format). 
-Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](https://docs.qiime2.org/2019.10/tutorials/importing/#manifest-file).
+Headers of manifest file must follow the Qiime2 requirements [Qiime2 manifest](https://docs.qiime2.org/2019.10/tutorials/importing/#manifest-file). 
+Please note that the input data must be in fastq.gz format.
 
 ## Generic arguments
 
@@ -184,7 +186,7 @@ Name of the project being analyzed.
 
 ## Data integrity
 
-This process is optional and checks if input datasets are correctly demultiplexed, if primers ratio is high enough, if metadata file is well-formed and creates a CSV report.
+This process is optional and checks if input datasets are correctly demultiplexed, if primers ratio is high enough, if metadata file is well-formed and creates a CSV report. Please note that the header of your input data must contain the barcode as in the follonwing example : @M00176:65:000000000-A41FR:1:2114:9875:23134 1:N:0:CAACTAGA
 
 ### `--data_integrity_enable`
 
@@ -339,6 +341,10 @@ This step is optional and based on [Qiime2/PICRUSt2](https://github.com/gavinmdo
 ### `--picrust2_enable`
 
 Set to true to enable functionnal prediction step. (default = false)
+
+### `--picrust_var`
+
+According to your metadata file, list the column names corresponding to the variables to group samples for functional predictions (comma-separated list).
 
 ### `--method`
 

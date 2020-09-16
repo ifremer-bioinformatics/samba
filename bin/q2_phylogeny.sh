@@ -15,6 +15,7 @@ rooted_tree=${args[5]}
 export=${args[6]}
 tree_export=${args[7]}
 logcmd=${args[8]}
+ncpus=${args[9]}
 
 # Alignment of representative sequences
 cmd="qiime alignment mafft --i-sequences $repseq --o-alignment $aligned"
@@ -27,7 +28,7 @@ echo $cmd >> $logcmd
 eval $cmd
 
 # fasttree phylogeny
-cmd="qiime phylogeny fasttree --i-alignment $masked --o-tree $tree >& $tree_log 2>&1"
+cmd="qiime phylogeny iqtree --i-alignment $masked --p-n-cores $ncpus --p-n-runs 10 --p-n-iter 1000 --p-alrt 1000 --p-abayes --p-lbp 1000 --o-tree $tree >& $tree_log 2>&1"
 echo $cmd >> $logcmd
 eval $cmd
 

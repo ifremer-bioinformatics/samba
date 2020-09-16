@@ -371,40 +371,41 @@ if (workflow.profile.contains('test')) {
 /*
  * STEP 1 - Checking data integrity
  */
+
 if (params.data_integrity_enable) {
     /* Check data integrity */
     process data_integrity {
-    	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.csv'
+
+        label 'biopython_env'
+
+    	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.txt'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.txt'
+    	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: '*.sort'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*.sort'
 
     	input :
     		file manifest from manifest4integrity
     		file metadata from metadata4integrity
-                file ready from ready_integrity
+            file ready from ready_integrity
 
     	output :
-    		file 'data_integrity.csv'
+    		file 'data_integrity.txt'
+    		file "${metadata}.sort" into metadata_sort
+    		file "${manifest}.sort" into manifest_sort
+
 
     	when :
     		params.data_integrity_enable && !params.stats_only && !params.dada2merge
         // TODO: disable when long reads
     	script :
+    	def datatype = params.singleEnd ? "single" : "paired"
     	"""
-    	data_integrity.sh ${manifest} ${metadata} ${params.primerF} ${params.primerR} data_integrity.csv ${params.barcode_column_name} ${params.sampleid_column_name} ${params.R1_single_files_column_name} ${params.R1_files_column_name} ${params.R2_files_column_name} ${params.barcode_filter} ${params.primer_filter} ${params.singleEnd} &> data_integrity.log 2>&1
-        if test -f "data_integrity_control.bad"; then
-  	   if test -f "data_integrity.csv"; then
-    	      echo "Data integrity process not satisfied, check ${params.outdir}/${params.data_integrity_dirname}/data_integrity.csv file"
-    	      mkdir -p ${params.outdir}/${params.data_integrity_dirname}
-    	      cp data_integrity.csv ${params.outdir}/${params.data_integrity_dirname}/.
-    	   else
-    	      echo "Data integrity process not satisfied, check data_integrity.log file in process working directory"
-    	   fi
-    	   exit 1
-    	fi
+        data_integrity.py -e ${metadata} -a ${manifest} -r ${datatype} -t ${task.cpus} -c ${params.control_list}
         """
     }
+    metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
+    manifest_sort.set { manifest }
 }
-
 
 /*
  * STEP 2 - Import metabarcoding data into QIIME2 object
@@ -420,7 +421,7 @@ process q2_import {
 
 	input :
 		file q2_manifest from manifest
-                file ready from ready_import
+        file ready from ready_import
 
 	output :
 		file 'data.qza' into imported_data

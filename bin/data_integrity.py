@@ -2,11 +2,13 @@
 
 from __future__ import print_function
 import re
+import os
+import sys
 import gzip
 import argparse
-import sys
-from Bio import SeqIO
+import subprocess
 import multiprocessing as mp
+from Bio import SeqIO
 
 # For errors / warnings
 def eprint(*args, **kwargs):
@@ -17,8 +19,8 @@ def getArgs():
     parser.add_argument('-a',dest="manifest",type=str,required=True,help='q2_manifest file')
     parser.add_argument('-e',dest="metadata",type=str,required=True,help='q2_metadata file')
     parser.add_argument('-p',dest="primer",type=int,default=70,help='Percentage of primers supposed to be found in raw reads [%(default)s]')
-    parser.add_argument('-c',dest="control",type=str,help='Delimited list of control (comma separated)')
-    parser.add_argument('-r',dest="readtype",type=str,default='paired', choices=['paired','single'],help='Sequencing format [%(default)s]')
+    parser.add_argument('-c',dest="control",type=str, default='',help='Delimited list of control (comma separated)')
+    parser.add_argument('-r',dest="readtype",type=str,default='paired',choices=['paired','single'],help='Sequencing format [%(default)s]')
     parser.add_argument('-t',dest="threads",type=int,default=4,help='Number of threads [%(default)s]')
 
     arg = parser.parse_args()
@@ -31,19 +33,19 @@ def collect_check_metadata(metadata_file, data_type):
     for l in open(metadata_file, 'r'):
         # ignore header
         if not l.startswith('sampleid'):
-            sampleid = l.split()[0]
+            sampleid = re.split(r'\t', l.rstrip('\n'))[0]
             collect_data[sampleid] = {}
-            collect_data[sampleid]['barcode'] = l.split()[1]
+            collect_data[sampleid]['barcode'] = re.split(r'\t', l.rstrip('\n'))[1]
             if data_type == 'paired':
-                collect_data[sampleid]['primerF'] = l.split()[2]
-                collect_data[sampleid]['primerR'] = l.split()[3]
-                collect_data[sampleid]['vars'] = l.split()[4:]
+                collect_data[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2]
+                collect_data[sampleid]['primerR'] = re.split(r'\t', l.rstrip('\n'))[3]
+                collect_data[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[4:]
             else:
-                collect_data[sampleid]['primerF'] = l.split()[2]
-                collect_data[sampleid]['vars'] = l.split()[3:]
+                collect_data[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2]
+                collect_data[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[3:]
             # check that var(s) didn't contains any NA
             for var in collect_data[sampleid]['vars']:
-                if var == 'NA':
+                if var == 'NA' or var == '':
                     eprint('ERROR: '+sampleid+' has NA value(s) in q2_metadata, please remove them before running SAMBA')
                     exit(1)
     # return results
@@ -58,7 +60,17 @@ def collect_manifest(manifest_file, collect_data, data_type):
         # ignore header
         if not l.startswith('sample-id'):
             if data_type == 'paired':
-                sampleid, R1, R2 = l.split()
+                try:
+                    sampleid, R1, R2 = re.split(r'\t', l.rstrip('\n'))
+                except ValueError:
+                    size = len(re.split(r'\t', l.rstrip('\n')))
+                    eprint('ERROR: q2_manifest contains '+str(size)+ 'column(s) instead of 3')
+                    exit(1)
+
+                # check that file path are good
+                check_fastq_path(R1)
+                check_fastq_path(R2)
+                # add to collect_data
                 try:
                     collect_data[sampleid]['R1'] = R1
                     collect_data[sampleid]['R2'] = R2
@@ -66,7 +78,15 @@ def collect_manifest(manifest_file, collect_data, data_type):
                     eprint('ERROR: '+sampleid+' from q2_manifest is absent in q2_metadata')
                     exit(1)
             else:
-                sampleid, R1 = l.split()
+                try:
+                    sampleid, R1 = l.split()
+                except ValueError:
+                    size = len(re.split(r'\t', l.rstrip('\n')))
+                    eprint('ERROR: q2_manifest contains '+str(size)+ 'column(s) instead of 2')
+                    exit(1)
+                # check that file path are good
+                check_fastq_path(R1)
+                # add to collect_data
                 try:
                     collect_data[sampleid]['R1'] = R1
                 except KeyError:
@@ -138,6 +158,11 @@ def read_fastq(fastq, primer):
                 reads_count += 1
     return instrument, index, reads_count, primers_count
 
+def check_fastq_path(path):
+    if not os.path.isfile(path):
+        eprint('ERROR: ' + path + ' from q2_manifest not exit. Wrong path?')
+        exit(1)
+
 def write_report(collect_data, data_type):
     # open output file for writting
     report = open('data_integrity.txt', 'w')
@@ -155,16 +180,57 @@ def write_report(collect_data, data_type):
         else:
             report.write(sample+'\t'+'{reads_count_R1}\t{barcode}\t{nb_barcode_R1}\t{barcode_seq_R1}\t{nb_instrument_R1}\t{primer_R1}\t{perc_primer_R1}\n'.format(**val))
 
+def integrity_validation(collect_data_out,control_list, data_type, primer_threshold):
+    # collect control(s)
+    controls = [str(control) for control in control_list.split(',')]
+    # let's check the integrity
+    for sample_id, val in collect_data_out.items():
+        if data_type == 'paired':
+            # 1 - check reads count R1 vs R2
+            if val['reads_count_R1'] != val['reads_count_R2']:
+                eprint('ERROR: different number of reads between R1 and R2 for ' + sample_id)
+                exit(1)
+            # 2 - check single sequencing instrument in reads
+            if val['nb_instrument_R1'] != 1 or val['nb_instrument_R2'] != 1:
+                eprint('ERROR: multiple sequencing machines detected in ' + sample_id)
+                exit(1)
+            # 3 - check primer percentage found, except for control(s)
+            if not sample_id in controls:
+                if val['perc_primer_R1'] < primer_threshold or val['perc_primer_R2'] < primer_threshold:
+                    eprint('ERROR: ' + sample_id + " did not reach the minimum threshold for primer percentage [" + str(primer_threshold) +"%]")
+                    exit(1)
+        else:
+            # 1 - check single sequencing instrument in reads
+            if val['nb_instrument_R1'] != 1:
+                eprint('ERROR: multiple sequencing machines detected in ' + sample_id)
+                exit(1)
+            # 2 - check primer percentage found, except for control(s)
+            if not sample_id in controls:
+                if val['perc_primer_R1'] < primer_threshold:
+                    eprint('ERROR: ' + sample_id + " did not reach the minimum threshold for primer percentage [" + str(primer_threshold) + "%]")
+                    exit(1)
+
+def sort_process(input_file, output_file):
+    cmd_sort = '(head -n 1 {in_file} && tail -n +2 {in_file} | sort) > {out_file}'.format(in_file=input_file, out_file=output_file)
+    p = subprocess.Popen(cmd_sort, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        eprint('ERROR: sort metadata/manifest failed')
+        raise Exception(stderr)
+        exit(1)
+
 def main(args):
 
-    # Collect metadata infos and check variable names
+    # 1 - Collect metadata infos and check variable names
     print("Step 1 - parse and collect data from q2_metadata")
     collect_data, data_type = collect_check_metadata(args.metadata, args.readtype)
-    # Collect reads location from manifest
+
+    # 2 - Collect reads location from manifest
     print("Step 2 - parse and collect data from q2_manifest")
     collect_data = collect_manifest(args.manifest, collect_data, data_type)
-    # Check fastq integrity
-    print("Step 3 - check fastq integrity")
+
+    # 3 - Check fastq integrity
+    print("Step 3 - collect fastq integrity")
     pool = mp.Pool(args.threads)
     collect_data_para = pool.starmap(check_fastq, [(collect_data, sample,data_type) for sample in collect_data.keys()])
     pool.close()
@@ -173,37 +239,24 @@ def main(args):
     for result in collect_data_para:
         for sample, vals in result.items():
             collect_data_out[sample] = vals
-    # Report fastq intergrity before validation
+
+    # 4 - Report fastq intergrity before validation
     # Allow exploration by user for a better understanding
     print("Step 4 - write integrity report")
     write_report(collect_data_out, data_type)
-    # Validate manifest, metadata and fastq
+
+    # 5 - Validate manifest, metadata and fastq
     print("Step 5 - validation of data")
-    controls = [str(control) for control in args.control.split(',')]
-    print(controls)
-    for sample, val in collect_data_out.items():
-        # print(sample, val)
-        # check samples
-        if val['reads_count_R1'] != val['reads_count_R2']:
-            eprint('ERROR: '+sampleid+' from q2_manifest is absent in q2_metadata')
-            exit(1)
+    integrity_validation(collect_data_out, args.control, data_type, args.primer)
 
-            
-        if not sample in controls:
-
-            # if val['nb_instrument_R1'] != val['reads_count_R2']:
-            if val['perc_primer_R1'] <= args.primer or val['perc_primer_R2'] <= args.primer:
-                eprint('ERROR: '+sampleid+' from q2_manifest is absent in q2_metadata')
-                exit(1)
-
-
-    # for k, v in collect_data_out.items()
-        # -> primer filter
-        # -> primer filter expcet for controls
-        # -> barcode filter: should be == TRUE
-        # -> sequencer name filter: should == 1
-
-    # print("Step 6 - rewrite manifest and metadata (to sort and remove space)")
+    # 6 - Sort manifest and metadata
+    print("Step 6 - Sort manifest and metadata by sample id")
+    print("\tsort manifest...")
+    output_file_manifest = args.manifest + ".sort"
+    sort_process(args.manifest, output_file_manifest)
+    print("\tsort metadata...")
+    output_file_metadata = args.metadata + ".sort"
+    sort_process(args.metadata, output_file_metadata)
 
 if __name__ == '__main__':
     args = getArgs()

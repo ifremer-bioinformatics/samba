@@ -815,10 +815,10 @@ seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
 seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
 
 Channel
-  .from(params.beta_div_var)
+  .from(params.picrust_var)
   .splitCsv(sep : ',', strip : true)
   .flatten()
-  .into { beta_var_picrust2 ; beta_var_nn ; beta_var_rare ; beta_var_deseq ; beta_var_css }
+  .into { var_picrust2 }
 
 /*
  * STEP 9 -  Run functional predictions
@@ -875,7 +875,7 @@ if (params.picrust2_enable) {
             file ko_metagenome from KO_predictions_tsv
             file metacyc_predictions_ from pathway_predictions_tsv
             file metadata from metadata4picrust2
-            each beta_var from beta_var_picrust2
+            each picrust_vars from var_picrust2
 
         output :
             file '*functional_predictions_NMDS*' into functional_pred_NMDS
@@ -887,7 +887,7 @@ if (params.picrust2_enable) {
 
         script :
         """
-        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_var} functional_predictions_NMDS_${picrust_var} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
         cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
         """
     }
@@ -1083,6 +1083,11 @@ process stats_alpha {
     """
 }
 
+Channel
+  .from(params.beta_div_var)
+  .splitCsv(sep : ',', strip : true)
+  .flatten()
+  .into { beta_var_nn ; beta_var_rare ; beta_var_deseq ; beta_var_css }
 
 /*
  * STEP 13 -  Beta diversity (non normalized) community statistics analysis

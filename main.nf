@@ -818,7 +818,7 @@ Channel
   .from(params.picrust_var)
   .splitCsv(sep : ',', strip : true)
   .flatten()
-  .into { var_picrust2 }
+  .set { var_picrust2 }
 
 /*
  * STEP 9 -  Run functional predictions

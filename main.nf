@@ -27,7 +27,7 @@ def helpMessage() {
 					Available: conda, docker, singularity, test, custom.
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
-	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio). Not available yet.
+	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio).
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.
@@ -264,25 +264,22 @@ if (params.microDecon_enable && !params.control_list) {
    exit 1
 }
 
-// TODO
 //If pipeline runs for long reads
-// Fully disable qiime2 pipeline, keep stats and reporting
-// Create a specific channel
-// if (!params.stats_only && params.longreads) {
-//   longreads_ch = Channel.fromPath(params.manifest)
-//                         .splitCsv(header: true, sep:'\t')
-//                         .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
-//
-// Force to false other processes options
-//   params.data_integrity_enable = false
-//   params.qiime2 = false
-//   params.dada2merge = false
-//   params.dbotu3_enable = false
-//   params.microDecon_enable = false
-//   params.ancom_enable = false
-//   params.asv = false
-//   params.picrust2_enable = false
-// }
+if (params.longreads) {
+   longreads_ch = Channel.fromPath(params.manifest)
+                         .splitCsv(header: true, sep:'\t')
+                         .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+
+//Force to false other processes options
+   params.data_integrity_enable = false
+   params.qiime2 = false
+   params.dada2merge = false
+   params.dbotu3_enable = false
+   params.microDecon_enable = false
+   params.ancom_enable = false
+   params.asv = false
+   params.picrust2_enable = false
+}
 
 /*
  * PIPELINE INFO
@@ -314,10 +311,7 @@ if (params.picrust2_enable) summary['Prediction'] = "Functionnal prediction proc
 if (params.stats_alpha_enable) summary['Alpha div'] = "Alpha diversity indexes process enabled"
 if (params.stats_beta_enable) summary['Beta div'] = "Beta diversity statistics processes enabled"
 if (params.stats_desc_comp_enable) summary["Desc comp"] = "Descriptive comparisons statistics process enabled"
-// TODO
-// if (params.longreads) summary["Long reads"] = "TODO"
-// if (params.nanopore) summary["Nanopore"] = "TODO"
-// if (params.pacbio) summary["PacBio"] = "TODO"
+if (params.longreads) summary["Long reads"] = "Going to run long reads processes"
 
 if (params.email || params.email_on_fail) {
     summary['E-mail Address']    = params.email
@@ -360,7 +354,7 @@ if (workflow.profile.contains('test')) {
          !params.stats_only && !params.dada2merge && workflow.profile.contains('test')
       script :
       """
-      get_test_data.sh ${baseDir} 'data_is_ready' &> get_test_data.log 2>&1
+      get_test_data.sh ${baseDir} 'data_is_ready' ${params.longreads} &> get_test_data.log 2>&1
       """
   }
 } else {

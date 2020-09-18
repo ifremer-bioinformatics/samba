@@ -782,9 +782,8 @@ if (!params.longreads) {
        file '*' from lr_mapped.collect()
    
      output:
-       file "*.tax" into lr_taxify
+       file 'samples.tax' into lr_biom_tsv
        file 'lr_get_taxonomy.ok' into process_lr_taxonomy_report
-       //TODO : ADD TSV biom file for long reads :  file 'lr_biom.tsv' into lr_biom_tsv
    
      shell:
        """

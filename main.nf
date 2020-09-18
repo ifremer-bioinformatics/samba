@@ -27,7 +27,7 @@ def helpMessage() {
 					Available: conda, docker, singularity, test, custom.
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
-	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio).
+	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.

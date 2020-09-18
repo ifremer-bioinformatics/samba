@@ -353,8 +353,9 @@ if (workflow.profile.contains('test')) {
        when :
          !params.stats_only && !params.dada2merge && workflow.profile.contains('test')
       script :
+      def datatype = params.longreads ? "longreads" : "shortreads"
       """
-      get_test_data.sh ${baseDir} 'data_is_ready' ${params.longreads} &> get_test_data.log 2>&1
+      get_test_data.sh ${baseDir} 'data_is_ready' ${datatype} &> get_test_data.log 2>&1
       """
   }
 } else {
@@ -380,17 +381,15 @@ if (params.data_integrity_enable) {
     	input :
     		file manifest from manifest4integrity
     		file metadata from metadata4integrity
-            file ready from ready_integrity
+                file ready from ready_integrity
 
     	output :
     		file 'data_integrity.txt'
     		file "${metadata}.sort" into metadata_sort
     		file "${manifest}.sort" into manifest_sort
 
-
     	when :
-    		params.data_integrity_enable && !params.stats_only && !params.dada2merge
-        // TODO: disable when long reads
+    		params.data_integrity_enable && !params.stats_only && !params.dada2merge && !params.longreads
     	script :
     	def datatype = params.singleEnd ? "single" : "paired"
     	"""

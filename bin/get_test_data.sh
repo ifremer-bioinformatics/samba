@@ -8,29 +8,31 @@
 args=("$@")
 BASEDIR=${args[0]}
 ready=${args[1]}
-longreads=${args[2]}
+datatype=${args[2]}
 
-if [ "$longreads" = true ]
+if [ "$datatype" == "longreads" ]
 then
-  datatype="longreads"
   datadir="$BASEDIR/training_dataset/$datatype"
   DB="silva_16S_99_k15.mmi"
   TAX="silva_taxonomy_16S_99_majority.txt"
-else
+elif [ "$datatype" == "shortreads" ]
+then
   # short reads dataset
-  datatype="shortreads"
   datadir="$BASEDIR/training_dataset/$datatype"
   DB="DATABASE_silva_v132_99_16S.qza"
   TAX=""
+else 
+  echo "Datatype is incorrect"
+  exit 1 
 fi
 
 if [ ! -d "$datadir" ] || ([ -d "$datadir" ] && [ ! "$(ls -A $datadir)" ])
 then 
      mkdir -p $datadir
-     wget -r -nc -l2 -nH --cut-dirs=88888888 -A 'q2*' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/$datatype -P $datadir
+     wget -r -nc -l2 -nH --cut-dirs=8 -A 'q2*' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/$datatype -P $datadir
      sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/$datatype/q2_manifest
      wget -r -nc -l2 -nH --cut-dirs=8 -A '_subsampled.fastq.gz' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/training_dataset/$datatype/dna-sequence-raw -P $datadir
-     if [ ! "$longreads" ] 
+     if [ "$datatype" == "shortreads" ] 
      then
         sed -i "s|/PATH-TO|$BASEDIR|g" $BASEDIR/training_dataset/$datatype/q2_manifest.single
      fi

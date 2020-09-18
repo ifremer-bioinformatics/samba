@@ -393,7 +393,7 @@ if (params.data_integrity_enable) {
     	script :
     	def datatype = params.singleEnd ? "single" : "paired"
     	"""
-        data_integrity.py -e ${metadata} -a ${manifest} -r ${datatype} -t ${task.cpus} -c ${params.control_list}
+        data_integrity.py -e ${metadata} -a ${manifest} -r ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
         """
     }
     metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
@@ -414,7 +414,7 @@ process q2_import {
 
 	input :
 		file q2_manifest from manifest
-        file ready from ready_import
+                file ready from ready_import
 
 	output :
 		file 'data.qza' into imported_data

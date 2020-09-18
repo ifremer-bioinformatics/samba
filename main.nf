@@ -751,7 +751,7 @@ if (!params.longreads) {
    /* _______________________________________________________________ */
    
    process lr_mapping {
-     label 'lr_mapping'
+     label 'lr_mapping_env'
    
      publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.sam'
      publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
@@ -774,7 +774,7 @@ if (!params.longreads) {
    }
    
    process lr_get_taxonomy {
-     label 'lr_get_taxonomy'
+     label 'biopython_env'
  
      publishDir "${params.outdir}/${params.lr_taxonomy_dirname}", mode: 'copy', pattern: '*.tax'
    

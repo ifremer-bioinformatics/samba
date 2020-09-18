@@ -366,401 +366,438 @@ if (workflow.profile.contains('test')) {
 /*
  * STEP 1 - Checking data integrity
  */
-
-if (params.data_integrity_enable) {
-    /* Check data integrity */
-    process data_integrity {
-
-        label 'biopython_env'
-
-    	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.txt'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.txt'
-    	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: '*.sort'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*.sort'
-
-    	input :
-    		file manifest from manifest4integrity
-    		file metadata from metadata4integrity
-                file ready from ready_integrity
-
-    	output :
-    		file 'data_integrity.txt'
-    		file "${metadata}.sort" into metadata_sort
-    		file "${manifest}.sort" into manifest_sort
-
-    	when :
-    		params.data_integrity_enable && !params.stats_only && !params.dada2merge && !params.longreads
-    	script :
-    	def datatype = params.singleEnd ? "single" : "paired"
-    	"""
-        data_integrity.py -e ${metadata} -a ${manifest} -r ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
-        """
+if (!params.longreads) {
+    if (params.data_integrity_enable) {
+        /* Check data integrity */
+        process data_integrity {
+    
+            label 'biopython_env'
+    
+        	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: 'data_integrity.txt'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'data_integrity.txt'
+        	publishDir "${params.outdir}/${params.data_integrity_dirname}", mode: 'copy', pattern: '*.sort'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*.sort'
+    
+        	input :
+        		file manifest from manifest4integrity
+        		file metadata from metadata4integrity
+                    file ready from ready_integrity
+    
+        	output :
+        		file 'data_integrity.txt'
+        		file "${metadata}.sort" into metadata_sort
+        		file "${manifest}.sort" into manifest_sort
+    
+        	when :
+        		params.data_integrity_enable && !params.stats_only && !params.dada2merge
+        	script :
+        	def datatype = params.singleEnd ? "single" : "paired"
+        	"""
+            data_integrity.py -e ${metadata} -a ${manifest} -r ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
+            """
+        }
+        metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
+        manifest_sort.set { manifest }
     }
-    metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
-    manifest_sort.set { manifest }
-}
-
-/*
- * STEP 2 - Import metabarcoding data into QIIME2 object
- */
-process q2_import {
-
-	label 'qiime2_env1cpu'
-
-	publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
-
-	input :
-		file q2_manifest from manifest
-                file ready from ready_import
-
-	output :
-		file 'data.qza' into imported_data
-		file 'data.qzv' into imported_visu
-		file 'import_output' into imported_output
-		file 'completecmd' into complete_cmd_import
-                file 'v_qiime2.txt' into qiime2_version
-
-	when :
-		!params.stats_only && !params.dada2merge
-    // TODO: disable when longreads
-
-	script :
-	"""
-	q2_import.sh ${params.singleEnd} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
-	qiime --version|grep 'q2cli'|cut -d' ' -f3 > v_qiime2.txt
-	"""
-}
-
-
-/*
- * STEP 3 - Trim metabarcode data with cutadapt
- */
-process q2_cutadapt {
-
-	label 'qiime2_env'
-
-	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
-
-	input :
-		file imported_data from imported_data
-
-	output :
-		file 'data_trimmed.qza' into trimmed_data
-		file 'data_trimmed.qzv' into trimmed_visu
-		file 'trimmed_output' into trimmed_output
-		file 'completecmd' into complete_cmd_cutadapt
-
-	when :
-		!params.stats_only && !params.dada2merge
-    // TODO: disable when long reads
-
-	script :
-	"""
-	q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
-	"""
-}
-
-/*
- * STEP 4 - Dada2 ASVs inference
- */
-process q2_dada2 {
-
-	label 'qiime2_env'
-
-	publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
-
-	input :
-		file trimmed_data from trimmed_data
-		file metadata from metadata4dada2
-
-	output :
-		file 'rep_seqs.qza' into dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
-		file 'rep_seqs.qzv' into visu_repseps
-		file 'table.qza' into dada2_table_dbotu3, dada2_table_picrust2, dada2_table_ancom
-		file 'table.qzv' into visu_table
-		file 'stats.qza' into stats_table
-		file 'stats.qzv' into visu_stats
-		file 'dada2_output' into dada2_output
-		file 'completecmd' into complete_cmd_dada2
-
-	when :
-		!params.stats_only && !params.dada2merge
-    // TODO: disable when long reads
-
-	script :
-	"""
-	q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
-	"""
-}
-
-/*
- * STEP 5 - Distribution based-clustering with dbotu3
- */
-if (params.dbotu3_enable) {
-    /* Run dbotu3 */
-    process q2_dbotu3 {
-
-      label 'qiime2_env'
-
-    	publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
+    
+    /*
+     * STEP 2 - Import metabarcoding data into QIIME2 object
+     */
+    process q2_import {
+    
+    	label 'qiime2_env1cpu'
+    
+    	publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
-
+    	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "cmd/${task.process}_complete.sh" }
+    
     	input :
-    		file table from dada2_table_dbotu3
-    		file seqs from dada2_seqs_dbotu3
-    		file metadata from metadata4dbotu3
-
+    		file q2_manifest from manifest
+                    file ready from ready_import
+    
     	output :
-    		file 'dbotu3_details.txt' into dbotu3_details
-    		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
-    		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
-    		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
-    		file 'dbotu3_table.qzv' into dbotu3_table_visu
-    		file 'dbotu3_output' into dbotu3_output
-    		file 'completecmd' into complete_cmd_dbotu3
-
+    		file 'data.qza' into imported_data
+    		file 'data.qzv' into imported_visu
+    		file 'import_output' into imported_output
+    		file 'completecmd' into complete_cmd_import
+                    file 'v_qiime2.txt' into qiime2_version
+    
     	when :
-    		!params.stats_only && !params.dada2merge && params.dbotu3_enable
-        // TODO: disable when long reads
-
+    		!params.stats_only && !params.dada2merge
+    
     	script :
     	"""
-    	q2_dbotu3.sh ${table} ${seqs} ${metadata} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+    	q2_import.sh ${params.singleEnd} ${q2_manifest} data.qza data.qzv import_output completecmd &> q2_import.log 2>&1
+    	qiime --version|grep 'q2cli'|cut -d' ' -f3 > v_qiime2.txt
     	"""
     }
-}
-
-/*
- * STEP 6 - Use Dada2 merge to merge ASVs tables and sequences
- */
-if (params.dada2merge) {
-    process q2_dada2_merge {
-
-            label 'qiime2_env'
-
-            publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
-            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
-
-            input :
-                    path table_dir from dada2merge_tabledir_ch
-                    path seq_dir from dada2merge_repseqsdir_ch
-
-            output :
-                    file 'merged_table.qza' into merge_table_picrust2, merge_table_ancom
-                    file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merge_seqs_ancom
-                    file 'merge_output' into merge_output
-                    file 'completecmd' into complete_cmd_dada2merge
-
-            when :
-                params.dada2merge
-                // TODO: disable when long reads
-
-            script :
-            """
-            q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza merge_output completecmd &> q2_merge.log 2>&1
-            """
-    }
-}
-
-
-// TODO: when long reads?
-outputA = params.dada2merge ? merge_output : dada2_output
-output_ch = params.dbotu3_enable ? dbotu3_output : outputA
-output_ch.into { taxonomy_output ; decontam_output }
-
-seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
-seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
-
-/*
-* STEP 7  -  Run taxonomy assignment
-*/
-process q2_taxonomy {
-
-	label 'qiime2_env'
-
-	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
-	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
-	publishDir "${params.outdir}/${params.report_dirname}/taxo_output/", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
-
-	input :
-		file repseqs_taxo from seqs_taxo
-		file summary_output from taxonomy_output
-    		file seqs_db from seqs_db_ch
-	        file taxo_db from taxo_db_ch
-        	file database from database_ch
-
-	output :
-		file 'taxonomy.qza' into data_taxonomy
-		file 'taxonomy.qzv' into visu_taxonomy
-		file 'ASV_taxonomy.tsv' into taxonomy_tsv
-		file 'taxo_output' into taxo_output
-		file 'ASV_table_with_taxonomy.biom' into biom
-		file 'ASV_table_with_taxonomy.tsv' into biom_tsv, biom_tsv_decontam
-		file 'taxonomic_database.qza' optional true into trained_database
-		file 'seqs_db_amplicons.qza' optional true into seqs_db_filtered
-		file 'completecmd' into complete_cmd_taxo
-
-	when :
-	!params.stats_only
-  // TODO: disable when long reads
-
-	script :
-        def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
-	"""
-        q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db ${workflow.workDir}/tmp &> q2_taxo.log 2>&1
-	"""
-}
-
-/*
- * STEP 8 -  Decontaminate samples with MicroDecon
- */
-if (params.microDecon_enable) {
-    process microDecon_step1 {
-
-    	label 'microdecon_env'
-
-    	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
-    	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'abundance_removed.txt'
-    	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'ASV_removed.txt'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
-    	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
-    	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'abundance_removed.txt'
-    	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'ASV_removed.txt'
-    	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_microDecon -> "cmd/${task.process}_complete.sh" }
-
-    	input :
-    		file microDecon_table from biom_tsv_decontam
-
-    	output :
-    		file 'decontaminated_ASV_table.tsv' into decontam_table, decontam_table_step2, decontam_table_step3
-    		file 'abundance_removed.txt' into abund_removed
-    		file 'ASV_removed.txt' into ASV_removed
-    		file 'completecmd' into complete_cmd_microDecon
-                file 'v_microdecon.txt' into microdecon_version
-
-    	when :
-    		!params.stats_only && !params.dada2merge && params.microDecon_enable
-        // TODO: disable when long reads
-
-    	shell :
-    	"""
-    	sed '1d' ${microDecon_table} > microDecon_table
-    	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
-    	microDecon.R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
-    	cp ${baseDir}/bin/microDecon.R completecmd &>> microDecon.log 2>&1
-        Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"
-
-    	"""
-    }
-
-    process microDecon_step2 {
-
+    
+    
+    /*
+     * STEP 3 - Trim metabarcode data with cutadapt
+     */
+    process q2_cutadapt {
+    
     	label 'qiime2_env'
-
-    	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
-    	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
-
+    
+    	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+    
     	input :
-    		file table4microDecon from decontam_table_step2
-
+    		file imported_data from imported_data
+    
     	output :
-    		file 'decontaminated_ASV_table.qza' into decontam_table_qza, decontam_table_picrust2, decontam_table_ancom
-
+    		file 'data_trimmed.qza' into trimmed_data
+    		file 'data_trimmed.qzv' into trimmed_visu
+    		file 'trimmed_output' into trimmed_output
+    		file 'completecmd' into complete_cmd_cutadapt
+    
     	when :
-    		!params.stats_only && !params.dada2merge && params.microDecon_enable
-        // TODO: disable when long reads
-
-    	shell :
+    		!params.stats_only && !params.dada2merge
+    
+    	script :
     	"""
-    	biom convert -i ${table4microDecon} -o decontaminated_ASV_table.biom --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy
-    	qiime tools import --input-path decontaminated_ASV_table.biom --type 'FeatureTable[Frequency]' --input-format BIOMV210Format --output-path decontaminated_ASV_table.qza
+    	q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
     	"""
     }
-
-    /* Extract non-contaminated ASV ID */
-    process microDecon_step3 {
-
-    	label 'seqtk_env'
-
-    	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_ID.txt'
-    	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
-    	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
-
-    	input :
-    		file decontam_table from decontam_table_step3
-    		file dada2_output from decontam_output
-
-    	output :
-    		file 'decontaminated_ASV_ID.txt' into decontam_ASV_ID
-    		file 'decontaminated_ASV.fasta' into decontam_ASV_fasta
-
-    	when :
-    		!params.stats_only && !params.dada2merge && params.microDecon_enable
-        // TODO: disable when long reads
-
-    	shell :
-    	"""
-    	cut -d \$'\t' -f1 ${decontam_table} | sed '1d' > decontaminated_ASV_ID.txt
-    	seqtk subseq ${dada2_output}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
-    	"""
-    }
-
-    /* Run phylogeny from decontaminated ASV sequences */
-    process microDecon_step4 {
-
+    
+    /*
+     * STEP 4 - Dada2 ASVs inference
+     */
+    process q2_dada2 {
+    
     	label 'qiime2_env'
-
-    	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
-    	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
-    	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
-
+    
+    	publishDir "${params.outdir}/${params.dada2_dirname}", mode: 'copy', pattern: '*.qz*'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
+    
     	input :
-    		file ASV_fasta from decontam_ASV_fasta
-
+    		file trimmed_data from trimmed_data
+    		file metadata from metadata4dada2
+    
     	output :
-    		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
-    		file 'aligned_repseq.qza' into decontam_aligned_repseq
-    		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
-    		file 'tree.qza' into decontam_tree
-    		file 'tree.log' into decontam_tree_bestmodel_log
-    		file 'rooted_tree.qza' into decontam_rooted_tree
-    		file 'tree_export_dir' into decontam_tree_export_dir
-    		file 'tree_export.log' into decontam_tree_export_log
-    		file 'tree.nwk' into decontam_newick
-    		file 'completecmd' into complete_cmd_decontam_phylogeny
-
+    		file 'rep_seqs.qza' into dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
+    		file 'rep_seqs.qzv' into visu_repseps
+    		file 'table.qza' into dada2_table_dbotu3, dada2_table_picrust2, dada2_table_ancom
+    		file 'table.qzv' into visu_table
+    		file 'stats.qza' into stats_table
+    		file 'stats.qzv' into visu_stats
+    		file 'dada2_output' into dada2_output
+    		file 'completecmd' into complete_cmd_dada2
+    
     	when :
-    		!params.stats_only && !params.dada2merge && params.microDecon_enable
-        // TODO: disable when long reads
-
-    	shell :
+    		!params.stats_only && !params.dada2merge
+    
+    	script :
     	"""
-        qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
-    	q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
-    	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
-
+    	q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
     	"""
     }
+    
+    /*
+     * STEP 5 - Distribution based-clustering with dbotu3
+     */
+    if (params.dbotu3_enable) {
+        /* Run dbotu3 */
+        process q2_dbotu3 {
+    
+          label 'qiime2_env'
+    
+        	publishDir "${params.outdir}/${params.dbotu3_dirname}", mode: 'copy', pattern: '*.qz*'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
+    
+        	input :
+        		file table from dada2_table_dbotu3
+        		file seqs from dada2_seqs_dbotu3
+        		file metadata from metadata4dbotu3
+    
+        	output :
+        		file 'dbotu3_details.txt' into dbotu3_details
+        		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
+        		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
+        		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
+        		file 'dbotu3_table.qzv' into dbotu3_table_visu
+        		file 'dbotu3_output' into dbotu3_output
+        		file 'completecmd' into complete_cmd_dbotu3
+    
+        	when :
+        		!params.stats_only && !params.dada2merge && params.dbotu3_enable
+    
+        	script :
+        	"""
+        	q2_dbotu3.sh ${table} ${seqs} ${metadata} dbotu3_details.txt dbotu3_seqs.qza dbotu3_seqs.qzv dbotu3_table.qza dbotu3_table.qzv dbotu3_output ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} completecmd &> q2_dbotu3.log 2>&1
+        	"""
+        }
+    }
+    
+    /*
+     * STEP 6 - Use Dada2 merge to merge ASVs tables and sequences
+     */
+    if (params.dada2merge) {
+        process q2_dada2_merge {
+    
+                label 'qiime2_env'
+    
+                publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
+                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
+    
+                input :
+                        path table_dir from dada2merge_tabledir_ch
+                        path seq_dir from dada2merge_repseqsdir_ch
+    
+                output :
+                        file 'merged_table.qza' into merge_table_picrust2, merge_table_ancom
+                        file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merge_seqs_ancom
+                        file 'merge_output' into merge_output
+                        file 'completecmd' into complete_cmd_dada2merge
+    
+                when :
+                    params.dada2merge
+    
+                script :
+                """
+                q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza merge_output completecmd &> q2_merge.log 2>&1
+                """
+        }
+    }
+    
+    outputA = params.dada2merge ? merge_output : dada2_output
+    output_ch = params.dbotu3_enable ? dbotu3_output : outputA
+    output_ch.into { taxonomy_output ; decontam_output }
+    
+    seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
+    seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
+    
+    /*
+    * STEP 7  -  Run taxonomy assignment
+    */
+    process q2_taxonomy {
+    
+    	label 'qiime2_env'
+    
+    	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
+    	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
+    	publishDir "${params.outdir}/${params.report_dirname}/taxo_output/", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
+    
+    	input :
+    		file repseqs_taxo from seqs_taxo
+    		file summary_output from taxonomy_output
+        		file seqs_db from seqs_db_ch
+    	        file taxo_db from taxo_db_ch
+            	file database from database_ch
+    
+    	output :
+    		file 'taxonomy.qza' into data_taxonomy
+    		file 'taxonomy.qzv' into visu_taxonomy
+    		file 'ASV_taxonomy.tsv' into taxonomy_tsv
+    		file 'taxo_output' into taxo_output
+    		file 'ASV_table_with_taxonomy.biom' into biom
+    		file 'ASV_table_with_taxonomy.tsv' into biom_tsv, biom_tsv_decontam
+    		file 'taxonomic_database.qza' optional true into trained_database
+    		file 'seqs_db_amplicons.qza' optional true into seqs_db_filtered
+    		file 'completecmd' into complete_cmd_taxo
+    
+    	when :
+    	!params.stats_only
+    
+    	script :
+            def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
+    	"""
+            q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db ${workflow.workDir}/tmp &> q2_taxo.log 2>&1
+    	"""
+    }
+    
+    /*
+     * STEP 8 -  Decontaminate samples with MicroDecon
+     */
+    if (params.microDecon_enable) {
+        process microDecon_step1 {
+    
+        	label 'microdecon_env'
+    
+        	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
+        	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'abundance_removed.txt'
+        	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'ASV_removed.txt'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
+        	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.tsv'
+        	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'abundance_removed.txt'
+        	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'ASV_removed.txt'
+        	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_microDecon -> "cmd/${task.process}_complete.sh" }
+    
+        	input :
+        		file microDecon_table from biom_tsv_decontam
+    
+        	output :
+        		file 'decontaminated_ASV_table.tsv' into decontam_table, decontam_table_step2, decontam_table_step3
+        		file 'abundance_removed.txt' into abund_removed
+        		file 'ASV_removed.txt' into ASV_removed
+        		file 'completecmd' into complete_cmd_microDecon
+                    file 'v_microdecon.txt' into microdecon_version
+    
+        	when :
+        		!params.stats_only && !params.dada2merge && params.microDecon_enable
+    
+        	shell :
+        	"""
+        	sed '1d' ${microDecon_table} > microDecon_table
+        	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
+        	microDecon.R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
+        	cp ${baseDir}/bin/microDecon.R completecmd &>> microDecon.log 2>&1
+            Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"
+    
+        	"""
+        }
+    
+        process microDecon_step2 {
+    
+        	label 'qiime2_env'
+    
+        	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
+        	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV_table.qza'
+    
+        	input :
+        		file table4microDecon from decontam_table_step2
+    
+        	output :
+        		file 'decontaminated_ASV_table.qza' into decontam_table_qza, decontam_table_picrust2, decontam_table_ancom
+    
+        	when :
+        		!params.stats_only && !params.dada2merge && params.microDecon_enable
+    
+        	shell :
+        	"""
+        	biom convert -i ${table4microDecon} -o decontaminated_ASV_table.biom --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy
+        	qiime tools import --input-path decontaminated_ASV_table.biom --type 'FeatureTable[Frequency]' --input-format BIOMV210Format --output-path decontaminated_ASV_table.qza
+        	"""
+        }
+    
+        /* Extract non-contaminated ASV ID */
+        process microDecon_step3 {
+    
+        	label 'seqtk_env'
+    
+        	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV_ID.txt'
+        	publishDir "${params.outdir}/${params.microDecon_dirname}", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
+        	publishDir "${params.outdir}/${params.report_dirname}/microDecon", mode: 'copy', pattern: 'decontaminated_ASV.fasta'
+    
+        	input :
+        		file decontam_table from decontam_table_step3
+        		file dada2_output from decontam_output
+    
+        	output :
+        		file 'decontaminated_ASV_ID.txt' into decontam_ASV_ID
+        		file 'decontaminated_ASV.fasta' into decontam_ASV_fasta
+    
+        	when :
+        		!params.stats_only && !params.dada2merge && params.microDecon_enable
+    
+        	shell :
+        	"""
+        	cut -d \$'\t' -f1 ${decontam_table} | sed '1d' > decontaminated_ASV_ID.txt
+        	seqtk subseq ${dada2_output}/sequences.fasta decontaminated_ASV_ID.txt > decontaminated_ASV.fasta
+        	"""
+        }
+    
+        /* Run phylogeny from decontaminated ASV sequences */
+        process microDecon_step4 {
+    
+        	label 'qiime2_env'
+    
+        	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
+        	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
+        	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
+    
+        	input :
+        		file ASV_fasta from decontam_ASV_fasta
+    
+        	output :
+        		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
+        		file 'aligned_repseq.qza' into decontam_aligned_repseq
+        		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
+        		file 'tree.qza' into decontam_tree
+        		file 'tree.log' into decontam_tree_bestmodel_log
+        		file 'rooted_tree.qza' into decontam_rooted_tree
+        		file 'tree_export_dir' into decontam_tree_export_dir
+        		file 'tree_export.log' into decontam_tree_export_log
+        		file 'tree.nwk' into decontam_newick
+        		file 'completecmd' into complete_cmd_decontam_phylogeny
+    
+        	when :
+        		!params.stats_only && !params.dada2merge && params.microDecon_enable
+    
+        	shell :
+        	"""
+            qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
+        	q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
+        	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
+    
+        	"""
+        }
+    }
+} else {
+
+   /* _______________________________________________________________ */
+   /*                      Long reads part                            */
+   /* _______________________________________________________________ */
+   
+   process lr_mapping {
+     label 'lr_mapping'
+   
+     publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.sam'
+     publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
+   
+     input:
+       set sample, file(fastq) from longreads_ch
+   
+     output:
+       file "*.sam" into lr_mapped
+       file 'lr_mapping.ok' into process_lr_mapping_report
+       file 'v_minimap2.txt' into v_minimap2_version
+       //TODO : ADD EXPORT SEQUENCES IN FASTA FORMAT FOR PHYLOGENY : file 'lr_sequences.fasta' into lr_sequences
+   
+     shell:
+       """
+       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam 2> lr_minimap2.log
+       touch lr_mapping.ok
+       minimap2 --version > v_minimap2.txt
+       """
+   }
+   
+   process lr_get_taxonomy {
+     label 'lr_get_taxonomy'
+ 
+     publishDir "${params.outdir}/${params.lr_taxonomy_dirname}", mode: 'copy', pattern: '*.tax'
+   
+     input:
+       file '*' from lr_mapped.collect()
+   
+     output:
+       file "*.tax" into lr_taxify
+       file 'lr_get_taxonomy.ok' into process_lr_taxonomy_report
+       //TODO : ADD TSV biom file for long reads :  file 'lr_biom.tsv' into lr_biom_tsv
+   
+     shell:
+       """
+       add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax &> add_taxonomy_minimap2.log 2&>1
+       touch lr_get_taxonomy.ok
+       """
+   }
 }
 
-// TODO: when long reads?
 seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
 seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
-seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
+seqs_phyloC = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
+seqs_phylo = params.longreads ? lr_sequences : seqs_phyloC
 
 /*
  * STEP 9 -  Run phylogeny construction
@@ -791,7 +828,6 @@ process q2_phylogeny {
 
 	when :
 	    !params.stats_only
-      // TODO: disable when long reads
 
 	script :
 	"""
@@ -800,190 +836,142 @@ process q2_phylogeny {
 	"""
 }
 
-// TODO: when long reads?
-table_picrust2A = params.dada2merge ? merge_table_picrust2 : dada2_table_picrust2
-table_picrust2B = params.dbotu3_enable ? dbotu3_table_picrust2 : table_picrust2A
-table_picrust2 = params.microDecon_enable ? decontam_table_picrust2 : table_picrust2B
+if (!params.longreads) {
 
-seqs_picrust2A = params.dada2merge ? merge_seqs_picrust2 : dada2_seqs_picrust2
-seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
-seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
-
-Channel
-  .from(params.picrust_var)
-  .splitCsv(sep : ',', strip : true)
-  .flatten()
-  .set { var_picrust2 }
-
-/*
- * STEP 9 -  Run functional predictions
- */
-if (params.picrust2_enable) {
-
-    process q2_picrust2_analysis {
-
-    	label 'qiime2_env'
-
-    	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
-    	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
-    	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*'
-    	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_cmd', saveAs : { complete_picrust2_cmd -> "cmd/${task.process}_complete.sh" }
-
-    	input :
-    		file seqs_picrust2 from seqs_picrust2
-    		file table_picrust2 from table_picrust2
-
-    	output :
-    		file 'q2-picrust2_output/ec_metagenome.qza' into EC_predictions
-    		file 'q2-picrust2_output/ec_metagenome.qzv' into EC_predictions_visu
-    		file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions*.tsv' into EC_predictions_tsv
-    		file 'q2-picrust2_output/ko_metagenome.qza' into KO_predictions
-    		file 'q2-picrust2_output/ko_metagenome.qzv' into KO_predictions_visu
-    		file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions*.tsv' into KO_predictions_tsv
-    		file 'q2-picrust2_output/pathway_abundance.qza' into pathway_predictions
-    		file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
-    		file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
-    		file 'complete_picrust2_cmd' into complete_picrust2_cmd
-
-    	when :
-    		!params.stats_only
-        // TODO: disable when long reads
-
-    	script :
-    	"""
-    	q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_picrust2.log 2>&1
-    	"""
-    }
-
-    /* Statistical analysis of functional predictions  */
-    process q2_picrust2_stats {
-
-        tag "$beta_var"
-        label 'r_stats_env'
-
-        publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
-
-        input :
-            file ec_metagenome from EC_predictions_tsv
-            file ko_metagenome from KO_predictions_tsv
-            file metacyc_predictions_ from pathway_predictions_tsv
-            file metadata from metadata4picrust2
-            each picrust_vars from var_picrust2
-
-        output :
-            file '*functional_predictions_NMDS*' into functional_pred_NMDS
-            file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
-
-        when :
-            !params.stats_only
-            // TODO: disable when long reads
-
-        script :
-        """
-        functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
-        cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
-        """
-    }
+   table_picrust2A = params.dada2merge ? merge_table_picrust2 : dada2_table_picrust2
+   table_picrust2B = params.dbotu3_enable ? dbotu3_table_picrust2 : table_picrust2A
+   table_picrust2 = params.microDecon_enable ? decontam_table_picrust2 : table_picrust2B
+   
+   seqs_picrust2A = params.dada2merge ? merge_seqs_picrust2 : dada2_seqs_picrust2
+   seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
+   seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
+   
+   Channel
+     .from(params.picrust_var)
+     .splitCsv(sep : ',', strip : true)
+     .flatten()
+     .set { var_picrust2 }
+   
+   /*
+    * STEP 9 -  Run functional predictions
+    */
+   if (params.picrust2_enable) {
+   
+       process q2_picrust2_analysis {
+   
+       	label 'qiime2_env'
+   
+       	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*'
+       	publishDir "${params.outdir}/${params.picrust2_dirname}", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
+       	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*'
+       	publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: 'q2-picrust2_output/*_exported/*.tsv'
+       	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_cmd', saveAs : { complete_picrust2_cmd -> "cmd/${task.process}_complete.sh" }
+   
+       	input :
+       		file seqs_picrust2 from seqs_picrust2
+       		file table_picrust2 from table_picrust2
+   
+       	output :
+       		file 'q2-picrust2_output/ec_metagenome.qza' into EC_predictions
+       		file 'q2-picrust2_output/ec_metagenome.qzv' into EC_predictions_visu
+       		file 'q2-picrust2_output/ec_metagenome_exported/ec_metagenome_predictions*.tsv' into EC_predictions_tsv
+       		file 'q2-picrust2_output/ko_metagenome.qza' into KO_predictions
+       		file 'q2-picrust2_output/ko_metagenome.qzv' into KO_predictions_visu
+       		file 'q2-picrust2_output/ko_metagenome_exported/ko_metagenome_predictions*.tsv' into KO_predictions_tsv
+       		file 'q2-picrust2_output/pathway_abundance.qza' into pathway_predictions
+       		file 'q2-picrust2_output/pathway_abundance_visu' into pathway_predictions_visu
+       		file 'q2-picrust2_output/pathway_abundance_exported/pathway_abundance_predictions*.tsv' into pathway_predictions_tsv
+       		file 'complete_picrust2_cmd' into complete_picrust2_cmd
+   
+       	when :
+       		!params.stats_only
+   
+       	script :
+       	"""
+       	q2_picrust2.sh ${table_picrust2} ${seqs_picrust2} q2-picrust2_output ${task.cpus} ${params.method} ${params.nsti} complete_picrust2_cmd &> q2_picrust2.log 2>&1
+       	"""
+       }
+   
+       /* Statistical analysis of functional predictions  */
+       process q2_picrust2_stats {
+   
+           tag "$beta_var"
+           label 'r_stats_env'
+   
+           publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
+   
+           input :
+               file ec_metagenome from EC_predictions_tsv
+               file ko_metagenome from KO_predictions_tsv
+               file metacyc_predictions_ from pathway_predictions_tsv
+               file metadata from metadata4picrust2
+               each picrust_vars from var_picrust2
+   
+           output :
+               file '*functional_predictions_NMDS*' into functional_pred_NMDS
+               file 'complete_picrust2_stats_cmd' into complete_picrust2_stats_cmd
+   
+           when :
+               !params.stats_only
+   
+           script :
+           """
+           functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+           cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
+           """
+       }
+   }
+   
+   table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
+   table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
+   table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
+   
+   Channel
+     .from(params.ancom_var)
+     .splitCsv(sep : ',', strip : true)
+     .flatten()
+     .set { ancom_var_list }
+   
+   /*
+    * STEP 10 -  Differential abundance testing with ANCOM
+    */
+   process q2_ancom {
+   
+       tag "$ancom_var"
+       label 'qiime2_env'
+   
+       publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
+       publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'
+       publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
+   
+       input :
+           file table4ancom from table_ancom
+           file metadata from metadata4ancom
+           file taxonomy4ancom from data_taxonomy
+           each ancom_var from ancom_var_list
+   
+       output :
+           file 'compo_table*.qza' into compo_table
+           file 'ancom_*.qzv' into ancom_table
+           file 'export_ancom_*' into export_ancom
+           file 'collapsed_table_*.qza' into collapsed_taxolevel_table
+           file 'completecmd_ancom' into completecmd_ancom
+   
+       when :
+           !params.stats_only
+   
+       script :
+       """
+       q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
+       """
+   }
 }
-
-// TODO: when long reads?
-table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
-table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
-table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
-
-Channel
-  .from(params.ancom_var)
-  .splitCsv(sep : ',', strip : true)
-  .flatten()
-  .set { ancom_var_list }
-
-/*
- * STEP 10 -  Differential abundance testing with ANCOM
- */
-process q2_ancom {
-
-    tag "$ancom_var"
-    label 'qiime2_env'
-
-    publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
-
-    input :
-        file table4ancom from table_ancom
-        file metadata from metadata4ancom
-        file taxonomy4ancom from data_taxonomy
-        each ancom_var from ancom_var_list
-
-    output :
-        file 'compo_table*.qza' into compo_table
-        file 'ancom_*.qzv' into ancom_table
-        file 'export_ancom_*' into export_ancom
-        file 'collapsed_table_*.qza' into collapsed_taxolevel_table
-        file 'completecmd_ancom' into completecmd_ancom
-
-    when :
-        !params.stats_only
-        // TODO: disable when long reads
-
-    script :
-    """
-    q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
-    """
-}
-
-// TODO: when long reads?
+   
 tsvA= params.microDecon_enable ? decontam_table : biom_tsv
-tsv = params.stats_only ? tsv_only : tsvA
+tsvB = params.stats_only ? tsv_only : tsvA
+tsv = params.longreads ? lr_biom_tsv : tsvB
 newick = params.stats_only ? newick_only : newick_phylo
-
-
-/* _______________________________________________________________ */
-/*                      Long reads part                            */
-/* _______________________________________________________________ */
-
-// process lr_mapping {
-//   label 'lr_mapping'
-//
-//   publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.sam'
-//   publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
-//
-//   input:
-//     set sample, file(fastq) from longreads_ch
-//
-//   output:
-//     file "*.sam" into lr_mapped
-//     file 'lr_mapping.ok' into process_lr_mapping_report
-//     file 'v_minimap2.txt' into v_minimap2_version
-//
-//   shell:
-//     """
-//     minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam 2> lr_minimap2.log
-//     touch lr_mapping.ok
-//     minimap2 --version > v_minimap2.txt
-//     """
-// }
-//
-// process lr_get_taxonomy {
-//
-//   publishDir "${params.outdir}/${params.lr_taxonomy_dirname}", mode: 'copy', pattern: '*.tax'
-//
-//   input:
-//     file '*' from lr_mapped.collect()
-//
-//   output:
-//     file "*.tax" into lr_taxify
-//     file 'lr_get_taxonomy.ok' into process_lr_taxonomy_report
-//
-//   shell:
-//     """
-//     add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax &> add_taxonomy_minimap2.log 2&>1
-//     touch lr_get_taxonomy.ok
-//     """
-// }
-
 
 /*
  * STEP 11 -  Prepare data for statistics steps

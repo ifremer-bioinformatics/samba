@@ -406,6 +406,8 @@ if (params.data_integrity_enable) {
  */
 process q2_import {
 
+	label 'qiime2_env1cpu'
+
 	publishDir "${params.outdir}/${params.import_dirname}", mode: 'copy', pattern: 'data.qz*'
 	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
 	publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'

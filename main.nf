@@ -1319,6 +1319,7 @@ if (params.report_enable) {
         data["steps"]["report_enable"] = '$params.report_enable'
         data["steps"]["stats_only"] = '$params.stats_only'
         data["steps"]["dada2merge"] = '$params.dada2merge'
+        data["steps"]["longreads"] = '$params.longreads'
 
         data["integrity"] = {}
         data["integrity"]["barcode_filter"] = '$params.barcode_filter' or None

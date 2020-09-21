@@ -39,7 +39,6 @@ def helpMessage() {
 
 	Data integrity:
 	--data_integrity_enable [bool]	Data integrity checking step. Set to false to deactivate this step. (default = true)
-	--barcode_filter [str]		Percentage of sample barcode supposed to be found in raw reads (default : 90).
 	--primer_filter [str]		Percentage of primers supposed to be found in raw reads (default : 70).
 
 	Raw reads cleaning:
@@ -393,8 +392,8 @@ if (!params.longreads) {
         	script :
         	def datatype = params.singleEnd ? "single" : "paired"
         	"""
-            data_integrity.py -e ${metadata} -a ${manifest} -r ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
-            """
+                data_integrity.py -e ${metadata} -a ${manifest} -p ${params.primer_filter} -r ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
+                """
         }
         metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
         manifest_sort.set { manifest }
@@ -760,15 +759,18 @@ if (!params.longreads) {
        set sample, file(fastq) from longreads_ch
    
      output:
-       file "*.sam" into lr_mapped
+       file "*.bam" into lr_mapped
        file 'lr_mapping.ok' into process_lr_mapping_report
+       file 'lr_samtools-sort.log' into process_lr_sort_report
        file 'v_minimap2.txt' into v_minimap2_version
        //TODO : ADD EXPORT SEQUENCES IN FASTA FORMAT FOR PHYLOGENY : file 'lr_sequences.fasta' into lr_sequences
    
      shell:
        """
-       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe80 > ${sample}.sam 2> lr_minimap2.log
+       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe00 | samtools sort -o ${sample}.bam -O bam - &> lr_minimap2.log 2>&1
        touch lr_mapping.ok
+       samtools index ${sample}.bam &> lr_samtools-sort.log 2>&1
+       touch lr_samtools-sort.ok
        minimap2 --version > v_minimap2.txt
        """
    }

@@ -1324,7 +1324,6 @@ if (params.report_enable) {
         data["steps"]["longreads"] = '$params.longreads'
 
         data["integrity"] = {}
-        data["integrity"]["barcode_filter"] = '$params.barcode_filter' or None
         data["integrity"]["primer_filter"] = '$params.primer_filter' or None
 
         data["cutadapt"] = {}

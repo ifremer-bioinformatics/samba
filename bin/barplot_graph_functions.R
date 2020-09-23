@@ -64,6 +64,7 @@ gg_color_hue <- function(n) {
 ## Restricts plot to x tax (define by the user : taxa_nb)
 composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill, group, color_bar, barplot) {
   ggdata = ggformat(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb)
+  ggdata$Abundance = round(ggdata$Abundance*100,2)
   p = ggplot(ggdata, aes_string(x = "Sample", y = "Abundance", fill = taxaRank2, color = fill))
   ## Manually change color scale to assign grey to "Unknown" (if any)
   if (!is.null(fill) && any(c("Unknown", "Other") %in% unique(ggdata[, fill]))) {
@@ -76,6 +77,17 @@ composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill,
   }
   p = p + geom_bar(stat = "identity", position = "stack") + theme(axis.text.x=element_text(angle=90)) + ggtitle(paste("Composition within", taxaSet1, "(", taxa_nb, "top", taxaRank2, ")")) + theme_classic() + labs(x="Samples",y="Abundance",fill=fill) + scale_y_continuous(expand=c(0,0),labels=c("0","25","50","75","100")) + theme(axis.text.x=element_text(angle=90,vjust=0.5,hjust=1,color="black",size=10)) + theme(axis.title.x=element_text(vjust=-1,color="black",size=13)) + theme(axis.text.y=element_text(hjust=0.8,color="black",size=13)) + theme(axis.title.y=element_text(size=11)) + theme(legend.text=element_text(size=16)) + theme(legend.title=element_text(size=16,face="bold")) + facet_wrap(group, scales = "free_x", nrow = 1) + theme(strip.text=element_text(size=13)) + theme(strip.background = element_rect(colour="black", fill="white", size=1.5, linetype="solid")) +theme(plot.title = element_text(hjust = 0.5, size=20, face="bold"))
 
- ggsave(filename=paste(barplot,".svg",sep=""), device="svg", width = 20, height = 12)
- ggsave(filename=paste(barplot,".png",sep=""), device="png", width = 20, height = 12)
+  ggsave(filename=paste(barplot,".svg",sep=""), device="svg", width = 20, height = 12)
+  ggsave(filename=paste(barplot,".png",sep=""), device="png", width = 20, height = 12)
+
+  plotly_plot = ggplotly(p)
+  for (i in c(1:length(plotly_plot$x$data))) {
+    tmp_replace_name = str_remove_all(plotly_plot$x$data[[i]]$name,"\\(")
+    tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")
+    plotly_plot$x$data[[i]]$name = tmp_replace_name
+    tmp_replace_legendgroup = str_remove_all(plotly_plot$x$data[[i]]$name,"\\(")
+    tmp_replace_legendgroup = str_remove_all(tmp_replace_legendgroup, ",1\\)")
+    plotly_plot$x$data[[i]]$legendgroup = tmp_replace_legendgroup
+  }
+ htmlwidgets::saveWidget(as_widget(plotly_plot),file=paste0(barplot,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 }

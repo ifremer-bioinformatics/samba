@@ -44,6 +44,18 @@ def hits_to_taxo(taxonomy, bam_lst):
                 read['lr_tax'] = taxonomy[l.reference_name]
                 read['lr_asm_length'] = l.query_alignment_length
 
+                ################################################################
+                # DEV: add query/subject coverage filtering (at least for 12S) #
+                ################################################################
+                query_length = l.infer_read_length()
+                asm_length = l.query_alignment_length
+                subject_length =  bam.get_reference_length(l.reference_name)
+                subject_coverage = (asm_length * 100 / subject_length)
+                query_coverage = (asm_length * 100 / query_length)
+
+                # print(query_length, asm_length, subject_length, round(query_coverage, 2), round(subject_coverage, 2))
+                ################################################################
+
             # Step 2 - Handle new hit and multihits
             ## Add a new hit
             if not l.query_name in lr_reads[sample]:
@@ -108,7 +120,7 @@ def main(args):
     hits_2_taxo = hits_to_taxo(taxonomy, collect_bam)
 
     # 4 - Filter the taxonomy by rank level and print
-    write_taxo(hits_2_taxo, args.rank, args.out)
+    # write_taxo(hits_2_taxo, args.rank, args.out)
 
 if __name__ == '__main__':
     args = getArgs()

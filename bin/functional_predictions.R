@@ -6,7 +6,7 @@
 ###############################################################################
 
 ## Load up the needed packages ####
-requiredPackages = c("dplyr","ggplot2","RColorBrewer","svglite","vegan","stringr")
+requiredPackages = c("dplyr","ggplot2","RColorBrewer","svglite","vegan","stringr","plotly","htmlwidgets")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -64,6 +64,29 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
                          paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
   ggsave(filename=paste(name,pred_plot,".svg",sep=""), device="svg", width = 12, height = 10)
   ggsave(filename=paste(name,pred_plot,".png",sep=""), device="png", width = 12, height = 10)
+
+  plot_pred_nmds = ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2)) +
+    theme_classic() +
+    stat_ellipse(geom="polygon",alpha=0.2,type="t",aes(fill=Condition),lty=1) +
+    geom_point(shape=19, size=2, alpha=0.8,aes(color=Condition, label = SampleID)) +
+    scale_color_brewer(palette="Set1") +
+    scale_fill_brewer(palette="Set1") +
+    theme(legend.title = element_blank()) +
+    theme(axis.text = element_text(colour = "black", size = 10)) +
+    labs(caption = paste("Stress:",pred_nmds_stress,
+                       "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
+                       paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
+
+  plotly_nmds = ggplotly(plot_pred_nmds) 
+  for (i in c(1:length(plotly_nmds$x$data))) {
+    tmp_replace_name = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
+    tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")
+    plotly_nmds$x$data[[i]]$name = tmp_replace_name
+    tmp_replace_legendgroup = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
+    tmp_replace_legendgroup = str_remove_all(tmp_replace_legendgroup, ",1\\)")
+    plotly_nmds$x$data[[i]]$legendgroup = tmp_replace_legendgroup
+  }
+  htmlwidgets::saveWidget(as_widget(plotly_nmds),file=paste0(name,pred_plot,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 }
 
 main_ec <- function(){

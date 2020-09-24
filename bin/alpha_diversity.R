@@ -7,7 +7,7 @@
 ###############################################################################
 
 ## Load up the needed packages ####
-requiredPackages = c("dplyr","stringr","ggplot2","svglite","vegan","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager","phyloseq", "microbiome")
+requiredPackages = c("dplyr","stringr","ggplot2","svglite","vegan","RColorBrewer","tidyr","gridExtra","egg","reshape2","BiocManager","phyloseq", "microbiome","plotly","htmlwidgets")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -58,41 +58,37 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     ggsave(filename=paste(alpha_div_plots,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
     ggsave(filename=paste(alpha_div_plots,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
 
+    plotly_boxplot = subplot(plot1_alpha,plot2_alpha,nrows=2,margin=0.12,widths=0.6)
+    htmlwidgets::saveWidget(as_widget(plotly_boxplot),file=paste0(alpha_div_plots,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
+  
     ## Rarefaction curve ####
-    rarec <- function (x, step = 1, sample, xlab = "Sample Size", ylab = "Species", 
-                   label = TRUE, cols = c(rep('red', nrow(x) / 2), rep('blue', nrow(x) / 2)), ...) {
-      tot <- rowSums(x)
-      S <- specnumber(x)
-      nr <- nrow(x)
-      out <- lapply(seq_len(nr), function(i) {
-        n <- seq(1, tot[i], by = step)
-        if (n[length(n)] != tot[i]) 
-          n <- c(n, tot[i])
-        drop(rarefy(x[i, ], n))
-      })
-      Nmax <- sapply(out, function(x) max(attr(x, "Subsample")))
-      Smax <- sapply(out, max)
-      plot(c(1, max(Nmax)), c(1, max(Smax)), xlab = xlab, ylab = ylab, 
-           type = "n", ...)
-      rare <- min(rowSums(x))
-      abline(v = rare, lwd = 2, lty=2, col="red")
-      for (ln in seq_len(length(out))) {
-        N <- attr(out[[ln]], "Subsample")
-        lines(N, out[[ln]], col = "black", ...)
-      }
-      if (label) {
-        ordilabel(cbind(tot, S), labels = rownames(x), ...)
-      }
-      invisible(out)
-    }
+    plot_rarec = rarecurve(t(otu_table(PHYLOSEQ)),step=20, cex = 0.6)
+    names(plot_rarec) = rownames(t(otu_table(PHYLOSEQ)))
+    rarec_value = min(rowSums(t(otu_table(PHYLOSEQ))))
 
-    svglite(paste(plot_rarefaction,".svg",sep=""), width = 14, height = 10)
-    rarec(t(otu_table(PHYLOSEQ)),step=20, cex = 0.6)
-    dev.off()
+    protox = mapply(FUN = function(x, y) {
+        mydf = as.data.frame(x)
+        colnames(mydf) <- "Value"
+        mydf$SampleID <- y
+        mydf$Subsampling <- attr(x, "Subsampling")
+        mydf
+    }, x = plot_rarec, y = as.list(names(plot_rarec)), SIMPLIFY = FALSE)
 
-    png(filename=paste(plot_rarefaction,".png",sep=""), res=150, width = 2000, height = 1200)
-    rarec(t(otu_table(PHYLOSEQ)),step=20, cex = 0.6)
-    dev.off()
+    xy <- do.call(rbind, protox)
+    rownames(xy) <- NULL
+
+    plot_rarec = ggplot(xy, aes(x = Subsampling, y = Value, color = SampleID)) +
+        theme_bw() +
+        scale_color_discrete(guide = FALSE) +
+        geom_line() +
+        theme(legend.position = "none") +
+        geom_vline(xintercept=rare,lty=2)
+
+    ggsave(filename=paste(plot_rarefaction,".svg",sep=""),plot_rarec, device="svg", width=14, height=14)
+    ggsave(filename=paste(plot_rarefaction,".png",sep=""),plot_rarec, device="png", width=14, height=14)
+
+    plotly_rarec = ggplotly(plot_rarec) 
+    htmlwidgets::saveWidget(as_widget(plotly_rarec),file=paste0(plot_rarefaction,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 
     ## Statistical significance of indexes  ####
     anova_data = cbind(sample_data(PHYLOSEQ), alpha_rich)

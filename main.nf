@@ -83,7 +83,7 @@ def helpMessage() {
 
 	Predict functionnal abundance:
 	--picrust2_enable [bool]	Set to true to enable functionnal prediction step. (default = false)
-    --picrust_var [str] According to your metadata file, list the column names corresponding to the variables to group samples for functional predictions (comma-separated list).
+        --picrust_var [str]		According to your metadata file, list the column names corresponding to the variables to group samples for functional predictions (comma-separated list).
 	--method [str]			HSP method of your choice. (default = 'mp' ) The most accurate prediction methode. Faster method: 'pic'.
 	--nsti [str]			Max NSTI value accepted. (default = 2) NSTI cut-off of 2 should eliminate junk sequences.
 
@@ -141,9 +141,13 @@ if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
 paramsfile = file("$baseDir/conf/base.config", checkIfExists: true)
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
-if (workflow.profile.contains('test')) {
-   testparamsfile = file("$baseDir/conf/test.config", checkIfExists: true)
-   testparamsfile.copyTo("$params.outdir/conf/test.config")
+if (workflow.profile.contains('shortreadstest')) {
+   testparamsfile = file("$baseDir/conf/test-shortreads.config", checkIfExists: true)
+   testparamsfile.copyTo("$params.outdir/conf/test-shortreads.config")
+}
+if (workflow.profile.contains('longreadstest')) {
+   testparamsfile = file("$baseDir/conf/test-longreads.config", checkIfExists: true)
+   testparamsfile.copyTo("$params.outdir/conf/test-longreads.config")
 }
 if (workflow.profile.contains('custom')) {
    customparamsfile = file("$baseDir/conf/custom.config", checkIfExists: true)
@@ -293,7 +297,7 @@ summary['Project Name']     = params.projectName
 summary['Manifest File']    = params.input_manifest
 summary['Metadata File']    = params.input_metadata
 summary['Data Type']        = params.singleEnd ? 'Single-End' : 'Paired-End'
-if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
+if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine"
 summary['Output dir']       = params.outdir
 summary['Launch dir']       = workflow.launchDir
 summary['Working dir']      = workflow.workDir
@@ -380,7 +384,7 @@ if (!params.longreads) {
         	input :
         		file manifest from manifest4integrity
         		file metadata from metadata4integrity
-                    file ready from ready_integrity
+                        file ready from ready_integrity
     
         	output :
         		file 'data_integrity.txt'
@@ -1286,6 +1290,7 @@ if (params.report_enable) {
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
+            file process_desc_comp_report from process_desc_comp_report
 
        output :
             file 'style.css' into SAMBA_css_output

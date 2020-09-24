@@ -8,7 +8,7 @@ Sys.setenv("OMP_NUM_THREADS" = 4)
 ###############################################################################
 
 ## Load up the needed packages ####
-requiredPackages = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager","phyloseq", "DESeq2")
+requiredPackages = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager","phyloseq", "DESeq2","plotly","htmlwidgets")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -101,11 +101,16 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_
     ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
 
     plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
+    plot.pie.interactive(ExpVar_piedata,ExpVar_name,ExpVar_perc,plot_pie,distance)
 
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
+    plot.nmds.interactive(ord_deseq2_nmds, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, paste("NMDS on DESeq2 normalized data","based
+ on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
+    plot.pcoa.interactive(ord_deseq2_pcoa, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, paste("MDS-PCoA on DESeq2 normalized data","b
+ased on",distance,"distance",sep=" "))
 
     ## Hierarchical clustering ####    
     hc = hclust(PHYLOSEQ_deseq2_dist, method = method_hc)

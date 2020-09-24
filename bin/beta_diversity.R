@@ -6,7 +6,7 @@
 ###############################################################################
 
 ## Load up the needed packages ####
-requiredPackages = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager", "phyloseq")
+requiredPackages = c("dplyr","stringr","ggplot2","RColorBrewer","svglite","tidyr","gridExtra","egg","vegan","dendextend","BiocManager", "phyloseq","plotly","htmlwidgets")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -73,11 +73,16 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_te
     ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
 
     plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
+    plot.pie.interactive(ExpVar_piedata,ExpVar_name,ExpVar_perc,plot_pie,distance)
 
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph
     plot.nmds(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result, nmds, distance, 12, 10, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
+    plot.nmds.interactive(ord_nmds, criteria, color_samples, adonis_result, nmds, distance, paste("NMDS on non-normalized data","based on",distance,"distance"
+,sep=" "))
     plot.pcoa(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, 12, 10, paste("MDS-PCoA on non-normalized data","based on",distance,"distance",sep=" "))
+    plot.pcoa.interactive(ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, paste("MDS-PCoA on non-normalized data","based on",distance,"dista
+nce",sep=" "))
     
     ## Hierarchical clustering ####    
     dist = distance(PHYLOSEQ, distance, type="samples")

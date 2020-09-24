@@ -454,8 +454,8 @@
                 {% for ec in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ec}}</span>
-                    <a target="_blank" href="picrust2_output/EC_functional_predictions_NMDS_{{ec}}.png">
-                        <img src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}.png" style="width:100%">
+                    <a target="_blank" href="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html">
+                        <iframe src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html" style="width:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -466,8 +466,8 @@
                 {% for ko in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ko}}</span>
-                    <a target="_blank" href="picrust2_output/KO_functional_predictions_NMDS_{{ko}}.png">
-                        <img src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}.png" style="width:100%">
+                    <a target="_blank" href="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html">
+                        <iframe src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html" style="width:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -478,8 +478,8 @@
                 {% for metacyc in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{metacyc}}</span>
-                    <a target="_blank" href="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}.png">
-                        <img src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}.png" style="width:100%">
+                    <a target="_blank" href="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html">
+                        <iframe src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html" style="width:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -588,8 +588,8 @@
         {% for var in r.alpha_div.var_tested %}
         <p class="highlight" >{{var}}</p>
         <p align="center">
-            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}.png">
-                <img src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}.png" style="width:80%">
+            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html">
+                <iframe src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html" style="width:80%"></iframe>
             </a>
             <br>
         </p>
@@ -597,8 +597,8 @@
         <h4>Rarefaction curve</h4>
         <br>
         <p align="center">
-            <a target="_blank" href="R/FIGURES/alpha_diversity/rarefaction_curve.png">
-                <img src="R/FIGURES/alpha_diversity/rarefaction_curve.png" style="width:80%">
+            <a target="_blank" href="R/FIGURES/alpha_diversity/rarefaction_curve_interactiv.html">
+                <iframe src="R/FIGURES/alpha_diversity/rarefaction_curve_interactiv.html" style="width:80%"></iframe>
             </a>
             <br>
         </p>
@@ -607,15 +607,15 @@
         {% for var in r.alpha_div.var_tested %}
         <ul>
             <li>Taxonomic barplots group by <span class="highlight">{{var}} :</span></li><br>
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_phylum_{{var}}.png">Barplot at the phylum level</a> ;
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_class_{{var}}.png">Barplot at the class level</a> ;
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_order_{{var}}.png">Barplot at the order level</a> ;
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_family_{{var}}.png">Barplot at the family level</a>
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_phylum_{{var}}_interactive.html">Barplot at the phylum level</a> ;
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_class_{{var}}_interactive.html">Barplot at the class level</a> ;
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_order_{{var}}_interactive.html">Barplot at the order level</a> ;
+            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_family_{{var}}_interactive.html">Barplot at the family level</a>
             <br>
         </ul>
         <p align="center">
-            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}.png">
-                <img src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}.png" style="width:80%">
+            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html">
+                <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html" width="100%" height="800"></iframe>
             </a>
             <br>
         </p>
@@ -648,104 +648,6 @@
         <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
         <br>
 
-        <!-- By index -->
-<!--        {% for method in d.methods %}-->
-<!--        <h4>Results for method: <span class="highlight">{{method}}</span></h4>-->
-<!--        <br>-->
-<!--            {% for index in d.indices %}-->
-<!--        <p><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#{{method}}{{index}}" aria-expanded="false" aria-controls="collapseExample">Show {{index}} results</button></p>-->
-<!--        <div class="collapse" id="{{method}}{{index}}">-->
-<!--                {% for var in r.beta_div.var_tested %}-->
-<!--            <br>-->
-<!--            <p style="margin-left: 20px"><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#{{method}}{{index}}{{var}}" aria-expanded="false" aria-controls="collapseExample">Show plots for: {{var}}</button></p>-->
-<!--            <div class="collapse" id="{{method}}{{index}}{{var}}">-->
-<!--                <div style="text-align: center; color: #007bff; font-size: 1.0rem">{{index}}</div>-->
-<!--                <hr class="results">-->
-<!--                <br>-->
-<!--                <div class="row">-->
-<!--                    {% for stat in d.stats %}-->
-<!--                    <div class="column">-->
-<!--                        <a class="link" target="_blank" href="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png">-->
-<!--                            <img src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png" style="width:100%">-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                    {% endfor %}-->
-<!--                </div>-->
-<!--                <hr class="results">-->
-<!--            </div>-->
-<!--            <br>-->
-<!--                {% endfor %}-->
-<!--        </div>-->
-<!--            {% endfor %}-->
-<!--        {% endfor %}-->
-<!--        <h4>Explained variance</h4>-->
-<!--        <br>-->
-<!--        {% for method in d.methods %}-->
-<!--        <p><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#ExpVar{{method}}_1" aria-expanded="false" aria-controls="collapseExample">Show {{method}} plots</button></p>-->
-<!--        <div class="collapse" id="ExpVar{{method}}_1">-->
-<!--            <div class="row">-->
-<!--                {% for stat in d.stats %}-->
-<!--                <div class="column">-->
-<!--                    <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}.png">-->
-<!--                        <img src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}.png" style="width:100%">-->
-<!--                    </a>-->
-<!--                </div>-->
-<!--                {% endfor %}-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <br>-->
-<!--        {% endfor %}-->
-
-        <!-- by method-->
-<!--        <h3 id="beta-diversity-2">Beta diversity by method [optional]</h3>-->
-<!--        <br>-->
-<!--        {% for method in d.methods %}-->
-<!--        <h4>Results for method: <span class="highlight">{{method}}</span></h4>-->
-<!--        <br>-->
-<!--            {% for var in r.beta_div.var_tested %}-->
-<!--        <p><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#{{method}}{{var}}" aria-expanded="false" aria-controls="collapseExample">Show results for variable: {{var}}</button></p>-->
-<!--        <div class="collapse" id="{{method}}{{var}}">-->
-<!--                {% for index in d.indices %}-->
-<!--            <br>-->
-<!--            <p style="margin-left: 20px"><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#{{method}}{{var}}{{index}}" aria-expanded="false" aria-controls="collapseExample">Show {{index}} plots</button></p>-->
-<!--            <div class="collapse" id="{{method}}{{var}}{{index}}">-->
-<!--                <div style="text-align: center; color: #007bff; font-size: 1.0rem">{{index}}</div>-->
-<!--                <hr class="results">-->
-<!--                <br>-->
-<!--                <div class="row">-->
-<!--                    {% for stat in d.stats %}-->
-<!--                    <div class="column">-->
-<!--                        <a class="link" target="_blank" href="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png">-->
-<!--                            <img src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png" style="width:100%">-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                    {% endfor %}-->
-<!--                </div>-->
-<!--                <hr class="results">-->
-<!--            </div>-->
-<!--            <br>-->
-<!--                {% endfor %}-->
-<!--        </div>-->
-<!--            {% endfor %}-->
-<!--        {% endfor %}-->
-<!--        <h4>Explained variance</h4>-->
-<!--        <br>-->
-<!--        {% for method in d.methods %}-->
-<!--        <p><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#ExpVar{{method}}_2" aria-expanded="false" aria-controls="collapseExample">Show {{method}} plots</button></p>-->
-<!--        <div class="collapse" id="ExpVar{{method}}_2">-->
-<!--            <div class="row">-->
-<!--                {% for stat in d.stats %}-->
-<!--                <div class="column">-->
-<!--                    <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}.png">-->
-<!--                        <img src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}.png" style="width:100%">-->
-<!--                    </a>-->
-<!--                </div>-->
-<!--                {% endfor %}-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <br>-->
-<!--        {% endfor %}-->
-
         <!-- by variable -->
         <h3 id="beta-diversity">Beta diversity by variable [optional]</h3>
         <br>
@@ -765,8 +667,8 @@
                 <div class="row">
                     {% for stat in d.stats %}
                     <div class="column">
-                        <a class="link" target="_blank" href="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png">
-                            <img src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png" style="width:100%">
+                        <a class="link" target="_blank" href="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html">
+                            <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100%"></iframe>
                         </a>
                     </div>
                     {% endfor %}
@@ -786,8 +688,8 @@
             <div class="row">
                 {% for stat in d.stats %}
                 <div class="column">
-                    <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}.png">
-                        <img src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}.png" style="width:100%">
+                    <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html">
+                        <iframe src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html" style="width:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}

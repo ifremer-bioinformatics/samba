@@ -142,12 +142,12 @@ paramsfile = file("$baseDir/conf/base.config", checkIfExists: true)
 paramsfile.copyTo("$params.outdir/conf/base.config")
 
 if (workflow.profile.contains('shortreadstest')) {
-   testparamsfile = file("$baseDir/conf/test-shortreads.config", checkIfExists: true)
-   testparamsfile.copyTo("$params.outdir/conf/test-shortreads.config")
+   testparamsfile = file("$baseDir/conf/shortreadstest.config", checkIfExists: true)
+   testparamsfile.copyTo("$params.outdir/conf/shortreadstest.config")
 }
 if (workflow.profile.contains('longreadstest')) {
-   testparamsfile = file("$baseDir/conf/test-longreads.config", checkIfExists: true)
-   testparamsfile.copyTo("$params.outdir/conf/test-longreads.config")
+   testparamsfile = file("$baseDir/conf/longreadstest.config", checkIfExists: true)
+   testparamsfile.copyTo("$params.outdir/conf/longreadstest.config")
 }
 if (workflow.profile.contains('custom')) {
    customparamsfile = file("$baseDir/conf/custom.config", checkIfExists: true)
@@ -238,28 +238,21 @@ if (!params.stats_only || !params.dada2merge) {
 }
 
 //If taxonomy step require to extract primer regions
-if (!params.stats_only && params.extract_db) {
-   if (!params.seqs_db || params.seqs_db.isEmpty()) {
-      log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
-      exit 1
-   } else {
-      seqs_db_ch = Channel.fromPath(params.seqs_db,checkIfExists:true)
-   }
-   if (!params.taxo_db || params.taxo_db.isEmpty()) {
-      log.error "Parameter --taxo_db cannot be null or empty. Set the path to the reference taxonomy"
-      exit 1
-   } else {
-      taxo_db_ch = Channel.fromPath(params.taxo_db,checkIfExists:true)
-   }
-   database_ch = Channel.value("none")
-} else {
-      if (workflow.profile.contains('test')) {
-         database_ch = Channel.fromPath(params.database)
-      } else {
-         database_ch = Channel.fromPath(params.database,checkIfExists:true)
+if (!params.stats_only) {
+   if (params.extract_db) {
+      if (!params.seqs_db || params.seqs_db.isEmpty()) {
+         log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
+         exit 1
+      } 
+      if (!params.taxo_db || params.taxo_db.isEmpty()) {
+         log.error "Parameter --taxo_db cannot be null or empty. Set the path to the reference taxonomy"
+         exit 1
       }
-   seqs_db_ch = Channel.value("none")
-   taxo_db_ch = Channel.value("none")
+   } else {
+      if (!params.database || params.database.isEmpty()) {
+         log.error "Parameter --database cannot be null or empty. Set the path to the reference database"
+      }
+   }
 }
 
 if (params.microDecon_enable && !params.control_list) {
@@ -574,29 +567,24 @@ if (!params.longreads) {
     
     seqs_taxoA = params.dada2merge ? merge_seqs_taxo : dada2_seqs_taxo
     seqs_taxo = params.dbotu3_enable ? dbotu3_seqs_taxo : seqs_taxoA
-    
+   
     /*
     * STEP 7  -  Run taxonomy assignment
     */
     process q2_taxonomy {
-    
-    	label 'qiime2_env'
-    
-    	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
-    	publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
-    	publishDir "${params.outdir}/${params.report_dirname}/taxo_output/", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
-    
-    	input :
-    		file repseqs_taxo from seqs_taxo
+           label 'qiime2_env'
+
+           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
+           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
+           publishDir "${params.outdir}/${params.report_dirname}/taxo_output/", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
+
+           input : 
+                file repseqs_taxo from seqs_taxo
     		file summary_output from taxonomy_output
-        		file seqs_db from seqs_db_ch
-    	        file taxo_db from taxo_db_ch
-            	file database from database_ch
-    
-    	output :
+           output :
     		file 'taxonomy.qza' into data_taxonomy
     		file 'taxonomy.qzv' into visu_taxonomy
     		file 'ASV_taxonomy.tsv' into taxonomy_tsv
@@ -606,18 +594,16 @@ if (!params.longreads) {
     		file 'taxonomic_database.qza' optional true into trained_database
     		file 'seqs_db_amplicons.qza' optional true into seqs_db_filtered
     		file 'completecmd' into complete_cmd_taxo
-    
-    	when :
-    	!params.stats_only
-    
-    	script :
-            def db = params.extract_db ? "$seqs_db $taxo_db" : "$database"
-    	"""
-            q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd $db ${workflow.workDir}/tmp &> q2_taxo.log 2>&1
-    	"""
+            when :
+                !params.stats_only
+
+           script :
+    """
+       q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd tmpdir ${params.database} ${params.seqs_db} ${params.taxo_db} &> q2_taxo.log 2>&1
+    """ 
     }
     
-    /*
+/*
      * STEP 8 -  Decontaminate samples with MicroDecon
      */
     if (params.microDecon_enable) {

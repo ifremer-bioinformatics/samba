@@ -30,6 +30,12 @@ def hits_to_taxo(taxonomy, bam_lst):
         bam = pysam.AlignmentFile(f, "rb")
         sample = os.path.splitext(os.path.basename(f))[0]
         lr_reads[sample] = {}
+        ################################################################
+        # DEV: add query/subject coverage filtering (at least for 12S) #
+        ################################################################
+        print(sample)
+        print("query_length\tasm_length\tsubject_length\tquery_coverage\tsubject_coverage")
+        ################################################################
         for l in bam.fetch(until_eof=True):
             # print(l.tostring(bam))
             # Step 1 - Parse bam and collect mapped/unmapped
@@ -52,8 +58,10 @@ def hits_to_taxo(taxonomy, bam_lst):
                 subject_length =  bam.get_reference_length(l.reference_name)
                 subject_coverage = (asm_length * 100 / subject_length)
                 query_coverage = (asm_length * 100 / query_length)
+                printer = [str(query_length), str(asm_length), str(subject_length), str(round(query_coverage, 2)), str(round(subject_coverage, 2))]
+                # print(query_length+'\t'+asm_length+'\t'+subject_length+'\t'+round(query_coverage, 2)+'\t'+round(subject_coverage, 2))
+                print('\t'.join(printer))
 
-                # print(query_length, asm_length, subject_length, round(query_coverage, 2), round(subject_coverage, 2))
                 ################################################################
 
             # Step 2 - Handle new hit and multihits

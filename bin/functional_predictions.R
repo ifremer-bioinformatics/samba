@@ -44,17 +44,17 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
   # Build a data frame with NMDS coordinates and metadata
   pred_nmds1 = pred_nmds$points[,1]
   pred_nmds2 = pred_nmds$points[,2]
-  pred_nmds_data = data.frame(MDS1 = pred_nmds1, MDS2 = pred_nmds2, metadata = metadata[,criteria], samples = rownames(t_pred))
+  pred_nmds_data = data.frame(MDS1 = pred_nmds1, MDS2 = pred_nmds2, Condition = metadata[,criteria], SampleID = rownames(t_pred))
 
   # ADONIS statistic
   pred_adonis = adonis(pred_dist ~ metadata[,criteria])
 
   # Plot
-  ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2, col=metadata)) +
+  ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2, col=Condition)) +
     theme_classic() +
     geom_point(shape=19, size=3) +
-    geom_text(data=pred_nmds_data,aes(x=MDS1,y=MDS2,label=samples),size=3,vjust=2) +
-    stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=metadata),lty=2) +
+    geom_text(data=pred_nmds_data,aes(x=MDS1,y=MDS2,label=SampleID),size=3,vjust=2) +
+    stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Condition),lty=2) +
     scale_color_brewer(palette="Set1") +
     scale_fill_brewer(palette="Set1") +
     theme(legend.title = element_blank()) +

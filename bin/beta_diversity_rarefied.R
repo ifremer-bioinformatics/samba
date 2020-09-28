@@ -91,11 +91,9 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, varia
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_rarefied, ord_rarefied_nmds, criteria, color_samples, adonis_result_rarefied, nmds_rarefied, distance, 12, 10, paste("NMDS on rarefied data","based on",distance,"distance",sep=" "))
-    plot.nmds.interactive(ord_rarefied_nmds, criteria, color_samples, adonis_result_rarefied, nmds_rarefied, distance, paste("NMDS on rarefied data","based on
-",distance,"distance",sep=" "))
+    plot.nmds.interactive(ord_rarefied_nmds, metadata, criteria, color_samples, adonis_result_rarefied, nmds_rarefied, distance, paste("NMDS on rarefied data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_rarefied, ord_rarefied_pcoa, criteria, color_samples, adonis_result_rarefied, pcoa_rarefied, distance, 12, 10, paste("MDS-PCoA on rarefied data","based on",distance,"distance",sep=" "))
-    plot.pcoa.interactive(ord_rarefied_pcoa, criteria, color_samples, adonis_result_rarefied, pcoa_rarefied, distance, paste("MDS-PCoA on rarefied data","base
-d on",distance,"distance",sep=" "))
+    plot.pcoa.interactive(ord_rarefied_pcoa, metadata, criteria, color_samples, adonis_result_rarefied, pcoa_rarefied, distance, paste("MDS-PCoA on rarefied data","based on",distance,"distance",sep=" "))
 
     ## Hierarchical clustering ####
     dist = distance(PHYLOSEQ_rarefied, distance, type="samples")

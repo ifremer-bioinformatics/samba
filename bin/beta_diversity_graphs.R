@@ -25,7 +25,7 @@ plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result
     ggsave(filename=paste(nmds,distance,".png",sep=""), device="png", width = width, height = height)
 }
 
-plot.nmds.interactive <- function(ord_nmds, Variable, color_samples, adonis_result, nmds, distance, graph_title) {
+plot.nmds.interactive <- function(ord_nmds, metadata, Variable, color_samples, adonis_result, nmds, distance, graph_title) {
   nmds1 = ord_nmds$points[,1]
   nmds2 = ord_nmds$points[,2]
   nmds_data = data.frame(NMDS1=nmds1, NMDS2=nmds2, Condition=metadata[,Variable], SampleID = rownames(ord_nmds$points))
@@ -78,7 +78,7 @@ plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result
     ggsave(filename=paste(pcoa,distance,".png",sep=""), device="png", width = width, height = height)
 }
 
-plot.pcoa.interactive <- function(ord_pcoa, Variable, color_samples, adonis_result, pcoa, distance, graph_title) {
+plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, adonis_result, pcoa, distance, graph_title) {
   mds1 = ord_pcoa$vectors[,1]
   mds2 = ord_pcoa$vectors[,2]
   pcoa_data = data.frame(Axis1=mds1, Axis2=mds2, Condition=metadata[,Variable], SampleID = rownames(ord_pcoa$vectors))

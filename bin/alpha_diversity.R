@@ -70,7 +70,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
         mydf = as.data.frame(x)
         colnames(mydf) <- "Value"
         mydf$SampleID <- y
-        mydf$Subsampling <- attr(x, "Subsampling")
+        mydf$Subsampling <- attr(x, "Subsample")
         mydf
     }, x = plot_rarec, y = as.list(names(plot_rarec)), SIMPLIFY = FALSE)
 

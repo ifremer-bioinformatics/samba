@@ -82,7 +82,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
         scale_color_discrete(guide = FALSE) +
         geom_line() +
         theme(legend.position = "none") +
-        geom_vline(xintercept=rare,lty=2)
+        geom_vline(xintercept=rarec_value,lty=2)
 
     ggsave(filename=paste(plot_rarefaction,".svg",sep=""),plot_rarec, device="svg", width=14, height=14)
     ggsave(filename=paste(plot_rarefaction,".png",sep=""),plot_rarec, device="png", width=14, height=14)

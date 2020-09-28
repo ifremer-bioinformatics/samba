@@ -100,11 +100,9 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_css, ord_css_nmds, criteria, color_samples, adonis_result_css, nmds_css, distance, 12, 10, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "))
-    plot.nmds.interactive(ord_css_nmds, criteria, color_samples, adonis_result_css, nmds_css, distance, paste("NMDS on CSS normalized data","based on",distanc
-e,"distance",sep=" "))
+    plot.nmds.interactive(ord_css_nmds, metadata, criteria, color_samples, adonis_result_css, nmds_css, distance, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_css, ord_css_pcoa, criteria, color_samples, adonis_result_css, pcoa_css, distance, 12, 10, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "))
-    plot.pcoa.interactive(ord_css_pcoa, criteria, color_samples, adonis_result_css, pcoa_css, distance, paste("MDS-PCoA on CSS normalized data","based on",dis
-tance,"distance",sep=" "))
+    plot.pcoa.interactive(ord_css_pcoa, metadata, criteria, color_samples, adonis_result_css, pcoa_css, distance, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "))
 
     ## Hierarchical clustering ####    
     dist = distance(PHYLOSEQ_css, distance, type="samples")

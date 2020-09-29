@@ -44,7 +44,7 @@ def hits_to_taxo(taxonomy, bam_lst):
             if l.flag == 4:
                 read['lr_nm_score'] = -1
                 # lr_seq_id = "no-hit"
-                read['lr_tax'] = "unassigned"
+                read['lr_tax'] = "Unmapped"
             else:
                 read['lr_nm_score'] = l.get_tag('NM')
                 read['lr_tax'] = taxonomy[l.reference_name]
@@ -59,7 +59,6 @@ def hits_to_taxo(taxonomy, bam_lst):
                 subject_coverage = (asm_length * 100 / subject_length)
                 query_coverage = (asm_length * 100 / query_length)
                 printer = [str(query_length), str(asm_length), str(subject_length), str(round(query_coverage, 2)), str(round(subject_coverage, 2))]
-                # print(query_length+'\t'+asm_length+'\t'+subject_length+'\t'+round(query_coverage, 2)+'\t'+round(subject_coverage, 2))
                 print('\t'.join(printer))
 
                 ################################################################
@@ -128,7 +127,7 @@ def main(args):
     hits_2_taxo = hits_to_taxo(taxonomy, collect_bam)
 
     # 4 - Filter the taxonomy by rank level and print
-    # write_taxo(hits_2_taxo, args.rank, args.out)
+    write_taxo(hits_2_taxo, args.rank, args.out)
 
 if __name__ == '__main__':
     args = getArgs()

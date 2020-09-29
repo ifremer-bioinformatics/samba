@@ -15,7 +15,6 @@
   * [`--projectName`](#--projectName)
 * [Data integrity](#data-integrity)
   * [`--data_integrity_enable`](#--data_integrity_enable)
-  * [`--barcode_filter`](#--barcode_filter)
   * [`--primer_filter`](#--primer_filter)
 * [Primers removal](#primers-removal)
   * [`--primerF`](#--primerF)
@@ -192,13 +191,11 @@ This process is optional and checks if input datasets are correctly demultiplexe
 
 Data integrity checking step. Set to false to deactivate this step. (default = true)
 
-### `--barcode_filter`
-
-Percentage of sample barcode supposed to be found in raw reads (default : 90).
-
 ### `--primer_filter`
 
 Percentage of primers supposed to be found in raw reads (default : 70).
+
+If you pass `--control_list` argument from MicroDecon, the primer filter threshold is disable ONLY for control samples.
 
 ## Primers removal
 

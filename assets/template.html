@@ -454,8 +454,7 @@
                 {% for ec in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ec}}</span>
-                    <a target="_blank" href="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html">
-                        <iframe src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html" style="width:100% ; height:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -466,8 +465,7 @@
                 {% for ko in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ko}}</span>
-                    <a target="_blank" href="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html">
-                        <iframe src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html" style="width:100% ; height:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -478,8 +476,7 @@
                 {% for metacyc in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{metacyc}}</span>
-                    <a target="_blank" href="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html">
-                        <iframe src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html" style="width:100% ; height:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}

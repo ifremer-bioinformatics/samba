@@ -40,7 +40,8 @@ plot.nmds.interactive <- function(ord_nmds, metadata, Variable, color_samples, a
     theme(axis.text=element_text(size=12,color="black")) +
     theme(legend.title = element_blank()) +
     scale_fill_manual(values=color_samples) +
-    scale_color_manual(values=color_samples)
+    scale_color_manual(values=color_samples) +
+    theme(plot.background = element_rect(fill="#fafafa"))
   
   text_annotation = paste(paste("Stress:",round(ord_nmds$stress,4)), paste0("Adonis R2:"," ",round(adonis_result$aov.tab$R2[1]*100,2),"%"),paste0("p-value: ",
 adonis_result$aov.tab$`Pr(>F)`[1]), sep="\n")
@@ -93,7 +94,8 @@ plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, a
     theme(axis.text=element_text(size=12,color="black")) +
     theme(legend.title = element_blank()) +
     scale_fill_manual(values=color_samples) +
-    scale_color_manual(values=color_samples)
+    scale_color_manual(values=color_samples) +
+    theme(plot.background = element_rect(fill="#fafafa"))
   
   text_annotation = paste(paste0("Adonis R2:"," ",round(adonis_result$aov.tab$R2[1]*100,2),"%"),paste0("p-value: ",adonis_result$aov.tab$`Pr(>F)`[1]), sep="\n
 ")
@@ -154,6 +156,6 @@ plot.pie.interactive <- function(pie_data,labels,values,plot_pie,distance) {
   pie.interactive = plot_ly(pie_data, labels=~labels,values=~values,type="pie", 
                                  textposition='auto', textinfo='label+percent', hoverinfo = 'text', 
                                  text = ~paste0("Variable: ",labels,"\n","Percentage of explained variance: ",round(values,2),"%")) %>% 
-    layout(showlegend = FALSE)
+    layout(showlegend = FALSE, paper_bgcolor="#fafafa")
   htmlwidgets::saveWidget(as_widget(pie.interactive),file=paste0(plot_pie,distance,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 }

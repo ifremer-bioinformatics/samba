@@ -656,7 +656,7 @@
                 <div class="row">
                     {% for stat in d.stats %}
                     <div class="column">
-                    {% if index != "hclustering" %}}
+                    {% if index != "hclustering" %}
                     <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100% ; height: 100%"></iframe>
                     {% else %}
                     <img src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png" style="width:100%"></img>

@@ -45,10 +45,10 @@ plot.nmds.interactive <- function(ord_nmds, metadata, Variable, color_samples, a
   
   text_annotation = paste(paste("Stress:",round(ord_nmds$stress,4)), paste0("Adonis R2:"," ",round(adonis_result$aov.tab$R2[1]*100,2),"%"),paste0("p-value: ",
 adonis_result$aov.tab$`Pr(>F)`[1]), sep="\n")
-  plotly_nmds = ggplotly(nmds.interactive) %>% 
+  plotly_nmds = ggplotly(nmds.interactive) %>% partial_bundle() %>%
     layout(title=graph_title,margin=list(r=200,l=0,pad=4)) %>%
     add_annotations(x=1.08,y=0.5,text=text_annotation,
-                    showarrow=F,xref='paper', yref='paper', xanchor='right', yanchor='auto', xshift=0, yshift=0,font=list(size=13, color="black"))
+                    showarrow=F,xref='paper', yref='paper', xanchor='right', yanchor='auto', xshift=0, yshift=0,font=list(size=13, color="black")) 
   for (i in c(1:length(plotly_nmds$x$data))) {
     tmp_replace_name = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")
@@ -84,7 +84,7 @@ plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, a
   mds2 = ord_pcoa$vectors[,2]
   pcoa_data = data.frame(Axis1=mds1, Axis2=mds2, Condition=metadata[,Variable], SampleID = rownames(ord_pcoa$vectors))
   
-  ## Sample ordination - NMDS ####
+  ## Sample ordination - MDS-PCoA ####
   pcoa.interactive = ggplot(pcoa_data, aes(x=Axis1,y=Axis2), title=graph_title) +
     theme_classic() +
     stat_ellipse(geom="polygon",alpha=0.2,type="t",aes(fill=Condition)) +
@@ -99,7 +99,7 @@ plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, a
   
   text_annotation = paste(paste0("Adonis R2:"," ",round(adonis_result$aov.tab$R2[1]*100,2),"%"),paste0("p-value: ",adonis_result$aov.tab$`Pr(>F)`[1]), sep="\n
 ")
-  plotly_pcoa = ggplotly(pcoa.interactive) %>% 
+  plotly_pcoa = ggplotly(pcoa.interactive) %>% partial_bundle() %>%
     layout(title=graph_title,margin=list(r=200,l=0,pad=4)) %>%
     add_annotations(x=1.08,y=0.5,text=text_annotation,
                     showarrow=F,xref='paper', yref='paper', xanchor='right', yanchor='auto', xshift=0, yshift=0,font=list(size=13, color="black"))
@@ -156,6 +156,6 @@ plot.pie.interactive <- function(pie_data,labels,values,plot_pie,distance) {
   pie.interactive = plot_ly(pie_data, labels=~labels,values=~values,type="pie", 
                                  textposition='auto', textinfo='label+percent', hoverinfo = 'text', 
                                  text = ~paste0("Variable: ",labels,"\n","Percentage of explained variance: ",round(values,2),"%")) %>% 
-    layout(showlegend = FALSE, paper_bgcolor="#fafafa")
+    layout(showlegend = FALSE, paper_bgcolor="#fafafa") %>% partial_bundle()
   htmlwidgets::saveWidget(as_widget(pie.interactive),file=paste0(plot_pie,distance,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 }

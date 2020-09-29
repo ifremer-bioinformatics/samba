@@ -662,8 +662,7 @@
                 <div class="row">
                     {% for stat in d.stats %}
                     <div class="column">
-                        <a class="link" target="_blank" href="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html">
-                            <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100% ; height: 100%"></iframe>
                         </a>
                     </div>
                     {% endfor %}
@@ -683,8 +682,7 @@
             <div class="row">
                 {% for stat in d.stats %}
                 <div class="column">
-                    <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html">
-                        <iframe src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html" style="width:100%"></iframe>
+                <iframe src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html" style="width:100% ; height: 100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}

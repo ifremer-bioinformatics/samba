@@ -72,6 +72,7 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
     scale_color_brewer(palette="Set1") +
     scale_fill_brewer(palette="Set1") +
     theme(legend.title = element_blank()) +
+    theme(plot.background = element_rect(fill="#fafafa")) +
     theme(axis.text = element_text(colour = "black", size = 10)) +
     labs(caption = paste("Stress:",pred_nmds_stress,
                        "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),

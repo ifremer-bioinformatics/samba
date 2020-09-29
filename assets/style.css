@@ -180,12 +180,14 @@ h4:before {
 .column {
   float: left;
   width: 50%;
+  height: 500px;
   padding: 5px;
 }
 .row::after {
   content: "";
   clear: both;
   display: table;
+  border-spacing: 20px;
 }
 
 /* ---------------------------------------------------

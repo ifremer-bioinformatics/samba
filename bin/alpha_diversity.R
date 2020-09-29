@@ -58,7 +58,11 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     ggsave(filename=paste(alpha_div_plots,".svg",sep=""),final_alpha_plot, device="svg", width=14, height=14)
     ggsave(filename=paste(alpha_div_plots,".png",sep=""),final_alpha_plot, device="png", width=14, height=14)
 
-    plotly_boxplot = subplot(plot1_alpha,plot2_alpha,nrows=2,margin=0.12,widths=0.6)
+    plot_alpha_global_int = plot_alpha_global + theme(plot.background = element_rect(fill="#fafafa"))
+    plot1_alpha_int = plot_alpha_global %+% subset(df2 , Measure == "Observed" | Measure == "Chao1" | Measure == "InvSimpson") + labs(x=NULL)
+    plot2_alpha_int = plot_alpha_global %+% subset(df2 , Measure == "Shannon" | Measure == "Pielou")
+
+    plotly_boxplot = subplot(plot1_alpha_int,plot2_alpha_int,nrows=2,margin=0.12,widths=0.6) %>% partial_bundle()
     htmlwidgets::saveWidget(as_widget(plotly_boxplot),file=paste0(alpha_div_plots,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
   
     ## Rarefaction curve ####
@@ -70,7 +74,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
         mydf = as.data.frame(x)
         colnames(mydf) <- "Value"
         mydf$SampleID <- y
-        mydf$Subsampling <- attr(x, "Subsampling")
+        mydf$Subsampling <- attr(x, "Subsample")
         mydf
     }, x = plot_rarec, y = as.list(names(plot_rarec)), SIMPLIFY = FALSE)
 
@@ -82,12 +86,13 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
         scale_color_discrete(guide = FALSE) +
         geom_line() +
         theme(legend.position = "none") +
-        geom_vline(xintercept=rare,lty=2)
+        geom_vline(xintercept=rarec_value,lty=2)
 
     ggsave(filename=paste(plot_rarefaction,".svg",sep=""),plot_rarec, device="svg", width=14, height=14)
     ggsave(filename=paste(plot_rarefaction,".png",sep=""),plot_rarec, device="png", width=14, height=14)
 
-    plotly_rarec = ggplotly(plot_rarec) 
+    plot_rarec_int = plot_rarec + theme(plot.background = element_rect(fill="#fafafa")) 
+    plotly_rarec = ggplotly(plot_rarec_int) %>% partial_bundle()
     htmlwidgets::saveWidget(as_widget(plotly_rarec),file=paste0(plot_rarefaction,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 
     ## Statistical significance of indexes  ####

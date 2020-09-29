@@ -454,8 +454,7 @@
                 {% for ec in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ec}}</span>
-                    <a target="_blank" href="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html">
-                        <iframe src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html" style="width:100% ; height:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -466,8 +465,7 @@
                 {% for ko in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ko}}</span>
-                    <a target="_blank" href="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html">
-                        <iframe src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html" style="width:100% ; height:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -478,8 +476,7 @@
                 {% for metacyc in r.picrust.var_tested %}
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{metacyc}}</span>
-                    <a target="_blank" href="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html">
-                        <iframe src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html" style="width:100% ; height:100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}
@@ -588,8 +585,7 @@
         {% for var in r.alpha_div.var_tested %}
         <p class="highlight" >{{var}}</p>
         <p align="center">
-            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html">
-                <iframe src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html" style="width:80%"></iframe>
+            <iframe src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html" style="width:80% ; height: 900px"</iframe>
             </a>
             <br>
         </p>
@@ -597,8 +593,7 @@
         <h4>Rarefaction curve</h4>
         <br>
         <p align="center">
-            <a target="_blank" href="R/FIGURES/alpha_diversity/rarefaction_curve_interactiv.html">
-                <iframe src="R/FIGURES/alpha_diversity/rarefaction_curve_interactiv.html" style="width:80%"></iframe>
+            <iframe src="R/FIGURES/alpha_diversity/rarefaction_curve_interactive.html" style="width:80% ; height: 900px"></iframe>
             </a>
             <br>
         </p>
@@ -667,8 +662,7 @@
                 <div class="row">
                     {% for stat in d.stats %}
                     <div class="column">
-                        <a class="link" target="_blank" href="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html">
-                            <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100%"></iframe>
+                    <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100% ; height: 100%"></iframe>
                         </a>
                     </div>
                     {% endfor %}
@@ -688,8 +682,7 @@
             <div class="row">
                 {% for stat in d.stats %}
                 <div class="column">
-                    <a class="link" target="_blank" href="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html">
-                        <iframe src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html" style="width:100%"></iframe>
+                <iframe src="./R/FIGURES/beta_diversity_{{method}}/ExpVar/pie_ExpVar_{{method}}_{{stat}}_interactive.html" style="width:100% ; height: 100%"></iframe>
                     </a>
                 </div>
                 {% endfor %}

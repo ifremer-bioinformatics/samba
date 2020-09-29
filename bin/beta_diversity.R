@@ -78,11 +78,9 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_te
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph
     plot.nmds(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result, nmds, distance, 12, 10, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
-    plot.nmds.interactive(ord_nmds, criteria, color_samples, adonis_result, nmds, distance, paste("NMDS on non-normalized data","based on",distance,"distance"
-,sep=" "))
+    plot.nmds.interactive(ord_nmds, metadata, criteria, color_samples, adonis_result, nmds, distance, paste("NMDS on non-normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, 12, 10, paste("MDS-PCoA on non-normalized data","based on",distance,"distance",sep=" "))
-    plot.pcoa.interactive(ord_pcoa, criteria, color_samples, adonis_result, pcoa, distance, paste("MDS-PCoA on non-normalized data","based on",distance,"dista
-nce",sep=" "))
+    plot.pcoa.interactive(ord_pcoa, metadata, criteria, color_samples, adonis_result, pcoa, distance, paste("MDS-PCoA on non-normalized data","based on",distance,"distance",sep=" "))
     
     ## Hierarchical clustering ####    
     dist = distance(PHYLOSEQ, distance, type="samples")

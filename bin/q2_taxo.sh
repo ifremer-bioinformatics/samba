@@ -5,7 +5,6 @@
 ##                                                                           ##
 ###############################################################################
 args=("$@")
-
 cpus=${args[0]}
 extract_db=${args[1]}
 Fprimer=${args[2]}
@@ -19,17 +18,18 @@ asv_taxo_tsv=${args[9]}
 dbotu3_summary=${args[10]}
 final_asv_taxo_biom=${args[11]}
 final_asv_taxo_tsv=${args[12]}
-database=${args[13]}
+taxo_database=${args[13]}
 seqs_db_filtered=${args[14]}
 logcmd=${args[15]}
-tmpdir=${args[17]}
+tmpdir=${args[16]}
+completedatabase=${args[17]}
+seqs_db=${args[18]}
+taxo_db=${args[19]}
 
-mkdir -p ${tmpdir}
-export TMPDIR="$tmpdir"
+mkdir "$tmpdir"
 
 if [ "$extract_db" = true ]; then
-    seqs_db=${args[16]}
-    taxa_db=${args[17]}
+    database=$taxo_database
     #Train the classifier
     cmd="qiime feature-classifier extract-reads \
         --i-sequences $seqs_db \
@@ -51,7 +51,7 @@ if [ "$extract_db" = true ]; then
 
 else 
     # Keep complete database
-    database=${args[16]}
+    database=$completedatabase
 fi
 
 #Run RDP Classifier for taxonomy assignment

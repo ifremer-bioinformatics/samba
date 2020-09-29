@@ -106,11 +106,9 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
-    plot.nmds.interactive(ord_deseq2_nmds, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, paste("NMDS on DESeq2 normalized data","based
- on",distance,"distance",sep=" "))
+    plot.nmds.interactive(ord_deseq2_nmds, metadata, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, paste("NMDS on DESeq2 normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
-    plot.pcoa.interactive(ord_deseq2_pcoa, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, paste("MDS-PCoA on DESeq2 normalized data","b
-ased on",distance,"distance",sep=" "))
+    plot.pcoa.interactive(ord_deseq2_pcoa, metadata, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, paste("MDS-PCoA on DESeq2 normalized data","based on",distance,"distance",sep=" "))
 
     ## Hierarchical clustering ####    
     hc = hclust(PHYLOSEQ_deseq2_dist, method = method_hc)

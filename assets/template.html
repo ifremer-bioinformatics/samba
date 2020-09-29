@@ -455,7 +455,6 @@
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ec}}</span>
                     <iframe src="picrust2_output/EC_functional_predictions_NMDS_{{ec}}_interactive.html" style="width:100% ; height:100%"></iframe>
-                    </a>
                 </div>
                 {% endfor %}
             </div>
@@ -466,7 +465,6 @@
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{ko}}</span>
                     <iframe src="picrust2_output/KO_functional_predictions_NMDS_{{ko}}_interactive.html" style="width:100% ; height:100%"></iframe>
-                    </a>
                 </div>
                 {% endfor %}
             </div>
@@ -477,7 +475,6 @@
                 <div class="column" style="text-align: center;">
                     <span class="highlight">{{metacyc}}</span>
                     <iframe src="picrust2_output/MetaCyc_functional_predictions_NMDS_{{metacyc}}_interactive.html" style="width:100% ; height:100%"></iframe>
-                    </a>
                 </div>
                 {% endfor %}
             </div>
@@ -586,7 +583,6 @@
         <p class="highlight" >{{var}}</p>
         <p align="center">
             <iframe src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html" style="width:80% ; height: 900px"</iframe>
-            </a>
             <br>
         </p>
         {% endfor %}
@@ -594,7 +590,6 @@
         <br>
         <p align="center">
             <iframe src="R/FIGURES/alpha_diversity/rarefaction_curve_interactive.html" style="width:80% ; height: 900px"></iframe>
-            </a>
             <br>
         </p>
         <h4>Taxonomic diversity</h4>
@@ -611,7 +606,6 @@
         <p align="center">
             <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html">
                 <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html" width="100%" height="800"></iframe>
-            </a>
             <br>
         </p>
         {% endfor %}
@@ -662,8 +656,11 @@
                 <div class="row">
                     {% for stat in d.stats %}
                     <div class="column">
+                    {% if index != "hclustering" %}}
                     <iframe src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}_interactive.html" style="width:100% ; height: 100%"></iframe>
-                        </a>
+                    {% else %}
+                    <img src="R/FIGURES/beta_diversity_{{method}}/{{index}}/{{index}}_{{method}}_{{var}}_{{stat}}.png" style="width:100%"></img>
+                    {% endif %}
                     </div>
                     {% endfor %}
                 </div>

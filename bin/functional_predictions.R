@@ -78,7 +78,7 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
                        "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
                        paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
 
-  plotly_nmds = ggplotly(plot_pred_nmds) 
+  plotly_nmds = ggplotly(plot_pred_nmds) %>% partial_bundle() 
   for (i in c(1:length(plotly_nmds$x$data))) {
     tmp_replace_name = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")

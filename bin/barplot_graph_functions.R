@@ -80,7 +80,8 @@ composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill,
   ggsave(filename=paste(barplot,".svg",sep=""), device="svg", width = 20, height = 12)
   ggsave(filename=paste(barplot,".png",sep=""), device="png", width = 20, height = 12)
 
-  plotly_plot = ggplotly(p)
+p_int = p + theme(plot.background = element_rect(fill="#fafafa"))
+  plotly_plot = ggplotly(p_int)
   for (i in c(1:length(plotly_plot$x$data))) {
     tmp_replace_name = str_remove_all(plotly_plot$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")

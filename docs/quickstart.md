@@ -26,7 +26,7 @@ BAQ4166.3   /path/to/data/BAQ4166.3_7_L001_R1_001.fastq.gz  /path/to/data/BAQ416
 BAQ4697.1   /path/to/data/BAQ4697.1_12_L001_R1_001.fastq.gz /path/to/data/BAQ4697.1_12_L001_R2_001.fastq.gz
 ```
 
-As we can see, the input data must be compressed in **gzip format**. Moreover the FASTQ file need to be, at least for data integrity step, encoded in Illumina **Casava 1.8**. In this format, the format of the '@' line (sequence identifier) looks like:
+As we can see, the input data must be compressed in **gzip format**. Moreover the FASTQ file need to be, at least for data integrity step, encoded in Illumina **Casava 1.8**. In this format, the '@' line (sequence identifier) looks like:
 ```
 @M00176:65:000000000-A41FR:1:2114:9875:23134 1:N:0:CAACTAGA
 ```
@@ -40,7 +40,7 @@ Intrument name    Run id  Flowcell id   Lane   Tile  Coordinate (x:y)
                                                       Pair   Filter   Index seq.
 ```
 
-### 3 - Metadata file
+### 2 - Metadata file
 The metadata file give information about your sequencing parameters (barcode and primers) and biological/environment/etc conditions. The number of descriptive fields is unlimited. As for manifest file, metadata is in tsv format and the header must follow the Qiime2 requirements.
 
 Here, an example for paired-end data:
@@ -60,5 +60,46 @@ YUN3428.2   AAGATCGTACTG    GTGCCAGCMGCCGCGGTAA     GACTACHVHHHTWTCTAAT     3428
 
 To avoid errors during the analysis, be careful to give the same samples between manifest and metadata file, and as possible, in the same order.
 
-### Custom config file
-This is the file which control each process and is parameters, **so it's very important to fulfill this file very carefully**. Otherwise, it's can lead to computational errors or misinterpretation of biological results.
+## Process parameters
+This custom.config file control each process and it's parameters, **so it's very important to fulfill this file very carefully**. Otherwise, it's can lead to computational errors or misinterpretation of biological results.
+
+In this section, we will describe the most important parameters for each process.
+
+#### Main
+```projectName```: the name of your project, **without space, tabulation or accented characters**
+
+```input_manifest```: the full path to your manifest file. 
+
+- ```input_manifest = "/path/to/samba/analysis/q2_manifest"```
+
+```input_metadata```: the full path to your metadata file.
+- ```input_metadata = "/path/to/samba/analysis/q2_metadata"```
+
+#### Cleaning primers step using cutadapt
+```primerF```:
+
+```primerR```:
+
+```overlap```: length shortest primer - 1
+#### ASV taxonomic assignation using QIIME2 RDP-like program
+```database```:
+
+#### Decontamination step using microDecon package
+```control_list```:
+
+```nb_controls```:
+
+```nb_samples```:
+
+#### Differential abundance testing with ANCOM
+```ancom_var```: 
+
+#### Functional predictions with PICRUSt2
+```picrust_var```: 
+
+#### Statistics steps parameters
+```alpha_div_group```: 
+
+```beta_div_var```:
+ 
+```desc_comp_crit```: 

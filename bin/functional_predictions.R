@@ -44,17 +44,17 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
   # Build a data frame with NMDS coordinates and metadata
   pred_nmds1 = pred_nmds$points[,1]
   pred_nmds2 = pred_nmds$points[,2]
-  pred_nmds_data = data.frame(MDS1 = pred_nmds1, MDS2 = pred_nmds2, metadata = metadata[,criteria], samples = rownames(t_pred))
+  pred_nmds_data = data.frame(MDS1 = pred_nmds1, MDS2 = pred_nmds2, Condition = metadata[,criteria], SampleID = rownames(t_pred))
 
   # ADONIS statistic
   pred_adonis = adonis(pred_dist ~ metadata[,criteria])
 
   # Plot
-  ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2, col=metadata)) +
+  ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2, col=Condition)) +
     theme_classic() +
     geom_point(shape=19, size=3) +
-    geom_text(data=pred_nmds_data,aes(x=MDS1,y=MDS2,label=samples),size=3,vjust=2) +
-    stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=metadata),lty=2) +
+    geom_text(data=pred_nmds_data,aes(x=MDS1,y=MDS2,label=SampleID),size=3,vjust=2) +
+    stat_ellipse(geom="polygon",alpha=0.1,type="t",aes(fill=Condition),lty=2) +
     scale_color_brewer(palette="Set1") +
     scale_fill_brewer(palette="Set1") +
     theme(legend.title = element_blank()) +
@@ -72,12 +72,13 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
     scale_color_brewer(palette="Set1") +
     scale_fill_brewer(palette="Set1") +
     theme(legend.title = element_blank()) +
+    theme(plot.background = element_rect(fill="#fafafa")) +
     theme(axis.text = element_text(colour = "black", size = 10)) +
     labs(caption = paste("Stress:",pred_nmds_stress,
                        "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
                        paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
 
-  plotly_nmds = ggplotly(plot_pred_nmds) 
+  plotly_nmds = ggplotly(plot_pred_nmds) %>% partial_bundle() 
   for (i in c(1:length(plotly_nmds$x$data))) {
     tmp_replace_name = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")

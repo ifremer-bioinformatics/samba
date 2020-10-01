@@ -85,13 +85,13 @@ def write_taxo(hits_to_taxo, rank, outfile):
         # Set count to 1 for the current sample
         sample_count[i] = '1'
         for read in sorted(hits_to_taxo[sample]):
-            longreads_seq_id = read
-            silva_tax_id = hits_to_taxo[sample][longreads_seq_id]['lr_tax']
-            tax_depth = len(silva_tax_id.split(';'))
-            if tax_depth >= rank:
-                taxify.write(longreads_seq_id+'\t'+'\t'.join(sample_count)+'\t'+silva_tax_id+'\tAssigned\t'+str(tax_depth)+'\n')
+            lr_read_name = read
+            lr_tax_id = hits_to_taxo[sample][lr_read_name]['lr_tax']
+            lr_tax_depth = len(lr_tax_id.split(';'))
+            if lr_tax_depth >= rank:
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAssigned\t'+str(lr_tax_depth)+'\n')
             else:
-                taxify.write(longreads_seq_id+'\t'+'\t'.join(sample_count)+'\t'+silva_tax_id+'\tUnassigned\t'+str(tax_depth)+'\n')
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tUnassigned\t'+str(lr_tax_depth)+'\n')
         # Clean count and increment
         sample_count[i] = '0'
         i += 1

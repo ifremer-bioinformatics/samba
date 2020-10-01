@@ -9,6 +9,8 @@ args=("$@")
 BASEDIR=${args[0]}
 ready=${args[1]}
 datatype=${args[2]}
+manifest=${args[3]}
+metadata=${args[4]}
 
 if [ "$datatype" == "longreads" ]
 then
@@ -41,7 +43,7 @@ if [ ! -f "$BASEDIR/tax.databases.test/$datatype/$DB" ]
 then
     mkdir -p $BASEDIR/tax.databases.test/$datatype
     wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v132/$datatype/$DB -O $BASEDIR/tax.databases.test/$datatype/$DB
-    if test -z "$TAX"
+    if [ "$datatype" == "longreads" ] 
     then
        wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v132/$datatype/$TAX -O $BASEDIR/tax.databases.test/$datatype/$TAX
     fi
@@ -49,4 +51,6 @@ fi
 if ([ -f "$BASEDIR/tax.databases.test/$datatype/$DB" ] && [ -f "$BASEDIR/training_dataset/$datatype/q2_manifest" ])
 then
    touch $ready
+   ln -s "$BASEDIR/training_dataset/$datatype/q2_manifest" "$manifest"
+   ln -s "$BASEDIR/training_dataset/$datatype/q2_metadata" "$metadata"
 fi

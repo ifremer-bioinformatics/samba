@@ -110,7 +110,7 @@ def helpMessage() {
 	--report_enable	[bool]		Set to false to deactivate report creation. (default = true)
 
 	Long reads options:
-	--lr_type [str]		Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
+	--lr_type [str]			Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
 	--lr_tax_fna [file]		Path to reference database indexed with Minimap2 (required).
 	--lr_taxo_flat [file]		Path to taxonomic reference file (required).
 	--lr_rank [int]			Minimal rank level to keep a hit as assigned [5]. 1:Kingdom, 2:Phylum, 3:Class, 4:Order, 5:Family, 6:Genus, 7:Species
@@ -207,38 +207,8 @@ if (params.dada2merge) {
    dada2merge_repseqsdir_ch = Channel.empty()
 }
 
-if (!params.stats_only || !params.dada2merge) {
-   // Check if input metadata file exits
-   if (!params.input_metadata || params.input_metadata.isEmpty()) {
-      log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
-      exit 1
-   } else {
-      if (workflow.profile.contains('test')) {
-         Channel.fromPath(params.input_metadata)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
-      } else {
-         Channel.fromPath(params.input_metadata, checkIfExists:true)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
-      }
-   }
-   if (!params.input_manifest || params.input_manifest.isEmpty()) {
-      log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
-      exit 1
-   } else {
-      if (workflow.profile.contains('test')) {
-         Channel.fromPath(params.input_manifest)
-                .into { manifest ; manifest4integrity }
-      } else {
-         Channel.fromPath(params.input_manifest, checkIfExists:true)
-                .into { manifest ; manifest4integrity }
-      }
-   }
-} else {
-   Channel.empty().into { manifest ; manifest4integrity }
-}
-
 //If taxonomy step require to extract primer regions
-if (!params.stats_only) {
+if (!params.longreads && !params.stats_only) {
    if (params.extract_db) {
       if (!params.seqs_db || params.seqs_db.isEmpty()) {
          log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
@@ -260,12 +230,7 @@ if (params.microDecon_enable && !params.control_list) {
    exit 1
 }
 
-//If pipeline runs for long reads
 if (params.longreads) {
-   longreads_ch = Channel.fromPath(params.manifest)
-                         .splitCsv(header: true, sep:'\t')
-                         .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
-
 //Force to false other processes options
    params.data_integrity_enable = false
    params.qiime2 = false
@@ -345,18 +310,50 @@ if (workflow.profile.contains('test')) {
    process get_test_data {
       label 'internet_access'
       output :
-         file 'data_is_ready' into ready_integrity, ready_import
+         file 'data_is_ready' into ready_integrity, ready_import, ready_lr
+         file 'manifest' into testmanifest
+         file 'metadata' into testmetadata
        when :
-         !params.stats_only && !params.dada2merge && workflow.profile.contains('test')
+         !params.stats_only && !params.dada2merge
       script :
       def datatype = params.longreads ? "longreads" : "shortreads"
       """
-      get_test_data.sh ${baseDir} 'data_is_ready' ${datatype} &> get_test_data.log 2>&1
+      get_test_data.sh ${baseDir} 'data_is_ready' ${datatype} 'manifest' 'metadata' &> get_test_data.log 2>&1
       """
-  }
+   }
+
+   if (!params.stats_only || !params.dada2merge) {
+      if (params.longreads) {
+        testmetadata.set { metadata4stats } 
+      } else {
+        testmanifest.into { manifest ; manifest4integrity }
+        testmetadata.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      } 
+   }
+  
 } else {
    data_ready = Channel.value("none")
-   data_ready.into { ready_integrity ; ready_import }
+   data_ready.into { ready_integrity ; ready_import ; ready_lr}
+
+   if (!params.stats_only || !params.dada2merge) {
+      // Check if input metadata file exits
+      if (!params.input_metadata || params.input_metadata.isEmpty()) {
+         log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
+         exit 1
+      } else {
+         Channel.fromPath(params.input_metadata, checkIfExists:true)
+                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      }
+      if (!params.input_manifest || params.input_manifest.isEmpty()) {
+         log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
+         exit 1
+      } else {
+         Channel.fromPath(params.input_manifest, checkIfExists:true)
+                .into { manifest ; manifest4integrity }
+      }
+   } else {
+      Channel.empty().into { manifest ; manifest4integrity }
+   }
 }
 
 /*
@@ -410,7 +407,7 @@ if (!params.longreads) {
     
     	input :
     		file q2_manifest from manifest
-                    file ready from ready_import
+                file ready from ready_import
     
     	output :
     		file 'data.qza' into imported_data
@@ -735,6 +732,18 @@ if (!params.longreads) {
     }
 } else {
 
+   if (workflow.profile.contains('test')) {
+     longreadsmanifest = testmanifest.splitCsv(header: true, sep:'\t')
+                                     .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+     longreadstofasta = testmanifest.splitCsv(header: true, sep:'\t')
+                                    .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+   } else {
+     longreadsmanifest = manifest.splitCsv(header: true, sep:'\t')
+                                 .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+     longreadstofasta = manifest.splitCsv(header: true, sep:'\t')
+                                .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+   }
+
    /* _______________________________________________________________ */
    /*                      Long reads part                            */
    /* _______________________________________________________________ */
@@ -742,29 +751,44 @@ if (!params.longreads) {
    process lr_mapping {
      label 'lr_mapping_env'
    
-     publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.sam'
+     publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.bam'
      publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
    
      input:
-       set sample, file(fastq) from longreads_ch
+       set sample, file(fastq) from longreadsmanifest
+       file ready from ready_lr
    
      output:
        file "*.bam" into lr_mapped
        file 'lr_mapping.ok' into process_lr_mapping_report
        file 'lr_samtools-sort.log' into process_lr_sort_report
        file 'v_minimap2.txt' into v_minimap2_version
-       //TODO : ADD EXPORT SEQUENCES IN FASTA FORMAT FOR PHYLOGENY : file 'lr_sequences.fasta' into lr_sequences
    
      shell:
        """
-       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe00 | samtools sort -o ${sample}.bam -O bam - &> lr_minimap2.log 2>&1
+       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -h -F0xe00 | samtools sort -o ${sample}.bam -O bam - &> lr_minimap2.log 2>&1
        touch lr_mapping.ok
        samtools index ${sample}.bam &> lr_samtools-sort.log 2>&1
        touch lr_samtools-sort.ok
        minimap2 --version > v_minimap2.txt
        """
    }
-   
+  
+
+   process lr_getfasta {
+      label 'seqtk_env'
+      input : 
+         set sample, file(fastq) from longreadstofasta
+
+      output :
+         file 'lr_sequences.fasta' into lr_sequences
+
+      shell :
+      """
+         seqtk seq -a ${fastq} > lr_sequences.fasta
+      """
+   }
+  
    process lr_get_taxonomy {
      label 'biopython_env'
  
@@ -785,10 +809,13 @@ if (!params.longreads) {
    }
 }
 
-seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
-seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
-seqs_phyloC = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
-seqs_phylo = params.longreads ? lr_sequences : seqs_phyloC
+if (params.longreads) {
+   seqs_phylo = lr_sequences.collectFile()
+} else {
+   seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
+   seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
+   seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
+}
 
 /*
  * STEP 9 -  Run phylogeny construction
@@ -886,7 +913,7 @@ if (!params.longreads) {
        /* Statistical analysis of functional predictions  */
        process q2_picrust2_stats {
    
-           tag "$beta_var"
+           tag "$picrust_vars"
            label 'r_stats_env'
    
            publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
@@ -958,10 +985,13 @@ if (!params.longreads) {
        """
    }
 }
-   
-tsvA= params.microDecon_enable ? decontam_table : biom_tsv
-tsvB = params.stats_only ? tsv_only : tsvA
-tsv = params.longreads ? lr_biom_tsv : tsvB
+
+if (params.longreads) {
+   tsv = lr_biom_tsv
+} else {   
+   tsvA= params.microDecon_enable ? decontam_table : biom_tsv
+   tsv = params.stats_only ? tsv_only : tsvA
+}
 newick = params.stats_only ? newick_only : newick_phylo
 
 /*
@@ -1272,7 +1302,6 @@ if (params.report_enable) {
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
             file SAMBAreport_ok from SAMBAreport_ok
-            file completecmd_ancom from completecmd_ancom
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected

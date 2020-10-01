@@ -736,12 +736,12 @@ if (!params.longreads) {
      longreadsmanifest = testmanifest.splitCsv(header: true, sep:'\t')
                                      .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
      longreadstofasta = testmanifest.splitCsv(header: true, sep:'\t')
-                                    .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+                                    .map { row -> file(row."absolute-filepath") }
    } else {
      longreadsmanifest = manifest.splitCsv(header: true, sep:'\t')
                                  .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
      longreadstofasta = manifest.splitCsv(header: true, sep:'\t')
-                                .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+                                .map { row -> file(row."absolute-filepath") }
    }
 
    /* _______________________________________________________________ */
@@ -773,22 +773,24 @@ if (!params.longreads) {
        minimap2 --version > v_minimap2.txt
        """
    }
-  
 
    process lr_getfasta {
       label 'seqtk_env'
       input : 
-         set sample, file(fastq) from longreadstofasta
+         file(fastq) from longreadstofasta
 
       output :
          file 'lr_sequences.fasta' into lr_sequences
 
       shell :
       """
-         seqtk seq -a ${fastq} > lr_sequences.fasta
+         seqtk seq -a ${fastq} > 'lr_sequences.fasta'
       """
    }
-  
+ 
+   lr_sequences.collectFile(name : 'lr_sequences.fasta', newLine : false, storeDir : "${params.outdir}/${params.lr_mapping_dirname}")
+               .subscribe {       println "Fasta sequences are saved to file : $it"       }
+
    process lr_get_taxonomy {
      label 'biopython_env'
  
@@ -810,7 +812,7 @@ if (!params.longreads) {
 }
 
 if (params.longreads) {
-   seqs_phylo = lr_sequences.collectFile()
+   seqs_phylo = Channel.fromPath("${params.outdir}/${params.lr_mapping_dirname}/lr_sequences.fasta")
 } else {
    seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
    seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA

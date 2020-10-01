@@ -45,7 +45,7 @@ write.table(DESeq2_normalized_table,final_deseq2_ASV_table_with_taxonomy,sep="\t
 #                                                                               #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie) { 
+betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js) { 
   
     #~~~~~~~~~~~~~~~~~~~~~~#
     # DESeq2 normalization #
@@ -101,14 +101,14 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_
     ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
 
     plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
-    plot.pie.interactive(ExpVar_piedata,ExpVar_name,ExpVar_perc,plot_pie,distance)
+    plot.pie.interactive(ExpVar_piedata,ExpVar_name,ExpVar_perc,plot_pie,distance, plotly_js)
 
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_deseq2, ord_deseq2_nmds, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, 12, 10, paste("NMDS on deseq2 normalized data","based on",distance,"distance",sep=" "))
-    plot.nmds.interactive(ord_deseq2_nmds, metadata, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, paste("NMDS on DESeq2 normalized data","based on",distance,"distance",sep=" "))
+    plot.nmds.interactive(ord_deseq2_nmds, metadata, criteria, color_samples, adonis_result_deseq2, nmds_deseq2, distance, paste("NMDS on DESeq2 normalized data","based on",distance,"distance",sep=" "), plotly_js)
     plot.pcoa(PHYLOSEQ_deseq2, ord_deseq2_pcoa, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, 12, 10, paste("MDS-PCoA on deseq2 normalized data","based on",distance,"distance",sep=" "))
-    plot.pcoa.interactive(ord_deseq2_pcoa, metadata, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, paste("MDS-PCoA on DESeq2 normalized data","based on",distance,"distance",sep=" "))
+    plot.pcoa.interactive(ord_deseq2_pcoa, metadata, criteria, color_samples, adonis_result_deseq2, pcoa_deseq2, distance, paste("MDS-PCoA on DESeq2 normalized data","based on",distance,"distance",sep=" "), plotly_js)
 
     ## Hierarchical clustering ####    
     hc = hclust(PHYLOSEQ_deseq2_dist, method = method_hc)
@@ -139,10 +139,11 @@ main_jaccard <- function(){
     plot_hc = args[9]
     variance_significance_tests_deseq2=args[10]
     plot_pie = args[11]
+    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
 if (!interactive()) {
@@ -163,10 +164,11 @@ main_bray <- function(){
     plot_hc = args[9]
     variance_significance_tests_deseq2=args[10]
     plot_pie = args[11]
+    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
 if (!interactive()) {
@@ -186,10 +188,11 @@ main_unifrac <- function(){
     plot_hc = args[9]
     variance_significance_tests_deseq2=args[10]
     plot_pie = args[11]
+    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
 if (!interactive()) {
@@ -209,10 +212,11 @@ main_wunifrac <- function(){
     plot_hc = args[9]
     variance_significance_tests_deseq2=args[10]
     plot_pie = args[11]
+    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie)
+    betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
 if (!interactive()) {

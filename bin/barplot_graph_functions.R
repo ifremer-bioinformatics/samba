@@ -97,7 +97,7 @@ composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill,
   ggsave(filename=paste(barplot,".png",sep=""), device="png", width = 20, height = 12)
 
 p_int = p + theme(plot.background = element_rect(fill="#fafafa"))
-  plotly_plot = ggplotly(p_int) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js) %>% layout(legend=list(bgcolor="#fafafa"))
+  plotly_plot = ggplotly(p_int, tooltip=c("x", "y", "fill")) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js) %>% layout(legend=list(bgcolor="#fafafa"))
   for (i in c(1:length(plotly_plot$x$data))) {
     tmp_replace_name = str_remove_all(plotly_plot$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")

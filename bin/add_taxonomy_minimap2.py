@@ -60,7 +60,6 @@ def hits_to_taxo(taxonomy, bam_lst):
                 query_coverage = (asm_length * 100 / query_length)
                 printer = [str(query_length), str(asm_length), str(subject_length), str(round(query_coverage, 2)), str(round(subject_coverage, 2))]
                 print('\t'.join(printer))
-
                 ################################################################
 
             # Step 2 - Handle new hit and multihits
@@ -111,6 +110,7 @@ def write_taxo(hits_to_taxo, rank, outfile):
                 taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAssigned\t'+str(lr_tax_depth)+'\n')
             else:
                 taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tUnassigned\t'+str(lr_tax_depth)+'\n')
+                # TODO: lr_tax_id switch to full taxonomy (ambigous by level) when unassigned
         # Clean count and increment
         sample_count[i] = '0'
         i += 1

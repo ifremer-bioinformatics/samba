@@ -35,11 +35,11 @@ p {
 
 p.subtitle {
     font-size: 2.0rem;
-    color: #22ae63
+    color: #007fcc
 }
 
 h1,h2{
-  color:#22ae63;
+  color: #007fcc;
   margin:0;
   line-height:1.15;
 }
@@ -57,11 +57,11 @@ h2{
 h3{
   margin: 0;
   margin-left: 20px;
-  color:#0d904a
+  color: #00609C
 }
 
 h4{
-  color:#22ae63;
+  color: #007fcc;
   margin: 0;
   margin-left: 40px;
 }
@@ -85,11 +85,11 @@ hr.results {
     height: 1.0px;
     margin-left: 10px;
     background: #333;
-    background-image: linear-gradient(to right, #22ae63, #fbfbfb);
+    background-image: linear-gradient(to right, #007fcc, #fbfbfb);
 }
 
 div.results {
-    color:#22ae63;
+    color:#007fcc;
     margin-left: 10px;
     font-size: 1.4rem;
 }
@@ -217,7 +217,7 @@ a:focus {
     left: 0;
     height: 100vh;
     z-index: 999;
-    background: #22ae63;
+    background: #007fcc;
     color: #fff;
     transition: all 0.3s;
 }
@@ -228,7 +228,7 @@ a:focus {
 
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #22ae63;
+    background: #007fcc;
 }
 
 #sidebar ul li a {
@@ -239,8 +239,7 @@ a:focus {
 
 #sidebar ul li.active>a,
 a[aria-expanded="true"] {
-    color: #fff;
-    background: #0d904a;
+    background: #00609C;
 }
 
 a[data-toggle="collapse"] {
@@ -258,7 +257,19 @@ a[data-toggle="collapse"] {
 ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
-    background: #0ccb65;
+    background: #006EAA;
+}
+
+/* ---------------------------------------------------
+    IFRAME STYLE
+----------------------------------------------------- */
+
+iframe {
+    border: 0px solid black;
+}
+
+.output {
+    background: #eee;
 }
 
 /* ---------------------------------------------------

@@ -28,6 +28,7 @@ def helpMessage() {
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
 	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
+    --compress_result [bool]        Zip the final result directory (default = true) 
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.
@@ -128,7 +129,9 @@ if (params.help) {
  * SET UP CONFIGURATION VARIABLES
  */
 import java.text.SimpleDateFormat
-def date = new Date()
+def d = new Date()
+def dtFormat = "dd/MM/yyyy"
+def date = d.format(dtFormat, TimeZone.getTimeZone('GMT+2'))
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -924,6 +927,7 @@ if (!params.longreads) {
    
            tag "$picrust_vars"
            label 'r_stats_env'
+           label 'internet_access'
    
            publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
@@ -944,7 +948,7 @@ if (!params.longreads) {
    
            script :
            """
-           functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+           functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} ${params.plotly_js} &> picrust2_stats.log 2>&1
            cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
            """
        }
@@ -983,7 +987,7 @@ if (!params.longreads) {
            file 'ancom_*.qzv' into ancom_table
            file 'export_ancom_*' into export_ancom
            file 'collapsed_table_*.qza' into collapsed_taxolevel_table
-           file 'completecmd_ancom' into completecmd_ancom
+           file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
    
        when :
            !params.stats_only
@@ -1067,6 +1071,7 @@ process stats_alpha {
 
     tag "$alpha_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
@@ -1091,7 +1096,7 @@ process stats_alpha {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve ${params.plotly_js} &> stats_alpha_diversity.log 2>&1
     touch process_alpha_report.ok
     """
 }
@@ -1109,6 +1114,7 @@ process stats_beta {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1135,7 +1141,7 @@ process stats_beta {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ ${params.plotly_js} &> stats_beta_diversity.log 2>&1
     touch process_beta_report.ok
     """
 }
@@ -1147,6 +1153,7 @@ process stats_beta_rarefied {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1173,7 +1180,7 @@ process stats_beta_rarefied {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ ${params.plotly_js} &> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -1184,6 +1191,7 @@ process stats_beta_deseq2 {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1210,7 +1218,7 @@ process stats_beta_deseq2 {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ ${params.plotly_js} &> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -1221,6 +1229,7 @@ process stats_beta_css {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1247,7 +1256,7 @@ process stats_beta_css {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ ${params.plotly_js} &> stats_beta_diversity_css.log 2>&1
     """
 }
 
@@ -1424,6 +1433,36 @@ if (params.report_enable) {
         os.system("${baseDir}/bin/SAMBAreport.py -t ${SAMBAtemplate} -p ${params.outdir}/${params.report_dirname} -c 'data.json'")
         os.system("cp ${wf_image} samba_wf.png")
 
+        """
+    }
+}
+
+compress_ok_chA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
+compress_ok_chB = params.stats_beta_enable ? process_beta_report : compress_ok_chA
+compress_ok_chC = params.picrust2_enable ? complete_picrust2_stats_cmd : compress_ok_chB
+compress_ok_ch = params.report_enable ? Report : compress_ok_chC
+
+/*
+ * STEP 19 -  Compress final report directory
+ */
+if (params.compress_result) {
+    process compress_result {
+        
+        input :
+            file compress_ok from compress_ok_ch
+            file completecmd from completcmd_ancom4compress
+
+        output :
+            file "SAMBA_report.zip" into report_zip
+
+        when :
+           params.compress_result
+ 
+        script :
+        """
+        cd ${params.outdir}/${params.report_dirname} && zip -r SAMBA_report.zip * 
+        cd -
+        ln -s ${params.outdir}/${params.report_dirname}/SAMBA_report.zip
         """
     }
 }

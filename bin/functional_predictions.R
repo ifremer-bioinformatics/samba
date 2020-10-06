@@ -11,7 +11,7 @@ for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDecon,control) {
+functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDecon,control, plotly_js) {
 
   # Format functional predictions tables ####
   pred = read.table(pred,h=T,sep="\t",check.names=F,quote="")
@@ -65,6 +65,22 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
   ggsave(filename=paste(name,pred_plot,".svg",sep=""), device="svg", width = 12, height = 10)
   ggsave(filename=paste(name,pred_plot,".png",sep=""), device="png", width = 12, height = 10)
 
+  plotly_mod_dep = function(p,js_file){
+    deps <- p$dependencies
+    deps_urls <- purrr::map(
+      deps,
+      ~if(.x$name == "plotly-basic") {
+        .x$src = list(file=getwd())
+        .x$script = js_file
+        .x
+      } else {
+        .x
+      }
+    )
+    p$dependencies <- deps_urls
+    p
+  }
+
   plot_pred_nmds = ggplot(pred_nmds_data, aes(x=MDS1, y=MDS2)) +
     theme_classic() +
     stat_ellipse(geom="polygon",alpha=0.2,type="t",aes(fill=Condition),lty=1) +
@@ -78,7 +94,7 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
                        "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
                        paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
 
-  plotly_nmds = ggplotly(plot_pred_nmds) %>% partial_bundle() 
+  plotly_nmds = ggplotly(plot_pred_nmds) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js) %>% layout(autosize=F,margin=list(r=0,l=0,t=0,b=0,pad=0),legend=list(bgcolor="#fafafa"),paper_bgcolor="#fafafa")
   for (i in c(1:length(plotly_nmds$x$data))) {
     tmp_replace_name = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")
@@ -100,7 +116,8 @@ main_ec <- function(){
   name = "EC_"
   microDecon = args[7]
   control = args[8]
-  functional_predictions(pred_ec,metadata,criteria,pred_plot,name,microDecon,control)
+  plotly_js = args[9]
+  functional_predictions(pred_ec,metadata,criteria,pred_plot,name,microDecon,control, plotly_js)
 }
 
 if (!interactive()) {
@@ -117,7 +134,8 @@ main_ko <- function(){
   name = "KO_"
   microDecon = args[7]
   control = args[8]
-  functional_predictions(pred_ko,metadata,criteria,pred_plot,name,microDecon,control)
+  plotly_js = args[9]
+  functional_predictions(pred_ko,metadata,criteria,pred_plot,name,microDecon,control,plotly_js)
 }
 
 if (!interactive()) {
@@ -134,7 +152,8 @@ main_metacyc <- function(){
   name = "MetaCyc_"
   microDecon = args[7]
   control = args[8]
-  functional_predictions(pred_path,metadata,criteria,pred_plot,name,microDecon,control)
+  plotly_js = args[9]
+  functional_predictions(pred_path,metadata,criteria,pred_plot,name,microDecon,control, plotly_js)
 }
 
 if (!interactive()) {

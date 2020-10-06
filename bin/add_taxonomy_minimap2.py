@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-import argparse
+
+from __future__ import print_function
 import re
 import os
+import sys
 import pysam
+import argparse
 
 def getArgs():
     parser = argparse.ArgumentParser(description="")
@@ -15,6 +18,10 @@ def getArgs():
     arg = parser.parse_args()
 
     return arg
+
+# For errors / warnings
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def store_taxonomy(taxonomy):
     taxo_r = open(taxonomy, 'r')
@@ -30,6 +37,12 @@ def hits_to_taxo(taxonomy, bam_lst):
         bam = pysam.AlignmentFile(f, "rb")
         sample = os.path.splitext(os.path.basename(f))[0]
         lr_reads[sample] = {}
+        ################################################################
+        # DEV: add query/subject coverage filtering (at least for 12S) #
+        ################################################################
+        # print(sample)
+        # print("query_length\tasm_length\tsubject_length\tquery_coverage\tsubject_coverage")
+        ################################################################
         for l in bam.fetch(until_eof=True):
             # print(l.tostring(bam))
             # Step 1 - Parse bam and collect mapped/unmapped
@@ -38,11 +51,23 @@ def hits_to_taxo(taxonomy, bam_lst):
             if l.flag == 4:
                 read['lr_nm_score'] = -1
                 # lr_seq_id = "no-hit"
-                read['lr_tax'] = "unassigned"
+                read['lr_tax'] = "Unmapped"
             else:
                 read['lr_nm_score'] = l.get_tag('NM')
                 read['lr_tax'] = taxonomy[l.reference_name]
                 read['lr_asm_length'] = l.query_alignment_length
+
+                ################################################################
+                # DEV: add query/subject coverage filtering (at least for 12S) #
+                ################################################################
+                # query_length = l.infer_read_length()
+                # asm_length = l.query_alignment_length
+                # subject_length =  bam.get_reference_length(l.reference_name)
+                # subject_coverage = (asm_length * 100 / subject_length)
+                # query_coverage = (asm_length * 100 / query_length)
+                # printer = [str(query_length), str(asm_length), str(subject_length), str(round(query_coverage, 2)), str(round(subject_coverage, 2))]
+                # print('\t'.join(printer))
+                ################################################################
 
             # Step 2 - Handle new hit and multihits
             ## Add a new hit
@@ -78,7 +103,7 @@ def write_taxo(hits_to_taxo, rank, outfile):
         sample_header.append(s)
     # Open and start to write
     taxify = open(outfile, 'w')
-    taxify.write('Read_id\t'+'\t'.join(sample_header)+'\tTaxonomy\tAssignation\tDepth\n')
+    taxify.write('Read_id\t'+'\t'.join(sample_header)+'\tTaxonomy\tAssignation\n')
     # Iterator for the position of each bample
     i = 0
     for sample in sorted(hits_to_taxo):
@@ -89,9 +114,12 @@ def write_taxo(hits_to_taxo, rank, outfile):
             lr_tax_id = hits_to_taxo[sample][lr_read_name]['lr_tax']
             lr_tax_depth = len(lr_tax_id.split(';'))
             if lr_tax_depth >= rank:
-                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAssigned\t'+str(lr_tax_depth)+'\n')
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAssigned\n')
+            elif lr_tax_id == "Unmapped":
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tUnmapped\n')
             else:
-                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tUnassigned\t'+str(lr_tax_depth)+'\n')
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAmbiguous\n')
+
         # Clean count and increment
         sample_count[i] = '0'
         i += 1
@@ -103,6 +131,9 @@ def main(args):
 
     # 2 - Collect all bam files
     collect_bam = [ os.path.join(args.bam, f) for f in os.listdir(args.bam) if f.endswith('.bam') ]
+    if len(collect_bam) == 0:
+        eprint('ERROR: no BAM found')
+        exit(1)
 
     # 3 - For each bam, get the taxonomy of hits
     hits_2_taxo = hits_to_taxo(taxonomy, collect_bam)

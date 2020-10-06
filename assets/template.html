@@ -55,7 +55,7 @@
             Project name : {{ d.projectName }}
         </div>
         <div style="text-align: left; padding: 10px">
-            Run date : {{ d.run_date }}
+            Analysis date : {{ d.run_date }}
         </div>
         <ul class="list-unstyled components">
             <li><a href="#description">Description</a></li>
@@ -583,14 +583,12 @@
         <p class="highlight" >{{var}}</p>
         <p align="center">
             <iframe src="R/FIGURES/alpha_diversity/diversity_index/alpha_div_plots_{{var}}_interactive.html" style="width:80% ; height: 900px"</iframe>
-            <br>
         </p>
         {% endfor %}
         <h4>Rarefaction curve</h4>
         <br>
         <p align="center">
-            <iframe src="R/FIGURES/alpha_diversity/rarefaction_curve_interactive.html" style="width:80% ; height: 900px"></iframe>
-            <br>
+            <iframe src="R/FIGURES/alpha_diversity/rarefaction_curve_interactive.html" style="width:80% ; height: 700px"></iframe>
         </p>
         <h4>Taxonomic diversity</h4>
         <br>
@@ -604,8 +602,7 @@
             <br>
         </ul>
         <p align="center">
-            <a target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html">
-                <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html" width="100%" height="800"></iframe>
+            <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html" width="100%" height="800"></iframe>
             <br>
         </p>
         {% endfor %}
@@ -641,7 +638,7 @@
         <h3 id="beta-diversity">Beta diversity by variable [optional]</h3>
         <br>
         {% for var in r.beta_div.var_tested %}
-        <h4>Results for variable: <span class="highlight">{{var}}</span></h4>
+        <h4>Ordination and hierarchical clustering for variable: <span class="highlight">{{var}}</span></h4>
         <br>
             {% for method in d.methods %}
         <p><button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#{{var}}{{method}}" aria-expanded="false" aria-controls="collapseExample">Show {{method}} method</button></p>

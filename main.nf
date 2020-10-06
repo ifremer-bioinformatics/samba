@@ -28,6 +28,7 @@ def helpMessage() {
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
 	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
+    --compress_result [bool]        Zip the final result directory (default = true) 
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.
@@ -110,7 +111,7 @@ def helpMessage() {
 	--report_enable	[bool]		Set to false to deactivate report creation. (default = true)
 
 	Long reads options:
-	--lr_type [str]		Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
+	--lr_type [str]			Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
 	--lr_tax_fna [file]		Path to reference database indexed with Minimap2 (required).
 	--lr_taxo_flat [file]		Path to taxonomic reference file (required).
 	--lr_rank [int]			Minimal rank level to keep a hit as assigned [5]. 1:Kingdom, 2:Phylum, 3:Class, 4:Order, 5:Family, 6:Genus, 7:Species
@@ -128,7 +129,9 @@ if (params.help) {
  * SET UP CONFIGURATION VARIABLES
  */
 import java.text.SimpleDateFormat
-def date = new Date()
+def d = new Date()
+def dtFormat = "dd/MM/yyyy"
+def date = d.format(dtFormat, TimeZone.getTimeZone('GMT+2'))
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -207,38 +210,8 @@ if (params.dada2merge) {
    dada2merge_repseqsdir_ch = Channel.empty()
 }
 
-if (!params.stats_only || !params.dada2merge) {
-   // Check if input metadata file exits
-   if (!params.input_metadata || params.input_metadata.isEmpty()) {
-      log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
-      exit 1
-   } else {
-      if (workflow.profile.contains('test')) {
-         Channel.fromPath(params.input_metadata)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
-      } else {
-         Channel.fromPath(params.input_metadata, checkIfExists:true)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
-      }
-   }
-   if (!params.input_manifest || params.input_manifest.isEmpty()) {
-      log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
-      exit 1
-   } else {
-      if (workflow.profile.contains('test')) {
-         Channel.fromPath(params.input_manifest)
-                .into { manifest ; manifest4integrity }
-      } else {
-         Channel.fromPath(params.input_manifest, checkIfExists:true)
-                .into { manifest ; manifest4integrity }
-      }
-   }
-} else {
-   Channel.empty().into { manifest ; manifest4integrity }
-}
-
 //If taxonomy step require to extract primer regions
-if (!params.stats_only) {
+if (!params.longreads && !params.stats_only) {
    if (params.extract_db) {
       if (!params.seqs_db || params.seqs_db.isEmpty()) {
          log.error "Parameter --seqs_db cannot be null or empty. Set the path to the reference sequences"
@@ -260,12 +233,7 @@ if (params.microDecon_enable && !params.control_list) {
    exit 1
 }
 
-//If pipeline runs for long reads
 if (params.longreads) {
-   longreads_ch = Channel.fromPath(params.manifest)
-                         .splitCsv(header: true, sep:'\t')
-                         .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
-
 //Force to false other processes options
    params.data_integrity_enable = false
    params.qiime2 = false
@@ -345,18 +313,50 @@ if (workflow.profile.contains('test')) {
    process get_test_data {
       label 'internet_access'
       output :
-         file 'data_is_ready' into ready_integrity, ready_import
+         file 'data_is_ready' into ready_integrity, ready_import, ready_lr
+         file 'manifest' into testmanifest
+         file 'metadata' into testmetadata
        when :
-         !params.stats_only && !params.dada2merge && workflow.profile.contains('test')
+         !params.stats_only && !params.dada2merge
       script :
       def datatype = params.longreads ? "longreads" : "shortreads"
       """
-      get_test_data.sh ${baseDir} 'data_is_ready' ${datatype} &> get_test_data.log 2>&1
+      get_test_data.sh ${baseDir} 'data_is_ready' ${datatype} 'manifest' 'metadata' &> get_test_data.log 2>&1
       """
-  }
+   }
+
+   if (!params.stats_only || !params.dada2merge) {
+      if (params.longreads) {
+        testmetadata.set { metadata4stats } 
+      } else {
+        testmanifest.into { manifest ; manifest4integrity }
+        testmetadata.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      } 
+   }
+  
 } else {
    data_ready = Channel.value("none")
-   data_ready.into { ready_integrity ; ready_import }
+   data_ready.into { ready_integrity ; ready_import ; ready_lr}
+
+   if (!params.stats_only || !params.dada2merge) {
+      // Check if input metadata file exits
+      if (!params.input_metadata || params.input_metadata.isEmpty()) {
+         log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
+         exit 1
+      } else {
+         Channel.fromPath(params.input_metadata, checkIfExists:true)
+                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+      }
+      if (!params.input_manifest || params.input_manifest.isEmpty()) {
+         log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
+         exit 1
+      } else {
+         Channel.fromPath(params.input_manifest, checkIfExists:true)
+                .into { manifest ; manifest4integrity }
+      }
+   } else {
+      Channel.empty().into { manifest ; manifest4integrity }
+   }
 }
 
 /*
@@ -410,7 +410,7 @@ if (!params.longreads) {
     
     	input :
     		file q2_manifest from manifest
-                    file ready from ready_import
+                file ready from ready_import
     
     	output :
     		file 'data.qza' into imported_data
@@ -603,7 +603,7 @@ if (!params.longreads) {
     """ 
     }
     
-/*
+     /*
      * STEP 8 -  Decontaminate samples with MicroDecon
      */
     if (params.microDecon_enable) {
@@ -726,7 +726,7 @@ if (!params.longreads) {
     
         	shell :
         	"""
-            qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
+                qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
         	q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
         	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
     
@@ -735,6 +735,18 @@ if (!params.longreads) {
     }
 } else {
 
+   if (workflow.profile.contains('test')) {
+     longreadsmanifest = testmanifest.splitCsv(header: true, sep:'\t')
+                                     .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+     longreadstofasta = testmanifest.splitCsv(header: true, sep:'\t')
+                                    .map { row -> file(row."absolute-filepath") }
+   } else {
+     longreadsmanifest = manifest.splitCsv(header: true, sep:'\t')
+                                 .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+     longreadstofasta = manifest.splitCsv(header: true, sep:'\t')
+                                .map { row -> file(row."absolute-filepath") }
+   }
+
    /* _______________________________________________________________ */
    /*                      Long reads part                            */
    /* _______________________________________________________________ */
@@ -742,29 +754,46 @@ if (!params.longreads) {
    process lr_mapping {
      label 'lr_mapping_env'
    
-     publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.sam'
+     publishDir "${params.outdir}/${params.lr_mapping_dirname}", mode: 'copy', pattern: '*.bam'
      publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
    
      input:
-       set sample, file(fastq) from longreads_ch
+       set sample, file(fastq) from longreadsmanifest
+       file ready from ready_lr
    
      output:
        file "*.bam" into lr_mapped
        file 'lr_mapping.ok' into process_lr_mapping_report
        file 'lr_samtools-sort.log' into process_lr_sort_report
        file 'v_minimap2.txt' into v_minimap2_version
-       //TODO : ADD EXPORT SEQUENCES IN FASTA FORMAT FOR PHYLOGENY : file 'lr_sequences.fasta' into lr_sequences
    
      shell:
        """
-       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -F0xe00 | samtools sort -o ${sample}.bam -O bam - &> lr_minimap2.log 2>&1
+       minimap2 -t ${task.cpus} -K 25M -ax ${params.lr_type} -L ${params.lr_tax_fna} ${fastq} | samtools view -h -F0xe00 | samtools sort -o ${sample}.bam -O bam - &> lr_minimap2.log 2>&1
        touch lr_mapping.ok
        samtools index ${sample}.bam &> lr_samtools-sort.log 2>&1
        touch lr_samtools-sort.ok
        minimap2 --version > v_minimap2.txt
        """
    }
-   
+
+   process lr_getfasta {
+      label 'seqtk_env'
+      input : 
+         file(fastq) from longreadstofasta
+
+      output :
+         file 'lr_sequences.fasta' into lr_sequences
+
+      shell :
+      """
+         seqtk seq -a ${fastq} > 'lr_sequences.fasta'
+      """
+   }
+ 
+   lr_sequences.collectFile(name : 'lr_sequences.fasta', newLine : false, storeDir : "${params.outdir}/${params.lr_mapping_dirname}")
+               .subscribe {       println "Fasta sequences are saved to file : $it"       }
+
    process lr_get_taxonomy {
      label 'biopython_env'
  
@@ -779,16 +808,19 @@ if (!params.longreads) {
    
      shell:
        """
-       add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax &> add_taxonomy_minimap2.log 2&>1
+       add_taxonomy_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tax &> add_taxo_minimap.log 2>&1
        touch lr_get_taxonomy.ok
        """
    }
 }
 
-seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
-seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
-seqs_phyloC = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
-seqs_phylo = params.longreads ? lr_sequences : seqs_phyloC
+if (params.longreads) {
+   seqs_phylo = Channel.fromPath("${params.outdir}/${params.lr_mapping_dirname}/lr_sequences.fasta")
+} else {
+   seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
+   seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
+   seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
+}
 
 /*
  * STEP 9 -  Run phylogeny construction
@@ -805,6 +837,7 @@ process q2_phylogeny {
 
 	input :
 		file repseqs_phylo from seqs_phylo
+                file process_lr_taxonomy_report from process_lr_taxonomy_report
 
 	output :
 		file 'aligned_repseq.qza' into aligned_repseq
@@ -822,7 +855,13 @@ process q2_phylogeny {
 
 	script :
 	"""
-	q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
+        SEQ="${repseqs_phylo}"
+        if [ ${params.longreads} ];
+        then 
+           qiime tools import --input-path ${repseqs_phylo} --output-path 'sequences.qza' --type 'FeatureData[Sequence]' &> q2_phylogeny.log 2>&1
+           SEQ="sequences.qza"
+        fi 
+	q2_phylogeny.sh \$SEQ aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
 	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
 	"""
 }
@@ -886,8 +925,9 @@ if (!params.longreads) {
        /* Statistical analysis of functional predictions  */
        process q2_picrust2_stats {
    
-           tag "$beta_var"
+           tag "$picrust_vars"
            label 'r_stats_env'
+           label 'internet_access'
    
            publishDir "${params.outdir}/${params.report_dirname}/picrust2_output", mode: 'copy', pattern: '*functional_predictions_NMDS*'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'complete_picrust2_stats_cmd', saveAs : { complete_picrust2_stats_cmd -> "cmd/${task.process}_complete.sh" }
@@ -908,7 +948,7 @@ if (!params.longreads) {
    
            script :
            """
-           functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} &> picrust2_stats.log 2>&1
+           functional_predictions.R ec_metagenome_predictions_with-descriptions.tsv ko_metagenome_predictions_with-descriptions.tsv pathway_abundance_predictions_with-descriptions.tsv ${metadata} ${picrust_vars} functional_predictions_NMDS_${picrust_vars} ${params.microDecon_enable} ${params.control_list} ${params.plotly_js} &> picrust2_stats.log 2>&1
            cp ${baseDir}/bin/functional_predictions.R complete_picrust2_stats_cmd &>> picrust2_stats.log 2>&1
            """
        }
@@ -947,7 +987,7 @@ if (!params.longreads) {
            file 'ancom_*.qzv' into ancom_table
            file 'export_ancom_*' into export_ancom
            file 'collapsed_table_*.qza' into collapsed_taxolevel_table
-           file 'completecmd_ancom' into completecmd_ancom
+           file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
    
        when :
            !params.stats_only
@@ -958,10 +998,13 @@ if (!params.longreads) {
        """
    }
 }
-   
-tsvA= params.microDecon_enable ? decontam_table : biom_tsv
-tsvB = params.stats_only ? tsv_only : tsvA
-tsv = params.longreads ? lr_biom_tsv : tsvB
+
+if (params.longreads) {
+   tsv = lr_biom_tsv
+} else {   
+   tsvA= params.microDecon_enable ? decontam_table : biom_tsv
+   tsv = params.stats_only ? tsv_only : tsvA
+}
 newick = params.stats_only ? newick_only : newick_phylo
 
 /*
@@ -1028,6 +1071,7 @@ process stats_alpha {
 
     tag "$alpha_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
@@ -1052,7 +1096,7 @@ process stats_alpha {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve &> stats_alpha_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve ${params.plotly_js} &> stats_alpha_diversity.log 2>&1
     touch process_alpha_report.ok
     """
 }
@@ -1070,6 +1114,7 @@ process stats_beta {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1096,7 +1141,7 @@ process stats_beta {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ &> stats_beta_diversity.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ ${params.plotly_js} &> stats_beta_diversity.log 2>&1
     touch process_beta_report.ok
     """
 }
@@ -1108,6 +1153,7 @@ process stats_beta_rarefied {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1134,7 +1180,7 @@ process stats_beta_rarefied {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ &> stats_beta_diversity_rarefied.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ ${params.plotly_js} &> stats_beta_diversity_rarefied.log 2>&1
     """
 }
 
@@ -1145,6 +1191,7 @@ process stats_beta_deseq2 {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1171,7 +1218,7 @@ process stats_beta_deseq2 {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ &> stats_beta_diversity_deseq2.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ ${params.plotly_js} &> stats_beta_diversity_deseq2.log 2>&1
     """
 }
 
@@ -1182,6 +1229,7 @@ process stats_beta_css {
 
     tag "$beta_var"
     label 'r_stats_env'
+    label 'internet_access'
 
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
     publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
@@ -1208,7 +1256,7 @@ process stats_beta_css {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ &> stats_beta_diversity_css.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ ${params.plotly_js} &> stats_beta_diversity_css.log 2>&1
     """
 }
 
@@ -1272,7 +1320,6 @@ if (params.report_enable) {
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
             file SAMBAreport_ok from SAMBAreport_ok
-            file completecmd_ancom from completecmd_ancom
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
@@ -1386,6 +1433,36 @@ if (params.report_enable) {
         os.system("${baseDir}/bin/SAMBAreport.py -t ${SAMBAtemplate} -p ${params.outdir}/${params.report_dirname} -c 'data.json'")
         os.system("cp ${wf_image} samba_wf.png")
 
+        """
+    }
+}
+
+compress_ok_chA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
+compress_ok_chB = params.stats_beta_enable ? process_beta_report : compress_ok_chA
+compress_ok_chC = params.picrust2_enable ? complete_picrust2_stats_cmd : compress_ok_chB
+compress_ok_ch = params.report_enable ? Report : compress_ok_chC
+
+/*
+ * STEP 19 -  Compress final report directory
+ */
+if (params.compress_result) {
+    process compress_result {
+        
+        input :
+            file compress_ok from compress_ok_ch
+            file completecmd from completcmd_ancom4compress
+
+        output :
+            file "SAMBA_report.zip" into report_zip
+
+        when :
+           params.compress_result
+ 
+        script :
+        """
+        cd ${params.outdir}/${params.report_dirname} && zip -r SAMBA_report.zip * 
+        cd -
+        ln -s ${params.outdir}/${params.report_dirname}/SAMBA_report.zip
         """
     }
 }

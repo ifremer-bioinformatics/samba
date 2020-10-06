@@ -600,7 +600,7 @@ if (!params.longreads) {
     """ 
     }
     
-/*
+     /*
      * STEP 8 -  Decontaminate samples with MicroDecon
      */
     if (params.microDecon_enable) {
@@ -723,7 +723,7 @@ if (!params.longreads) {
     
         	shell :
         	"""
-            qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
+                qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
         	q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
         	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
     
@@ -805,7 +805,7 @@ if (!params.longreads) {
    
      shell:
        """
-       add_taxonomy_minimap2.py -p . -t ${params.lr_taxo_flat} -r ${params.lr_rank} -o samples.tax &> add_taxonomy_minimap2.log 2&>1
+       add_taxonomy_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tax &> add_taxo_minimap.log 2>&1
        touch lr_get_taxonomy.ok
        """
    }
@@ -834,6 +834,7 @@ process q2_phylogeny {
 
 	input :
 		file repseqs_phylo from seqs_phylo
+                file process_lr_taxonomy_report from process_lr_taxonomy_report
 
 	output :
 		file 'aligned_repseq.qza' into aligned_repseq
@@ -851,7 +852,13 @@ process q2_phylogeny {
 
 	script :
 	"""
-	q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
+        SEQ="${repseqs_phylo}"
+        if [ ${params.longreads} ];
+        then 
+           qiime tools import --input-path ${repseqs_phylo} --output-path 'sequences.qza' --type 'FeatureData[Sequence]' &> q2_phylogeny.log 2>&1
+           SEQ="sequences.qza"
+        fi 
+	q2_phylogeny.sh \$SEQ aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
 	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
 	"""
 }

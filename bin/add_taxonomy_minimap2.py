@@ -76,7 +76,7 @@ def hits_to_taxo(taxonomy, bam_lst):
             ## Replace taxonomy if the alignment score of another hit is better
             elif lr_reads[sample][l.query_name]['lr_nm_score'] < read['lr_nm_score']:
                 lr_reads[sample][l.query_name] = read
-            ## In case of bame alignment score...
+            ## In case of same alignment score...
             elif lr_reads[sample][l.query_name]['lr_nm_score'] == read['lr_nm_score']:
                 ### 1 - split taxo
                 # c for current and n for new
@@ -111,18 +111,28 @@ def write_taxo(hits_to_taxo, rank, outfile):
         sample_count[i] = '1'
         for read in sorted(hits_to_taxo[sample]):
             lr_read_name = read
-            lr_tax_id = hits_to_taxo[sample][lr_read_name]['lr_tax']
-            lr_tax_depth = len(lr_tax_id.split(';'))
+            lr_tax = hits_to_taxo[sample][lr_read_name]['lr_tax']
+            lr_tax_depth = len(lr_tax.split(';'))
+            # Add ambiguous field(s)
+            if lr_tax_depth != 7:
+                lr_tax = ambiguous_taxa(lr_tax, lr_tax_depth)
+            # Writing
             if lr_tax_depth >= rank:
-                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAssigned\n')
-            elif lr_tax_id == "Unmapped":
-                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tUnmapped\n')
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax+'\tAssigned\n')
+            elif lr_tax == "Unmapped":
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax+'\tUnmapped\n')
             else:
-                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax_id+'\tAmbiguous\n')
+                taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax+'\tAmbiguous\n')
 
         # Clean count and increment
         sample_count[i] = '0'
         i += 1
+def ambiguous_taxa(lr_tax, lr_tax_depth):
+    ranks_lst = ["Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+    ranks = len(ranks_lst)
+    for i in range(lr_tax_depth, ranks):
+        lr_tax = lr_tax + ";Ambiguous_" + ranks_lst[i]
+    return lr_tax
 
 def main(args):
 

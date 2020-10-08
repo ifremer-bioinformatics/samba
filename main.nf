@@ -734,7 +734,7 @@ if (!params.longreads) {
         }
     }
 } else {
-
+   
    if (workflow.profile.contains('test')) {
      longreadsmanifest = testmanifest.splitCsv(header: true, sep:'\t')
                                      .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
@@ -803,70 +803,66 @@ if (!params.longreads) {
        file '*' from lr_mapped.collect()
    
      output:
-       file 'samples.tax' into lr_biom_tsv
+       file 'samples.tsv' into lr_biom_tsv
        file 'lr_get_taxonomy.ok' into process_lr_taxonomy_report
    
      shell:
        """
-       add_taxonomy_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tax &> add_taxo_minimap.log 2>&1
+       add_taxonomy_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tsv &> add_taxo_minimap.log 2>&1
        touch lr_get_taxonomy.ok
        """
    }
 }
 
-if (params.longreads) {
-   seqs_phylo = Channel.fromPath("${params.outdir}/${params.lr_mapping_dirname}/lr_sequences.fasta")
-} else {
+if (!params.longreads) {
    seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
    seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
    seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
-}
 
-/*
- * STEP 9 -  Run phylogeny construction
- */
-process q2_phylogeny {
+    /*
+     * STEP 9 -  Run phylogeny construction
+     */
+    process q2_phylogeny {
+    
+    	label 'qiime2_env'
+    
+    	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
+    	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
+    	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
+    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
+    
+    	input :
+    		file repseqs_phylo from seqs_phylo
+                    file process_lr_taxonomy_report from process_lr_taxonomy_report
+    
+    	output :
+    		file 'aligned_repseq.qza' into aligned_repseq
+    		file 'masked-aligned_repseq.qza' into masked_aligned
+    		file 'tree.qza' into tree
+    		file 'tree.log' into tree_bestmodel_log
+    		file 'rooted_tree.qza' into rooted_tree
+    		file 'tree_export_dir' into tree_export_dir
+    		file 'tree_export.log' into tree_export_log
+    		file 'tree.nwk' into newick_phylo
+    		file 'completecmd' into complete_cmd_phylogeny
+    
+    	when :
+    	    !params.stats_only
+    
+    	script :
+    	"""
+            SEQ="${repseqs_phylo}"
+            if [ ${params.longreads} ];
+            then 
+               qiime tools import --input-path ${repseqs_phylo} --output-path 'sequences.qza' --type 'FeatureData[Sequence]' &> q2_phylogeny.log 2>&1
+               SEQ="sequences.qza"
+            fi 
+    	q2_phylogeny.sh \$SEQ aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
+    	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
+    	"""
+    }
 
-	label 'qiime2_env'
-
-	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
-	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
-	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
-
-	input :
-		file repseqs_phylo from seqs_phylo
-                file process_lr_taxonomy_report from process_lr_taxonomy_report
-
-	output :
-		file 'aligned_repseq.qza' into aligned_repseq
-		file 'masked-aligned_repseq.qza' into masked_aligned
-		file 'tree.qza' into tree
-		file 'tree.log' into tree_bestmodel_log
-		file 'rooted_tree.qza' into rooted_tree
-		file 'tree_export_dir' into tree_export_dir
-		file 'tree_export.log' into tree_export_log
-		file 'tree.nwk' into newick_phylo
-		file 'completecmd' into complete_cmd_phylogeny
-
-	when :
-	    !params.stats_only
-
-	script :
-	"""
-        SEQ="${repseqs_phylo}"
-        if [ ${params.longreads} ];
-        then 
-           qiime tools import --input-path ${repseqs_phylo} --output-path 'sequences.qza' --type 'FeatureData[Sequence]' &> q2_phylogeny.log 2>&1
-           SEQ="sequences.qza"
-        fi 
-	q2_phylogeny.sh \$SEQ aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
-	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
-	"""
-}
-
-if (!params.longreads) {
 
    table_picrust2A = params.dada2merge ? merge_table_picrust2 : dada2_table_picrust2
    table_picrust2B = params.dbotu3_enable ? dbotu3_table_picrust2 : table_picrust2A
@@ -1001,11 +997,12 @@ if (!params.longreads) {
 
 if (params.longreads) {
    tsv = lr_biom_tsv
+   newick = "none"
 } else {   
    tsvA= params.microDecon_enable ? decontam_table : biom_tsv
    tsv = params.stats_only ? tsv_only : tsvA
+   newick = params.stats_only ? newick_only : newick_phylo
 }
-newick = params.stats_only ? newick_only : newick_phylo
 
 /*
  * STEP 11 -  Prepare data for statistics steps
@@ -1033,7 +1030,12 @@ process prepare_data_for_stats {
     script :
     """
     prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.stats_only} &> stats_prepare_data.log 2&>1
-    Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
+    if [ ${params.longreads} ];
+    then
+        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj_longreads.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &>> stats_prepare_data_lr.log 2&>1
+    else
+        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
+    fi
     ## get statistics libraries version for report
     Rscript -e "write(x=as.character(paste0(R.Version()[c('major','minor')], collapse = '.')), file='v_R.txt')"
     Rscript -e "library(dplyr); write(x=as.character(packageVersion('dplyr')), file='v_dplyr.txt')"
@@ -1445,7 +1447,7 @@ compress_ok_ch = params.report_enable ? Report : compress_ok_chC
 /*
  * STEP 19 -  Compress final report directory
  */
-if (params.compress_result) {
+/*if (params.compress_result) {
     process compress_result {
         
         input :
@@ -1465,7 +1467,7 @@ if (params.compress_result) {
         ln -s ${params.outdir}/${params.report_dirname}/SAMBA_report.zip
         """
     }
-}
+}*/
 
 /*
  * Completion e-mail notification

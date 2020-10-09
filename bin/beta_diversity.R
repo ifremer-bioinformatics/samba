@@ -99,6 +99,9 @@ betadiversity <- function(PHYLOSEQ, distance, metadata, variance_significance_te
 #                                             #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
+args = commandArgs(trailingOnly=TRUE)
+longreads = args[12]
+
 main_jaccard  <- function(){
     # Get arguments from RScript command line
     args = commandArgs(trailingOnly=TRUE)
@@ -173,8 +176,10 @@ main_unifrac  <- function(){
     betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_unifrac()
+if (longreads == "false") { 
+    if (!interactive()) {
+            main_unifrac()
+    }
 }
 
 main_wunifrac  <- function(){
@@ -199,6 +204,8 @@ main_wunifrac  <- function(){
     betadiversity(PHYLOSEQ, distance, metadata, variance_significance_tests, criteria, nmds, pcoa, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_wunifrac()
+if (longreads == "false") {
+    if (!interactive()) {
+            main_wunifrac()
+    }
 }

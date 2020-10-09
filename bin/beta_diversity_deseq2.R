@@ -126,6 +126,8 @@ betadiversity_deseq2 <- function (PHYLOSEQ_deseq2, distance, metadata, variance_
 #                                             #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
+longreads = args[13]
+
 main_jaccard <- function(){
     PHYLOSEQ_deseq2 = PHYLOSEQ_deseq2
     distance = "jaccard"
@@ -195,8 +197,10 @@ main_unifrac <- function(){
     betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_unifrac()
+if (longreads == "false") { 
+    if (!interactive()) {
+            main_unifrac()
+    }
 }
 
 main_wunifrac <- function(){
@@ -219,6 +223,8 @@ main_wunifrac <- function(){
     betadiversity_deseq2(PHYLOSEQ_deseq2, distance, metadata, variance_significance_tests_deseq2, criteria, nmds_deseq2, pcoa_deseq2, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_wunifrac()
+if (longreads == "false") {
+    if (!interactive()) {
+            main_wunifrac()
+    }
 }

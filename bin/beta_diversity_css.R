@@ -121,6 +121,8 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
 #                                             #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
+longreads = args[13]
+
 main_jaccard <- function(){
     PHYLOSEQ_css = PHYLOSEQ_css
     distance = "jaccard"
@@ -189,8 +191,10 @@ main_unifrac <- function(){
     betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_unifrac()
+if (longreads == "false") {
+    if (!interactive()) {
+            main_unifrac()
+    }
 }
 
 main_wunifrac <- function(){
@@ -213,6 +217,8 @@ main_wunifrac <- function(){
     betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_wunifrac()
+if (longreads == "false") {
+    if (!interactive()) {
+            main_wunifrac()
+    }
 }

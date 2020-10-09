@@ -112,6 +112,8 @@ betadiversity_rarefied <- function (PHYLOSEQ_rarefied, distance, metadata, varia
 #                                             #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
+longreads= args[13]
+
 main_jaccard <- function(){
     PHYLOSEQ_rarefied = PHYLOSEQ_rarefied 
     distance = "jaccard"
@@ -180,8 +182,10 @@ main_unifrac <- function(){
     betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_unifrac()
+if (longreads == "false") {
+    if (!interactive()) {
+            main_unifrac()
+    }
 }
 
 main_wunifrac <- function(){
@@ -204,6 +208,8 @@ main_wunifrac <- function(){
     betadiversity_rarefied(PHYLOSEQ_rarefied, distance, metadata, variance_significance_tests_rarefied, criteria, nmds_rarefied, pcoa_rarefied, method_hc, plot_hc, plot_pie, plotly_js)
 }
 
-if (!interactive()) {
-        main_wunifrac()
+if (longreads == "false") {
+    if (!interactive()) {
+            main_wunifrac()
+    }
 }

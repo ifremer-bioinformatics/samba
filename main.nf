@@ -1021,20 +1021,20 @@ process prepare_data_for_stats {
         file newick_tree from newick
 
     output :
-        file 'ASV_table_with_taxo_for_stats.tsv' into biom_tsv_stats
+        file 'table_with_taxo_for_stats.tsv' into biom_tsv_stats
         file 'metadata_stats.tsv' into metadata_stats, metadata_beta, metadata_beta_rarefied, metadata_beta_deseq2, metadata_beta_css
         file 'phyloseq.rds' into phyloseq_rds, phyloseq_rds_alpha, phyloseq_rds_beta, phyloseq_rds_beta_rarefied, phyloseq_rds_beta_deseq2, phyloseq_rds_beta_css,phyloseq_rds_set
         file 'version_ok' into version_collected
         file 'v_*.txt' into r_lib_version
-
+ 
     script :
     """
-    prepare_data_for_stats.sh ${metadata} ${biom_tsv} ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.stats_only} &> stats_prepare_data.log 2&>1
     if [ ${params.longreads} ];
     then
-        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj_longreads.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} &>> stats_prepare_data_lr.log 2&>1
+        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj_longreads.R phyloseq.rds ${biom_tsv} ${metadata} ${params.lr_rank} ${params.kingdom} table_with_taxo_for_stats.tsv &>> stats_prepare_data_lr.log 2&>1
     else
-        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds ASV_table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
+        prepare_data_for_stats.sh ${metadata} ${biom_tsv} table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.stats_only} &> stats_prepare_data.log 2&>1
+        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
     fi
     ## get statistics libraries version for report
     Rscript -e "write(x=as.character(paste0(R.Version()[c('major','minor')], collapse = '.')), file='v_R.txt')"

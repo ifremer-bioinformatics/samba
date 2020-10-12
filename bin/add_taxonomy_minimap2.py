@@ -33,6 +33,7 @@ def store_taxonomy(taxonomy):
 
 def hits_to_taxo(taxonomy, bam_lst):
     lr_reads = {}
+    lr_ambiguous_reads = {}
     for f in bam_lst:
         bam = pysam.AlignmentFile(f, "rb")
         sample = os.path.splitext(os.path.basename(f))[0]
@@ -92,9 +93,13 @@ def hits_to_taxo(taxonomy, bam_lst):
                         # lr_reads[sample][l.query_name] = read
                         lr_reads[sample][l.query_name]['lr_tax'] = ';'.join(c[:t])
                         break
+                ### 3 - Store the taxonomy options
+                # if lr_ambiguous_reads:
+                # else:
+
     return lr_reads
 
-def write_taxo(hits_to_taxo, rank, outfile):
+def write_taxo(hits_to_taxo, rank, outfile, ranks):
     # sample hit count
     sample_count = ['0'] * len(hits_to_taxo)
     # Header for samples
@@ -115,7 +120,7 @@ def write_taxo(hits_to_taxo, rank, outfile):
             lr_tax_depth = len(lr_tax.split(';'))
             # Add ambiguous field(s)
             if lr_tax_depth != 7:
-                lr_tax = ambiguous_taxa(lr_tax, lr_tax_depth)
+                lr_tax = ambiguous_taxa(lr_tax, lr_tax_depth, ranks)
             # Writing
             if lr_tax_depth >= rank:
                 taxify.write(lr_read_name+'\t'+'\t'.join(sample_count)+'\t'+lr_tax+'\tAssigned\n')
@@ -127,14 +132,19 @@ def write_taxo(hits_to_taxo, rank, outfile):
         # Clean count and increment
         sample_count[i] = '0'
         i += 1
-def ambiguous_taxa(lr_tax, lr_tax_depth):
-    ranks_lst = ["Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
-    ranks = len(ranks_lst)
-    for i in range(lr_tax_depth, ranks):
-        lr_tax = lr_tax + ";Ambiguous_" + ranks_lst[i]
+
+def ambiguous_taxa(lr_tax, lr_tax_depth, ranks):
+    ranks_depth = len(ranks)
+    for i in range(lr_tax_depth, ranks_depth):
+        lr_tax = lr_tax + ";Ambiguous_" + ranks[i]
     return lr_tax
 
+# def write_ambiguous_reads():
+
+
 def main(args):
+
+    ranks = ["Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
     # 1 - read and store taxonomy
     taxonomy = store_taxonomy(args.tax)
@@ -149,7 +159,7 @@ def main(args):
     hits_2_taxo = hits_to_taxo(taxonomy, collect_bam)
 
     # 4 - Filter the taxonomy by rank level and print
-    write_taxo(hits_2_taxo, args.rank, args.out)
+    write_taxo(hits_2_taxo, args.rank, args.out, ranks)
 
 if __name__ == '__main__':
     args = getArgs()

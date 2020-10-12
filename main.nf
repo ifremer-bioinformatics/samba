@@ -797,19 +797,19 @@ if (!params.longreads) {
    process lr_get_taxonomy {
      label 'biopython_env'
  
-     publishDir "${params.outdir}/${params.lr_taxonomy_dirname}", mode: 'copy', pattern: '*.tax'
+     publishDir "${params.outdir}/${params.lr_taxonomy_dirname}", mode: 'copy', pattern: '*.tsv'
    
      input:
        file '*' from lr_mapped.collect()
    
      output:
        file 'samples.tsv' into lr_biom_tsv
-       file 'lr_get_taxonomy.ok' into process_lr_taxonomy_report
+       file 'lr_count_table.ok' into process_lr_taxonomy_report
    
      shell:
        """
-       add_taxonomy_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tsv &> add_taxo_minimap.log 2>&1
-       touch lr_get_taxonomy.ok
+       lr_count_table_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tsv &> lr_count_table.log 2>&1
+       touch lr_count_table.ok
        """
    }
 }

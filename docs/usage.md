@@ -12,6 +12,7 @@
   * [`-profile`](#-profile)
 * [Generic arguments](#generic-arguments)
   * [`--singleEnd`](#--singleEnd)
+  * [`--longreads`](#--longreads)
   * [`--projectName`](#--projectName)
 * [Data integrity](#data-integrity)
   * [`--data_integrity_enable`](#--data_integrity_enable)
@@ -57,6 +58,11 @@
   * [`--nsti`](#--nsti)
 * [Differential abundance](#differential-abundance)
   * [`--ancom_var`](#--ancom_var)
+* [Long reads](#long-reads)
+  * [`--lr_type`](#--lr_type)
+  * [`--lr_tax_fna`](#--lr_tax_fna)
+  * [`--lr_taxo_flat`](#--lr_taxo_flat)
+  * [`--lr_rank`](#--lr_rank)
 * [Statistics](#statistics)
   * [`--stats_alpha_enable`](#--stats_alpha_enable)
   * [`--stats_beta_enable`](#--stats_beta_enable)
@@ -178,6 +184,10 @@ Please note that the input data must be in fastq.gz format.
 ### `--singleEnd`
 
 Set to true to specify that the inputs are single-end reads. Default is paired-end reads.
+
+### `--longreads`
+
+Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
 
 ### `--projectName`
 
@@ -358,6 +368,28 @@ Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/
 ### `--ancom_var`
 
 According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
+
+
+
+## Long reads
+
+Analysis based on mapping with [Minimap2](https://github.com/lh3/minimap2) and Python script developed by the SeBiMER team based on the preprint [Freshwater monitoring by nanopore sequencing](https://dx.doi.org/10.1101/2020.02.06.936302) for the taxonomic assignation.
+
+### `--lr_type`
+
+Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
+
+### `--lr_tax_fna`
+
+ Path to reference database indexed with Minimap2 (required).
+
+### `--lr_taxo_flat`
+
+Path to taxonomic reference file (required).
+
+### `--lr_rank`
+
+Minimal rank level to keep a hit as assigned [5]. 1:Kingdom, 2:Phylum, 3:Class, 4:Order, 5:Family, 6:Genus, 7:Species
 
 ## Statistics
 

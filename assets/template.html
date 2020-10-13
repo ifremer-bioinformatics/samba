@@ -204,7 +204,7 @@
         <br>
         {% if d.steps.stats_only == 'false' %}
         <h1 id="bioinformatic">Bioinformatic process</h1>
-        {% if d.steps.data_integrity_enable == 'true' %}
+        {% if d.steps.data_integrity_enable == 'true' or d.steps.longreads = 'false' %}
         <h3 id ="data-integrity">Data integrity [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -223,6 +223,7 @@
         <ul style="margin: 0 ; padding: 1 ;"><li>All data integrity verification are summarized in <a class="link" href="./data_integrity.csv">this csv file</a></li></ul>
         <br>
         {% endif %}
+        {% d.steps.longreads = 'false' %}
         <h3 id="importing-raw-data">Importing raw data</h3>
         <br>
         <div style="text-align: justify">
@@ -368,11 +369,13 @@
         </ul>
         <br>
         {% endif %}
+        {% endif %}
         <!--  -->
         <!-- Taxonomic assignation -->
         <!--  -->
         <h3 id="taxo-assign">Taxonomic assignation</h3>
         <br>
+        {% d.steps.longreads = 'false' %}
         <div style="text-align: justify">
             The taxonomic assignation performed during the fourth step of the workflow allowed to
             affiliate each ASV to a taxonomy by using as reference the database defined by yourself.<a class="link" target="_blank" href="./cmd/q2_taxonomy_complete.sh">Commands executed</a>
@@ -393,11 +396,33 @@
             <li>The result of the taxonomic affiliation is available in <a class="link" target="_blank" href="./taxo_output/index.html">html</a> and
                 <a class="link" target="_blank" href="./taxo_output/ASV_taxonomy.tsv">tabulated</a> formats</li>
         </ul>
+        {% else  %}
+        <div style="text-align: justify">
+            The taxonomic assignation allowed to affiliate each <b>read</b> to a taxonomy by using as reference the database defined by yourself.
+        </div>
+        <br>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined Minimap2 and Taxonomy parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li class="cmdline">Sequencing technology: <span class="highlight">{{d.lr.lr_type}}</span></li>
+            <li class="cmdline">Minimal rank level: <span class="highlight">{{d.lr.lr_rank}}</span></li>
+            <li class="cmdline">Reference database: <span class="highlight">{{d.lr.lr_tax_fna}}</span></li>
+            <li class="cmdline">Reference taxonomy: <span class="highlight">{{d.lr.lr_tax_flat}}</span></li>
+        </ul>
+        <br>
+        <div class="results">Results</div>
+        <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./taxo_output" style="font-size: 1.4rem"> Output folder</a>
+        <br>
+        <br>
+        <ul style="margin: 0 ; padding: 1 ;text-align: justify">
+            <li>The result of the taxonomic affiliation is available in <a class="link" target="_blank" href="./02_lr_mapping/samples.tsv">tabulated</a> formats</li>
+        </ul>
+        {% endif %}
         <br>
         <!--  -->
         <!-- Samples decontamination (microDecon) [optional] -->
         <!--  -->
-        {% if d.steps.microDecon_enable == 'true' %}
+        {% if d.steps.microDecon_enable == 'true' or d.steps.longreads = 'false' %}
         <h3 id="microdecon">Samples decontamination (microDecon) [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -429,7 +454,7 @@
         <!--  -->
         <!-- Functional predictions (PICRUSt2) [optional] -->
         <!--  -->
-        {% if d.steps.picrust2_enable == 'true' %}
+        {% if d.steps.picrust2_enable == 'true' or d.steps.longreads = 'false' %}
         <h3 id="picrsut">Functional predictions (PICRUSt2) [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -485,6 +510,7 @@
         <!--  -->
         <!--  Differential abundance testing using ANCOM -->
         <!--  -->
+        {% if d.steps.longreads = 'false' %}
         <h3 id="ancom">Differential abundance testing using ANCOM</h3>
         <br>
         <div style="text-align: justify">
@@ -545,6 +571,8 @@
         <!--  -->
         <!--  Final outputs -->
         <!--  -->
+        {% endif %}
+        {% if d.steps.longreads = 'false' %}
         <h3 id="final-output">Final outputs</h3>
         <br>
         <div style="text-align: justify">
@@ -558,6 +586,7 @@
                 A biom file is available <a class="link" target="_blank" href="./ASV_table_with_taxonomy.biom">here</a> formats</li>
         </ul>
         <br>
+        {% endif %}
         {% endif %}
         <!--  -->
         <!--  General statistical analyses -->

@@ -221,6 +221,12 @@ def main(args):
                 var_name = f.replace('upset_plot_', '').replace('.png', '')
                 results['descriptive_comparison']['var_tested'].append(var_name)
 
+    # _____________________________________________________________
+    ## long reads databases
+    if nxt_params['steps']['longreads'] == 'true':
+        nxt_params["lr"]["lr_tax_fna"] = os.path.basename(nxt_params["lr"]["lr_tax_fna"])
+        nxt_params["lr"]["lr_taxo_flat"] = os.path.basename(nxt_params["lr"]["lr_taxo_flat"])
+
     # -------------------------------------------------------------
     # Step 3 - write the final html report
     write_html(args.template, nxt_params, results)

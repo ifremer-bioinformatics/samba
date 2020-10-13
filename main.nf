@@ -1407,6 +1407,12 @@ if (params.report_enable) {
         data["microdecon"]["nb_controls"] = '$params.nb_controls' or None
         data["microdecon"]["nb_samples"] = '$params.nb_samples' or None
 
+        data["lr"] = {}
+        data["lr"]["lr_type"] = '$params.lr_type' or None
+        data["lr"]["lr_rank"] = '$params.lr_rank' or None
+        data["lr"]["lr_tax_fna"] = '$params.lr_tax_fna' or None
+        data["lr"]["lr_taxo_flat"] = '$params.lr_taxo_flat' or None
+
         data["stats"] = {}
         data["stats"]["ancom_var"] = '$params.ancom_var' or None
         data["stats"]["kingdom"] = '$params.kingdom' or None

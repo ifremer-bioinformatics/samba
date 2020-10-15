@@ -31,7 +31,8 @@ def load_json(jsonfile):
     nxt_params['methods'] = ['rarefied','DESeq2','CSS']
     nxt_params['indices'] = ['NMDS', 'PCoA', 'hclustering']
     nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard', 'unifrac']
-
+    if nxt_params['steps']['longreads'] == 'true':
+        nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard']
 
     return nxt_params
 

@@ -660,7 +660,11 @@
             <li><span class="highlight">{{ v }}</span></li>
             {% endfor %}
         </ul>
+        {% if d.steps.longreads = 'false' %}
         <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
+        {% else %}
+        <li>Distance matrix : "Jaccard / Bray-Curtis"</li>
+        {% endif %}
         <br>
 
         <!-- by variable -->

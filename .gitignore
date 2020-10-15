@@ -5,3 +5,4 @@ tax.databases.test
 SAMBA_results_of_*
 tmp_SAMBA
 training_dataset/
+.idea/

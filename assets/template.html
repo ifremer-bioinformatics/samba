@@ -63,24 +63,28 @@
             <li class="active">
                 <a href="#BioinformaticSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Bioinformatic process</a>
                 <ul class="collapse list-unstyled" id="BioinformaticSubmenu">
-                    {% if d.steps.data_integrity_enable == 'true' %}
-                        <li><a href="#data-integrity">Data integrity</a></li>
+                    {% if d.steps.longreads == 'false' %}
+                        {% if d.steps.data_integrity_enable == 'true' %}
+                            <li><a href="#data-integrity">Data integrity</a></li>
+                        {% endif %}
+                        <li><a href="#importing-raw-data">Importing raw data</a></li>
+                        <li><a href="#primers-removal">Primers removal</a></li>
+                        <li><a href="#qc-feature-table">QC and feature table</a></li>
+                        {% if d.steps.dbotu3_enable == 'true' %}
+                            <li><a href="#asv-clustering">ASV clustering</a></li>
+                        {% endif %}
+                        <li><a href="#taxo-assign">Taxonomic assignation</a></li>
+                        {% if d.steps.microDecon_enable == 'true' %}
+                            <li><a href="#microdecon">Samples decontamination</a></li>
+                        {% endif %}
+                        {% if d.steps.picrust2_enable == 'true' %}
+                            <li><a href="#picrsut">Functional predictions</a></li>
+                        {% endif %}
+                        <li><a href="#ancom">Differential abundance</a></li>
+                        <li><a href="#final-output">Final outputs</a></li>
+                    {% else %}
+                        <li><a href="#taxo-assign">Taxonomic assignation</a></li>
                     {% endif %}
-                    <li><a href="#importing-raw-data">Importing raw data</a></li>
-                    <li><a href="#primers-removal">Primers removal</a></li>
-                    <li><a href="#qc-feature-table">QC and feature table</a></li>
-                    {% if d.steps.dbotu3_enable == 'true' %}
-                    <li><a href="#asv-clustering">ASV clustering</a></li>
-                    {% endif %}
-                    <li><a href="#taxo-assign">Taxonomic assignation</a></li>
-                    {% if d.steps.microDecon_enable == 'true' %}
-                    <li><a href="#microdecon">Samples decontamination</a></li>
-                    {% endif %}
-                    {% if d.steps.picrust2_enable == 'true' %}
-                    <li><a href="#picrsut">Functional predictions</a></li>
-                    {% endif %}
-                    <li><a href="#ancom">Differential abundance</a></li>
-                    <li><a href="#final-output">Final outputs</a></li>
                 </ul>
             </li>
             {% endif %}
@@ -200,11 +204,15 @@
                 <td><a class="link" target="_blank" href="https://github.com/hms-dbmi/UpSetR">UpSetR</a></td>
                 <td style="text-align: center">{{d.soft.UpSetR}}</td>
             </tr>
+            <tr>
+                <td><a class="link" target="_blank" href="https://github.com/lh3/minimap2">Minimap2</a></td>
+                <td style="text-align: center">{{d.soft.minimap2}}</td>
+            </tr>
         </table>
         <br>
         {% if d.steps.stats_only == 'false' %}
         <h1 id="bioinformatic">Bioinformatic process</h1>
-        {% if d.steps.data_integrity_enable == 'true' or d.steps.longreads = 'false' %}
+        {% if d.steps.data_integrity_enable == 'true' or d.steps.longreads == 'false' %}
         <h3 id ="data-integrity">Data integrity [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -223,7 +231,7 @@
         <ul style="margin: 0 ; padding: 1 ;"><li>All data integrity verification are summarized in <a class="link" href="./data_integrity.csv">this csv file</a></li></ul>
         <br>
         {% endif %}
-        {% d.steps.longreads = 'false' %}
+        {% if d.steps.longreads == 'false' %}
         <h3 id="importing-raw-data">Importing raw data</h3>
         <br>
         <div style="text-align: justify">
@@ -375,7 +383,7 @@
         <!--  -->
         <h3 id="taxo-assign">Taxonomic assignation</h3>
         <br>
-        {% d.steps.longreads = 'false' %}
+        {% if d.steps.longreads == 'false' %}
         <div style="text-align: justify">
             The taxonomic assignation performed during the fourth step of the workflow allowed to
             affiliate each ASV to a taxonomy by using as reference the database defined by yourself.<a class="link" target="_blank" href="./cmd/q2_taxonomy_complete.sh">Commands executed</a>
@@ -422,7 +430,7 @@
         <!--  -->
         <!-- Samples decontamination (microDecon) [optional] -->
         <!--  -->
-        {% if d.steps.microDecon_enable == 'true' or d.steps.longreads = 'false' %}
+        {% if d.steps.microDecon_enable == 'true' or d.steps.longreads == 'false' %}
         <h3 id="microdecon">Samples decontamination (microDecon) [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -454,7 +462,7 @@
         <!--  -->
         <!-- Functional predictions (PICRUSt2) [optional] -->
         <!--  -->
-        {% if d.steps.picrust2_enable == 'true' or d.steps.longreads = 'false' %}
+        {% if d.steps.picrust2_enable == 'true' or d.steps.longreads == 'false' %}
         <h3 id="picrsut">Functional predictions (PICRUSt2) [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -510,7 +518,7 @@
         <!--  -->
         <!--  Differential abundance testing using ANCOM -->
         <!--  -->
-        {% if d.steps.longreads = 'false' %}
+        {% if d.steps.longreads == 'false' %}
         <h3 id="ancom">Differential abundance testing using ANCOM</h3>
         <br>
         <div style="text-align: justify">
@@ -572,7 +580,7 @@
         <!--  Final outputs -->
         <!--  -->
         {% endif %}
-        {% if d.steps.longreads = 'false' %}
+        {% if d.steps.longreads == 'false' %}
         <h3 id="final-output">Final outputs</h3>
         <br>
         <div style="text-align: justify">
@@ -621,20 +629,29 @@
         </p>
         <h4>Taxonomic diversity</h4>
         <br>
-        {% for var in r.alpha_div.var_tested %}
-        <ul>
-            <li>Taxonomic barplots group by <span class="highlight">{{var}} :</span></li><br>
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_phylum_{{var}}_interactive.html">Barplot at the phylum level</a> ;
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_class_{{var}}_interactive.html">Barplot at the class level</a> ;
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_order_{{var}}_interactive.html">Barplot at the order level</a> ;
-            <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_family_{{var}}_interactive.html">Barplot at the family level</a>
-            <br>
-        </ul>
-        <p align="center">
-            <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html" width="100%" height="800"></iframe>
-            <br>
-        </p>
-        {% endfor %}
+        {% if d.steps.longreads == 'false' %}
+            {% for var in r.alpha_div.var_tested %}
+            <ul>
+                <li>Taxonomic barplots group by <span class="highlight">{{var}} :</span></li><br>
+                <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_phylum_{{var}}_interactive.html">Barplot at the phylum level</a> ;
+                <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_class_{{var}}_interactive.html">Barplot at the class level</a> ;
+                <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_order_{{var}}_interactive.html">Barplot at the order level</a> ;
+                <a class="link" target="_blank" href="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_family_{{var}}_interactive.html">Barplot at the family level</a>
+                <br>
+            </ul>
+            <p align="center">
+                <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_genus_{{var}}_interactive.html" width="100%" height="800"></iframe>
+                <br>
+            </p>
+            {% endfor %}
+        {% else %}
+            {% for var in r.alpha_div.var_tested %}
+                <p align="center">
+                    <iframe src="R/FIGURES/alpha_diversity/diversity_barplots/{{var}}/barplot_{{d.lr.lr_rank}}_{{var}}_interactive.html" width="100%" height="800"></iframe>
+                    <br>
+                </p>
+            {% endfor %}
+        {% endif %}
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
             <li>The results of the significance tests carried out for each variable on each diversity indexes can be viewed <a class="link" target="_blank" href="./R/FIGURES/alpha_diversity/index_significance_tests.txt">here</a></li>
         </ul>
@@ -660,7 +677,7 @@
             <li><span class="highlight">{{ v }}</span></li>
             {% endfor %}
         </ul>
-        {% if d.steps.longreads = 'false' %}
+        {% if d.steps.longreads == 'false' %}
         <li>Distance matrix : "Jaccard / Bray-Curtis / UniFrac / Weighted UniFrac"</li>
         {% else %}
         <li>Distance matrix : "Jaccard / Bray-Curtis"</li>

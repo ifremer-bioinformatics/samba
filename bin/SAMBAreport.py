@@ -31,8 +31,6 @@ def load_json(jsonfile):
     nxt_params['methods'] = ['rarefied','DESeq2','CSS']
     nxt_params['indices'] = ['NMDS', 'PCoA', 'hclustering']
     nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard', 'unifrac']
-    if nxt_params['steps']['longreads'] == 'true':
-        nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard']
 
     return nxt_params
 
@@ -125,67 +123,89 @@ def main(args):
     # _____________________________________________________________
     # Step 2 - Collect info and files for each process
     # _____________________________________________________________
-    ## DADA 2
-    dada2_fasta = os.path.join(args.path, structure['dada2']['fasta'])
-    results['dada2']['asv_count'] = count_seq_fasta(dada2_fasta)
+    # Step 2.1 - Short reads
+    # _____________________________________________________________
+    if nxt_params['steps']['longreads'] == 'false':
+
+        ## DADA 2
+        dada2_fasta = os.path.join(args.path, structure['dada2']['fasta'])
+        results['dada2']['asv_count'] = count_seq_fasta(dada2_fasta)
+
+        # _____________________________________________________________
+        ## DBOTU 3
+        if nxt_params['steps']['dbotu3_enable'] == 'true':
+            dbotu3_fasta = os.path.join(args.path,structure['dbotu3']['fasta'])
+            results['dbotu3']['asv_count'] = count_seq_fasta(dbotu3_fasta)
+            results['dbotu3']['clustering'] = results['dada2']['asv_count'] - results['dbotu3']['asv_count']
+            results['dbotu3']['clustering_perc'] = round(100 - (results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count']), 2)
+
+        # _____________________________________________________________
+        ## MicroDecon
+        if nxt_params['steps']['microDecon_enable'] == 'true':
+            microdecon_fasta = os.path.join(args.path,structure['microdecon']['fasta'])
+            microdecon_removed = os.path.join(args.path,structure['microdecon']['removed'])
+
+            results['microdecon']['asv_count'] = count_seq_fasta(microdecon_fasta)
+            results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
+            # -1 to rm header line count
+            results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - 1
+
+        # _____________________________________________________________
+        ## piCrust
+        if nxt_params['steps']['picrust2_enable'] == 'true':
+            picrust_out_dir = os.path.join(args.path,structure['picrust']['folder'])
+            picrust_listdir = collect_from_folder(picrust_out_dir)
+
+            ### Collect png for each category
+            results['picrust'] = defaultdict(dict)
+            results['picrust']['var_tested'] = []
+            for file in picrust_listdir:
+                if file.startswith('EC_') and file.endswith('.png'):
+                    var_name = os.path.splitext(file)[0].replace('EC_functional_predictions_NMDS_','')
+                    results['picrust']['var_tested'].append(var_name)
+
+        # _____________________________________________________________
+        ## ancom
+        ancom_out_dir = os.path.join(args.path,structure['ancom']['folder'])
+        ancom_listdir = collect_from_folder(ancom_out_dir)
+
+        ### Collect variable names
+        results['ancom']['var'] = []
+        for f in ancom_listdir:
+            if not f.endswith('_family') and not f.endswith('_genus'):
+                var = re.sub(r'export_ancom_', '', f)
+                results['ancom']['var'].append(var)
+
+        ### Collect ASV folder and DE
+        for var in results['ancom']['var']:
+            # Folder path
+            var_path_base = os.path.join(ancom_out_dir, ('export_ancom_'+ var))
+            var_path_family = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_family'))
+            var_path_genus = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_genus'))
+            # ASV DE
+            results['ancom'][var] = {}
+            results['ancom'][var]['base'] = len(get_true_from_csv(os.path.join(var_path_base, 'ancom.tsv')))
+            results['ancom'][var]['family'] = len(get_true_from_csv(os.path.join(var_path_family, 'ancom.tsv')))
+            results['ancom'][var]['genus'] = len(get_true_from_csv(os.path.join(var_path_genus, 'ancom.tsv')))
 
     # _____________________________________________________________
-    ## DBOTU 3
-    if nxt_params['steps']['dbotu3_enable'] == 'true':
-        dbotu3_fasta = os.path.join(args.path,structure['dbotu3']['fasta'])
-        results['dbotu3']['asv_count'] = count_seq_fasta(dbotu3_fasta)
-        results['dbotu3']['clustering'] = results['dada2']['asv_count'] - results['dbotu3']['asv_count']
-        results['dbotu3']['clustering_perc'] = round(100 - (results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count']), 2)
+    # Step 2.2 - Long reads
+    # _____________________________________________________________
+    else:
+        # _____________________________________________________________
+        ## long reads databases and stats
+        nxt_params["lr"]["lr_tax_fna"] = os.path.basename(nxt_params["lr"]["lr_tax_fna"])
+        nxt_params["lr"]["lr_tax_flat"] = os.path.basename(nxt_params["lr"]["lr_tax_flat"])
+        nxt_params['stats'] = ['bray', 'jaccard']
+        if nxt_params["lr"]["lr_type"] == 'map-ont':
+            nxt_params["lr"]["lr_type"] = 'Nanopore'
+        else:
+            nxt_params["lr"]["lr_type"] = 'PacBio'
+        ranks = {'1': 'Kingdom', '2': 'Phylum', '3': 'Class', '4': 'Order', '5': 'Family', '6': 'Genus', '7': 'Species'}
+        nxt_params["lr"]["lr_rank"] = ranks[nxt_params["lr"]["lr_rank"]]
 
     # _____________________________________________________________
-    ## MicroDecon
-    if nxt_params['steps']['microDecon_enable'] == 'true':
-        microdecon_fasta = os.path.join(args.path,structure['microdecon']['fasta'])
-        microdecon_removed = os.path.join(args.path,structure['microdecon']['removed'])
-
-        results['microdecon']['asv_count'] = count_seq_fasta(microdecon_fasta)
-        results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
-        # -1 to rm header line count
-        results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - 1
-
-    # _____________________________________________________________
-    ## piCrust
-    if nxt_params['steps']['picrust2_enable'] == 'true':
-        picrust_out_dir = os.path.join(args.path,structure['picrust']['folder'])
-        picrust_listdir = collect_from_folder(picrust_out_dir)
-
-        ### Collect png for each category
-        results['picrust'] = defaultdict(dict)
-        results['picrust']['var_tested'] = []
-        for file in picrust_listdir:
-            if file.startswith('EC_') and file.endswith('.png'):
-                var_name = os.path.splitext(file)[0].replace('EC_functional_predictions_NMDS_','')
-                results['picrust']['var_tested'].append(var_name)
-
-    # _____________________________________________________________
-    ## ancom
-    ancom_out_dir = os.path.join(args.path,structure['ancom']['folder'])
-    ancom_listdir = collect_from_folder(ancom_out_dir)
-
-    ### Collect variable names
-    results['ancom']['var'] = []
-    for f in ancom_listdir:
-        if not f.endswith('_family') and not f.endswith('_genus'):
-            var = re.sub(r'export_ancom_', '', f)
-            results['ancom']['var'].append(var)
-
-    ### Collect ASV folder and DE
-    for var in results['ancom']['var']:
-        # Folder path
-        var_path_base = os.path.join(ancom_out_dir, ('export_ancom_'+ var))
-        var_path_family = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_family'))
-        var_path_genus = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_genus'))
-        # ASV DE
-        results['ancom'][var] = {}
-        results['ancom'][var]['base'] = len(get_true_from_csv(os.path.join(var_path_base, 'ancom.tsv')))
-        results['ancom'][var]['family'] = len(get_true_from_csv(os.path.join(var_path_family, 'ancom.tsv')))
-        results['ancom'][var]['genus'] = len(get_true_from_csv(os.path.join(var_path_genus, 'ancom.tsv')))
-
+    # Step 2.3 - Short and long reads
     # _____________________________________________________________
     ## Alpha diversity
     if nxt_params['steps']['stats_alpha_enable'] == 'true':
@@ -222,14 +242,9 @@ def main(args):
                 var_name = f.replace('upset_plot_', '').replace('.png', '')
                 results['descriptive_comparison']['var_tested'].append(var_name)
 
-    # _____________________________________________________________
-    ## long reads databases
-    if nxt_params['steps']['longreads'] == 'true':
-        nxt_params["lr"]["lr_tax_fna"] = os.path.basename(nxt_params["lr"]["lr_tax_fna"])
-        nxt_params["lr"]["lr_taxo_flat"] = os.path.basename(nxt_params["lr"]["lr_taxo_flat"])
-
     # -------------------------------------------------------------
     # Step 3 - write the final html report
+    # _____________________________________________________________
     write_html(args.template, nxt_params, results)
 
 if __name__ == '__main__':

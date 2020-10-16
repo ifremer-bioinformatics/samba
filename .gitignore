@@ -1,3 +1,4 @@
+*.pbs
 *log*
 .nextflow
 tax.databases.test

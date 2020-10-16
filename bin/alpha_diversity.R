@@ -165,7 +165,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     } else {
         rank_name = "Species"     
     }
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, rank_name, taxa_nb, fill=rank_name, group, color_bar, barplot_phylum, plotly_js)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, rank_name, taxa_nb, fill=rank_name, group, color_bar, paste0("barplot_",rank_name,"_",group), plotly_js)
     }
 }
 

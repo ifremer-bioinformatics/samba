@@ -21,17 +21,6 @@ def load_json(jsonfile):
     nxt_params = {}
     with open(jsonfile) as json_data:
         nxt_params = json.load(json_data)
-
-    # Only keep the DB name instead of full path
-    # TODO: put that into a function
-    nxt_params['taxonomy']['database'] = os.path.basename(nxt_params['taxonomy']['database'])
-    nxt_params['metadata'] = os.path.basename(nxt_params['metadata'])
-    nxt_params['manifest'] = os.path.basename(nxt_params['manifest'])
-
-    nxt_params['methods'] = ['rarefied','DESeq2','CSS']
-    nxt_params['indices'] = ['NMDS', 'PCoA', 'hclustering']
-    nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard', 'unifrac']
-
     return nxt_params
 
 def count_seq_fasta(fasta):
@@ -120,12 +109,24 @@ def main(args):
     # Step 1 - load the json file with all the Nextflow parameters
     nxt_params = load_json(args.config)
 
+    # Only keep thename instead of full path
+    nxt_params['metadata'] = os.path.basename(nxt_params['metadata'])
+    nxt_params['manifest'] = os.path.basename(nxt_params['manifest'])
+
+    # Store methods, indices and stats
+    nxt_params['methods'] = ['rarefied','DESeq2','CSS']
+    nxt_params['indices'] = ['NMDS', 'PCoA', 'hclustering']
+    nxt_params['stats'] = ['bray', 'wunifrac', 'jaccard', 'unifrac']
+
     # _____________________________________________________________
     # Step 2 - Collect info and files for each process
     # _____________________________________________________________
     # Step 2.1 - Short reads
     # _____________________________________________________________
     if nxt_params['steps']['longreads'] == 'false':
+
+        # Only keep the DB name instead of full path
+        nxt_params['taxonomy']['database'] = os.path.basename(nxt_params['taxonomy']['database'])
 
         ## DADA 2
         dada2_fasta = os.path.join(args.path, structure['dada2']['fasta'])

@@ -834,7 +834,6 @@ if (!params.longreads) {
     
     	input :
     		file repseqs_phylo from seqs_phylo
-                    file process_lr_taxonomy_report from process_lr_taxonomy_report
     
     	output :
     		file 'aligned_repseq.qza' into aligned_repseq

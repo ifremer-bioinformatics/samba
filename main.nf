@@ -1023,7 +1023,7 @@ process prepare_data_for_stats {
  
     script :
     """
-    if [ ${params.longreads} ];
+    if [ ${params.longreads} = "true" ];
     then
         Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj_longreads.R phyloseq.rds ${biom_tsv} ${metadata} ${params.lr_rank} ${params.kingdom} table_with_taxo_for_stats.tsv &>> stats_prepare_data_lr.log 2&>1
     else

@@ -852,11 +852,6 @@ if (!params.longreads) {
     	script :
     	"""
             SEQ="${repseqs_phylo}"
-            if [ ${params.longreads} ];
-            then 
-               qiime tools import --input-path ${repseqs_phylo} --output-path 'sequences.qza' --type 'FeatureData[Sequence]' &> q2_phylogeny.log 2>&1
-               SEQ="sequences.qza"
-            fi 
     	q2_phylogeny.sh \$SEQ aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
     	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
     	"""

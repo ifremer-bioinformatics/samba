@@ -1448,7 +1448,7 @@ compress_ok_ch = params.report_enable ? Report : compress_ok_chC
 /*
  * STEP 19 -  Compress final report directory
  */
-/*if (params.compress_result) {
+if (params.compress_result) {
     process compress_result {
         
         input :
@@ -1468,7 +1468,7 @@ compress_ok_ch = params.report_enable ? Report : compress_ok_chC
         ln -s ${params.outdir}/${params.report_dirname}/SAMBA_report.zip
         """
     }
-}*/
+}
 
 /*
  * Completion e-mail notification

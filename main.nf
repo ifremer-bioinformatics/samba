@@ -181,6 +181,8 @@ if (params.stats_only) {
    params.microDecon_enable = false
    params.picrust2_enable = false
 } else {
+   params.inasv_table = ""
+   params.innewick = ""
    inasv_table_ch = Channel.empty()
    newick_ch = Channel.empty()
 }
@@ -206,6 +208,8 @@ if (params.dada2merge) {
    params.picrust2_enable = false
    params.stats_only = false
 } else {
+   params.merge_tabledir = ""
+   params.merge_repseqsdir = ""
    dada2merge_tabledir_ch = Channel.empty()
    dada2merge_repseqsdir_ch = Channel.empty()
 }
@@ -243,6 +247,31 @@ if (params.longreads) {
    params.ancom_enable = false
    params.asv = false
    params.picrust2_enable = false
+// Initialized variables not used in long reads analysis
+   params.primerF = ""
+   params.primerR = ""
+   params.errorRate = ""
+   params.overlap = ""
+   params.FtrimLeft = ""
+   params.RtrimLeft = ""
+   params.FtruncLen = ""
+   params.RtruncLen = ""
+   params.FmaxEE = ""
+   params.RmaxEE = ""
+   params.minQ = ""
+   params.chimeras = ""
+   params.database = ""
+   params.seqs_db = ""
+   params.taxo_db = ""
+   params.nb_controls = ""
+   params.nb_samples = ""
+   params.ancom_var = ""
+} else {
+// Initialized variables not used in short reads analysis
+   params.lr_rank = ""
+   params.lr_type = ""
+   params.lr_tax_fna = ""
+   params.lr_taxo_flat = ""
 }
 
 /*
@@ -272,6 +301,7 @@ if (params.dbotu3_enable) summary['Clustering'] = "Distribution based-clustering
 if (params.microDecon_enable) summary['Decontamination'] = "Sample decontamination process enabled"
 if (params.dada2merge) summary['Dada2 merge'] = "Dada2 merge process enabled"
 if (params.picrust2_enable) summary['Prediction'] = "Functionnal prediction process enabled"
+if (params.ancom_enable) summary['Ancom'] = "Differential abundance ANCOM analysis process enabled"
 if (params.stats_alpha_enable) summary['Alpha div'] = "Alpha diversity indexes process enabled"
 if (params.stats_beta_enable) summary['Beta div'] = "Beta diversity statistics processes enabled"
 if (params.stats_desc_comp_enable) summary["Desc comp"] = "Descriptive comparisons statistics process enabled"
@@ -980,7 +1010,7 @@ if (!params.longreads) {
            file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
    
        when :
-           !params.stats_only
+           !params.stats_only && params.ancom_enable
    
        script :
        """
@@ -1296,7 +1326,8 @@ SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIf
 SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExists:true) : Channel.empty()
 SAMBAreport_okA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
 SAMBAreport_okB = params.stats_beta_enable ? process_beta_report : SAMBAreport_okA
-SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okB
+SAMBAreport_okC = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okB
+SAMBAreport_ok = params.ancom_enable ? completecmd_ancom : SAMBAreport_okC
 
 /*
  * STEP 18 -  Save user parameters of the workflow and Generate analysis report
@@ -1316,7 +1347,6 @@ if (params.report_enable) {
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
             file SAMBAreport_ok from SAMBAreport_ok
-            file completecmd_ancom from completecmd_ancom
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
@@ -1443,8 +1473,8 @@ if (params.report_enable) {
 compress_ok_chA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
 compress_ok_chB = params.stats_beta_enable ? process_beta_report : compress_ok_chA
 compress_ok_chC = params.picrust2_enable ? complete_picrust2_stats_cmd : compress_ok_chB
-compress_ok_ch = params.report_enable ? Report : compress_ok_chC
-
+compress_ok_chD = params.ancom_enable ? completcmd_ancom4compress : compress_ok_chC
+compress_ok_ch = params.report_enable ? Report : compress_ok_chD
 /*
  * STEP 19 -  Compress final report directory
  */
@@ -1453,7 +1483,6 @@ if (params.compress_result) {
         
         input :
             file compress_ok from compress_ok_ch
-            file completecmd from completcmd_ancom4compress
 
         output :
             file "SAMBA_report.zip" into report_zip

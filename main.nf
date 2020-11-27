@@ -1470,11 +1470,6 @@ if (params.report_enable) {
     }
 }
 
-compress_ok_chA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
-compress_ok_chB = params.stats_beta_enable ? process_beta_report : compress_ok_chA
-compress_ok_chC = params.picrust2_enable ? complete_picrust2_stats_cmd : compress_ok_chB
-compress_ok_chD = params.ancom_enable ? completcmd_ancom4compress : compress_ok_chC
-compress_ok_ch = params.report_enable ? Report : compress_ok_chD
 /*
  * STEP 19 -  Compress final report directory
  */
@@ -1482,7 +1477,7 @@ if (params.compress_result) {
     process compress_result {
         
         input :
-            file compress_ok from compress_ok_ch
+            file compress_ok from Report
 
         output :
             file "SAMBA_report.zip" into report_zip

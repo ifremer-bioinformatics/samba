@@ -1326,8 +1326,8 @@ SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIf
 SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExists:true) : Channel.empty()
 SAMBAreport_okA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
 SAMBAreport_okB = params.stats_beta_enable ? process_beta_report : SAMBAreport_okA
-SAMBAreport_okC = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okB
-SAMBAreport_ok = params.ancom_enable ? completecmd_ancom : SAMBAreport_okC
+SAMBAreport_okC = params.ancom_enable ? completecmd_ancom : SAMBAreport_okB
+SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okC
 
 /*
  * STEP 18 -  Save user parameters of the workflow and Generate analysis report

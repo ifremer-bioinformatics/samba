@@ -21,7 +21,7 @@ elif [ "$datatype" == "shortreads" ]
 then
   # short reads dataset
   datadir="$BASEDIR/training_dataset/$datatype"
-  DB="DATABASE_silva_v132_99_16S.qza"
+  DB="DATABASE_silva_v132_99_16S_V4_515F-806R.qza"
   TAX=""
 else 
   echo "Datatype is incorrect"

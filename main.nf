@@ -1348,6 +1348,7 @@ if (params.report_enable) {
             file SAMBAcss from SAMBAcss_ch
             file SAMBAreport_ok from SAMBAreport_ok
             file logo from SAMBAlogo_ch
+            file completecmd_ancom from completecmd_ancom
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
             file process_desc_comp_report from process_desc_comp_report

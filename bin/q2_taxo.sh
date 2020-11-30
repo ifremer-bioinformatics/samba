@@ -27,7 +27,7 @@ seqs_db=${args[18]}
 taxo_db=${args[19]}
 
 mkdir "$tmpdir"
-
+export TMPDIR=$tmpdir
 if [ "$extract_db" = true ]; then
     database=$taxo_database
     #Train the classifier

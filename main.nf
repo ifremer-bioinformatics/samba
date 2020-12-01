@@ -602,7 +602,7 @@ if (!params.longreads) {
     * STEP 7  -  Run taxonomy assignment
     */
     process q2_taxonomy {
-           label 'qiime2_env'
+           label 'qiime2_highRAM'
 
            publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
            publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'

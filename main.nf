@@ -1199,6 +1199,7 @@ process stats_beta_rarefied {
         file "hclustering_rarefied_${beta_var}*" into hclustering_rarefied
         file 'variance_significance_tests_rarefied_*' into variance_significance_tests_rarefied
         file 'pie_ExpVar_rarefied_*' into pie_ExpVar_rarefied
+        file 'process_beta_report_rarefied.ok' into process_beta_report_rarefied
 
     when :
         params.stats_beta_enable
@@ -1206,6 +1207,7 @@ process stats_beta_rarefied {
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ ${params.plotly_js} ${params.longreads} &> stats_beta_diversity_rarefied.log 2>&1
+    touch process_beta_report_rarefied.ok
     """
 }
 
@@ -1237,6 +1239,7 @@ process stats_beta_deseq2 {
         file "hclustering_DESeq2_${beta_var}*" into hclustering_deseq2
         file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
         file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
+        file 'process_beta_report_DESeq2.ok' into process_beta_report_DESeq2
 
     when :
         params.stats_beta_enable
@@ -1244,6 +1247,7 @@ process stats_beta_deseq2 {
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ ${params.plotly_js} ${params.longreads} &> stats_beta_diversity_deseq2.log 2>&1
+    touch process_beta_report_DESeq2.ok
     """
 }
 
@@ -1275,6 +1279,7 @@ process stats_beta_css {
         file "hclustering_CSS_${beta_var}*" into hclustering_css
         file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
         file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
+        file 'process_beta_report_CSS.ok' into process_beta_report_CSS
 
     when :
         params.stats_beta_enable
@@ -1282,6 +1287,7 @@ process stats_beta_css {
     shell :
     """
     Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ ${params.plotly_js} ${params.longreads} &> stats_beta_diversity_css.log 2>&1
+    touch process_beta_report_CSS.ok
     """
 }
 
@@ -1323,11 +1329,13 @@ SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate,
 SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfExists:true) : Channel.empty()
 SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIfExists:true) : Channel.empty()
 SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExists:true) : Channel.empty()
-SAMBAreport_okA = params.stats_alpha_enable ? process_alpha_report : Channel.empty()
-SAMBAreport_okB = params.stats_beta_enable ? process_beta_report : SAMBAreport_okA
-SAMBAreport_ok = params.picrust2_enable ? complete_picrust2_stats_cmd : SAMBAreport_okB
+betastats_reportok = params.stats_beta_enable ? process_beta_report.concat( process_beta_report_CSS, process_beta_report_DESeq2, process_beta_report_rarefied ) : Channel.empty()
+SAMBAreport_okstatsA = params.stats_alpha_enable ? process_alpha_report : Channel.from('report_without_stats_ok')
+SAMBAreport_okstats = params.stats_beta_enable ? betastats_reportok : SAMBAreport_okstatsA
 
-SAMBAreport_ok2 = params.ancom_enable ? completecmd_ancom : process_alpha_report
+SAMBAreport_okpicrust2 = params.picrust2_enable ? complete_picrust2_stats_cmd : Channel.from('report_without_picrust2_ok')
+
+SAMBAreport_okancom = params.ancom_enable ? completecmd_ancom : Channel.from('report_without_ancom_ok')
 
 /*
  * STEP 18 -  Save user parameters of the workflow and Generate analysis report
@@ -1346,12 +1354,12 @@ if (params.report_enable) {
         input :
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
-            file SAMBAreport_ok from SAMBAreport_ok
-            file SAMBAreport_ok2 from SAMBAreport_ok2
+            file SAMBAreport_okstats from SAMBAreport_okstats
+            file SAMBAreport_okpicrust2 from SAMBAreport_okpicrust2
+            file SAMBAreport_okancom from SAMBAreport_okancom
             file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
-            file process_desc_comp_report from process_desc_comp_report
 
        output :
             file 'style.css' into SAMBA_css_output

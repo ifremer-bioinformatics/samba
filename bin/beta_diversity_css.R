@@ -39,7 +39,7 @@ write.table(CSS_normalized_table,final_css_ASV_table_with_taxonomy,sep="\t",col.
 #                                                                               #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js) {
+betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie) {
 
     #~~~~~~~~~~~~~~~~~~~#
     # CSS normalization #
@@ -95,14 +95,14 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
     ExpVar_pielabels = sprintf("%s = %3.1f%s", ExpVar_piedata$ExpVar_name,ExpVar_piedata$ExpVar_perc, "%")
 
     plot.pie(ExpVar_piedata$ExpVar_perc, ExpVar_pielabels, distance, plot_pie, 12, 10)
-    plot.pie.interactive(ExpVar_piedata,ExpVar_name,ExpVar_perc,plot_pie,distance, plotly_js)
+    plot.pie.interactive(ExpVar_piedata,ExpVar_name,ExpVar_perc,plot_pie,distance)
 
     ## Ordination plots ####
     ### PHYLOSEQ_OBJ, Ordination, variable to test, colors to use, adonis result, ordination plot name, distance, width of graph, heigth of graph, graph title
     plot.nmds(PHYLOSEQ_css, ord_css_nmds, criteria, color_samples, adonis_result_css, nmds_css, distance, 12, 10, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "))
-    plot.nmds.interactive(ord_css_nmds, metadata, criteria, color_samples, adonis_result_css, nmds_css, distance, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "), plotly_js)
+    plot.nmds.interactive(ord_css_nmds, metadata, criteria, color_samples, adonis_result_css, nmds_css, distance, paste("NMDS on CSS normalized data","based on",distance,"distance",sep=" "))
     plot.pcoa(PHYLOSEQ_css, ord_css_pcoa, criteria, color_samples, adonis_result_css, pcoa_css, distance, 12, 10, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "))
-    plot.pcoa.interactive(ord_css_pcoa, metadata, criteria, color_samples, adonis_result_css, pcoa_css, distance, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "),plotly_js)
+    plot.pcoa.interactive(ord_css_pcoa, metadata, criteria, color_samples, adonis_result_css, pcoa_css, distance, paste("MDS-PCoA on CSS normalized data","based on",distance,"distance",sep=" "))
 
     ## Hierarchical clustering ####    
     dist = distance(PHYLOSEQ_css, distance, type="samples")
@@ -121,7 +121,7 @@ betadiversity_css <- function (PHYLOSEQ_css, distance, metadata, variance_signif
 #                                             #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-longreads = args[13]
+longreads = args[12]
 
 main_jaccard <- function(){
     PHYLOSEQ_css = PHYLOSEQ_css
@@ -136,11 +136,10 @@ main_jaccard <- function(){
     plot_hc = args[9]
     variance_significance_tests_css=args[10]
     plot_pie = args[11]
-    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -160,11 +159,10 @@ main_bray <- function(){
     plot_hc = args[9]
     variance_significance_tests_css=args[10]
     plot_pie = args[11]
-    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (!interactive()) {
@@ -184,11 +182,10 @@ main_unifrac <- function(){
     plot_hc = args[9]
     variance_significance_tests_css=args[10]
     plot_pie = args[11]
-    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (longreads == "false") {
@@ -210,11 +207,10 @@ main_wunifrac <- function(){
     plot_hc = args[9]
     variance_significance_tests_css=args[10]
     plot_pie = args[11]
-    plotly_js = args[12]
     # Check if functions are loaded, if not source them
     if (!exists("plot.nmds", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/beta_diversity_graphs.R")))
     # Beta diversity analyses
-    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie, plotly_js)
+    betadiversity_css(PHYLOSEQ_css, distance, metadata, variance_significance_tests_css, criteria, nmds_css, pcoa_css, method_hc, plot_hc, plot_pie)
 }
 
 if (longreads == "false") {

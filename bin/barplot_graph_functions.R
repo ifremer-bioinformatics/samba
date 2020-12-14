@@ -63,7 +63,7 @@ gg_color_hue <- function(n) {
 
 ## Plot composition at specific level within the studied kingdom at the kingdom rank
 ## Restricts plot to x tax (define by the user : taxa_nb)
-composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill, group, color_bar, barplot, plotly_js) {
+composition <- function(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb, fill, group, color_bar, barplot) {
   ggdata = ggformat(PHYLOSEQ, taxaRank1, taxaSet1, taxaRank2, taxa_nb)
   ggdata$Abundance = round(ggdata$Abundance*100,2)
   p = ggplot(ggdata, aes_string(x = "Sample", y = "Abundance", fill = taxaRank2, color = fill))

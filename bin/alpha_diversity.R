@@ -18,7 +18,7 @@ for(package in requiredPackages){
 #						   #
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ #
 
-alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, group, plot_rarefaction, plotly_js, longreads, rank) {
+alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, group, plot_rarefaction, longreads, rank) {
     
     # ~~~~~~~~~~~~~~~ #
     # Alpha diversity #
@@ -62,7 +62,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     plot1_alpha_int = plot_alpha_global_int %+% subset(df2 , Measure == "Observed" | Measure == "Chao1" | Measure == "InvSimpson") + labs(x=NULL)
     plot2_alpha_int = plot_alpha_global_int %+% subset(df2 , Measure == "Shannon" | Measure == "Pielou")
 
-    plotly_boxplot = subplot(plot1_alpha_int,plot2_alpha_int,nrows=2,margin=0.12,widths=0.6) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js) 
+    plotly_boxplot = subplot(plot1_alpha_int,plot2_alpha_int,nrows=2,margin=0.12,widths=0.6) %>% partial_bundle(local=FALSE)
     htmlwidgets::saveWidget(as_widget(plotly_boxplot),file=paste0(alpha_div_plots,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
   
     ## Rarefaction curve ####
@@ -92,7 +92,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     ggsave(filename=paste(plot_rarefaction,".png",sep=""),plot_rarec, device="png", width=14, height=14)
 
     plot_rarec_int = plot_rarec + theme(plot.background = element_rect(fill="#fafafa")) 
-    plotly_rarec = ggplotly(plot_rarec_int) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js)
+    plotly_rarec = ggplotly(plot_rarec_int) %>% partial_bundle(local=FALSE)
     htmlwidgets::saveWidget(as_widget(plotly_rarec),file=paste0(plot_rarefaction,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 
     ## Statistical significance of indexes  ####
@@ -135,19 +135,19 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     ## Barplot representation ####
     if (longreads == "false") {
     #### at the phylum level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Phylum", taxa_nb, fill="Phylum", group, color_bar, barplot_phylum, plotly_js) 
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Phylum", taxa_nb, fill="Phylum", group, color_bar, barplot_phylum) 
 
     #### at the class level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Class", taxa_nb, fill="Class", group, color_bar, barplot_class, plotly_js)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Class", taxa_nb, fill="Class", group, color_bar, barplot_class)
 
     #### at the order level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Order", taxa_nb, fill="Order", group, color_bar, barplot_order, plotly_js)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Order", taxa_nb, fill="Order", group, color_bar, barplot_order)
 
     #### at the family level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Family", taxa_nb, fill="Family", group, color_bar, barplot_family, plotly_js)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Family", taxa_nb, fill="Family", group, color_bar, barplot_family)
 
     #### at the genus level ####
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", taxa_nb, fill="Genus", group, color_bar, barplot_genus, plotly_js)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, "Genus", taxa_nb, fill="Genus", group, color_bar, barplot_genus)
     } else {
     #### for longreads at the user-selected level ####
     if (as.numeric(rank) == 1) {         
@@ -165,7 +165,7 @@ alphadiversity <- function(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_
     } else {
         rank_name = "Species"     
     }
-    composition(PHYLOSEQ, "Kingdom", taxaSet1, rank_name, taxa_nb, fill=rank_name, group, color_bar, paste0("barplot_",rank_name,"_",group), plotly_js)
+    composition(PHYLOSEQ, "Kingdom", taxaSet1, rank_name, taxa_nb, fill=rank_name, group, color_bar, paste0("barplot_",rank_name,"_",group))
     }
 }
 
@@ -193,13 +193,12 @@ main <- function() {
     index_significance_tests = args[12]
     workflow_dir = args[13]
     plot_rarefaction = args[14]
-    plotly_js = args[15]
-    longreads = args[16]
-    rank = noquote(args[17])
+    longreads = args[15]
+    rank = noquote(args[16])
     # Get plot_composition function
     if (!exists("composition", mode="function")) source(gsub(" ", "", paste(workflow_dir,"/bin/barplot_graph_functions.R")))
     # Run alpha diversity analyses
-    alphadiversity(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, group, plot_rarefaction, plotly_js, longreads, rank)
+    alphadiversity(PHYLOSEQ, alpha_rich_results, alpha_div_plots, index_significance_tests, barplot_phylum, barplot_class, barplot_order, barplot_family, barplot_genus, kingdom, taxa_nb, group, plot_rarefaction, longreads, rank)
 }
 if (!interactive()) {
         main()

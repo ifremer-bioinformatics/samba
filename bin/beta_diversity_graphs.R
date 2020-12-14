@@ -5,21 +5,6 @@
 ##                                                                           ##
 ###############################################################################
 
-plotly_mod_dep = function(p,js_file){
-  deps <- p$dependencies
-  deps_urls <- purrr::map(
-    deps,
-    ~if(.x$name == "plotly-basic") {
-      .x$src = list(file=getwd())
-      .x$script = js_file
-      .x
-    } else {
-      .x
-    }
-  )
-  p$dependencies <- deps_urls
-  p
-}
 
 plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result, nmds, distance, width, height, graph_title) {
     ## Sample ordination - NMDS ####
@@ -41,7 +26,7 @@ plot.nmds <- function(PHYLOSEQ, ord_nmds, criteria, color_samples, adonis_result
     ggsave(filename=paste(nmds,distance,".png",sep=""), device="png", width = width, height = height)
 }
 
-plot.nmds.interactive <- function(ord_nmds, metadata, Variable, color_samples, adonis_result, nmds, distance, graph_title, plotly_js) {
+plot.nmds.interactive <- function(ord_nmds, metadata, Variable, color_samples, adonis_result, nmds, distance, graph_title) {
   nmds1 = ord_nmds$points[,1]
   nmds2 = ord_nmds$points[,2]
   nmds_data = data.frame(NMDS1=nmds1, NMDS2=nmds2, Condition=metadata[,Variable], SampleID = rownames(ord_nmds$points))
@@ -59,7 +44,7 @@ plot.nmds.interactive <- function(ord_nmds, metadata, Variable, color_samples, a
     theme(plot.background = element_rect(fill="#fafafa")) +
     theme(legend.position = "bottom")
   
-  plotly_nmds = ggplotly(nmds.interactive) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js) %>% layout(title=graph_title,titlefont=list(size=11),legend=list(orientation="v",xanchor="auto",yanchor="auto",y=-0.15,bgcolor="#fafafa"),margin=list(r=0,t=50,l=0,b=50),autosize=F)
+  plotly_nmds = ggplotly(nmds.interactive) %>% partial_bundle(local=FALSE) %>% layout(title=graph_title,titlefont=list(size=11),legend=list(orientation="v",xanchor="auto",yanchor="auto",y=-0.15,bgcolor="#fafafa"),margin=list(r=0,t=50,l=0,b=50),autosize=F)
   for (i in c(1:length(plotly_nmds$x$data))) {
     tmp_replace_name = str_remove_all(plotly_nmds$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")
@@ -90,7 +75,7 @@ plot.pcoa <- function(PHYLOSEQ, ord_pcoa, criteria, color_samples, adonis_result
     ggsave(filename=paste(pcoa,distance,".png",sep=""), device="png", width = width, height = height)
 }
 
-plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, adonis_result, pcoa, distance, graph_title, plotly_js) {
+plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, adonis_result, pcoa, distance, graph_title) {
   mds1 = ord_pcoa$vectors[,1]
   mds2 = ord_pcoa$vectors[,2]
   pcoa_data = data.frame(Axis1=mds1, Axis2=mds2, Condition=metadata[,Variable], SampleID = rownames(ord_pcoa$vectors))
@@ -108,7 +93,7 @@ plot.pcoa.interactive <- function(ord_pcoa, metadata, Variable, color_samples, a
     theme(plot.background = element_rect(fill="#fafafa")) +
     theme(legend.position = "bottom")
   
-  plotly_pcoa = ggplotly(pcoa.interactive) %>% partial_bundle(local=FALSE) %>% plotly_mod_dep(js_file=plotly_js) %>% layout(title=graph_title,titlefont=list(size=11),legend=list(orientation="v",xanchor="auto",yanchor="auto",y=-0.15,bgcolor="#fafafa"),margin=list(r=0,t=50,l=0,b=50),autosize=F)
+  plotly_pcoa = ggplotly(pcoa.interactive) %>% partial_bundle(local=FALSE) %>% layout(title=graph_title,titlefont=list(size=11),legend=list(orientation="v",xanchor="auto",yanchor="auto",y=-0.15,bgcolor="#fafafa"),margin=list(r=0,t=50,l=0,b=50),autosize=F)
   for (i in c(1:length(plotly_pcoa$x$data))) {
     tmp_replace_name = str_remove_all(plotly_pcoa$x$data[[i]]$name,"\\(")
     tmp_replace_name = str_remove_all(tmp_replace_name, ",1\\)")
@@ -158,12 +143,11 @@ plot.pie <- function(ExpVar_perc, labels, distance, plot_pie, width, height) {
     dev.off()
 }
 
-plot.pie.interactive <- function(pie_data,labels,values,plot_pie,distance, plotly_js) {
+plot.pie.interactive <- function(pie_data,labels,values,plot_pie,distance) {
   pie.interactive = plot_ly(pie_data, labels=~labels,values=~values,type="pie", 
                                  textposition='auto', textinfo='label+percent', hoverinfo = 'text', 
                                  text = ~paste0("Variable: ",labels,"\n","Percentage of explained variance: ",round(values,2),"%")) %>% 
     layout(title = paste("Percentage of variance explained","\n","by each variable for",distance,"matrix",sep=" "),margin=list(l=55,r=55,b=55,t=55),autosize=F,showlegend = FALSE, paper_bgcolor="#fafafa") %>% 
-    partial_bundle(local=FALSE) %>% 
-    plotly_mod_dep(js_file=plotly_js)
+    partial_bundle(local=FALSE)
   htmlwidgets::saveWidget(as_widget(pie.interactive),file=paste0(plot_pie,distance,"_interactive.html"),background="#fafafa",selfcontained=FALSE)
 }

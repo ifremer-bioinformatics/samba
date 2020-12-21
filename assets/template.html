@@ -74,6 +74,9 @@
                             <li><a href="#asv-clustering">ASV clustering</a></li>
                         {% endif %}
                         <li><a href="#taxo-assign">Taxonomic assignation</a></li>
+                        {% if d.steps.filtering_tax_enable == 'true' %}
+                            <li><a href="#tax-filtering">Taxonomy filtering</a></li>
+                        {% endif %}
                         {% if d.steps.microDecon_enable == 'true' %}
                             <li><a href="#microdecon">Samples decontamination</a></li>
                         {% endif %}
@@ -212,7 +215,7 @@
         <br>
         {% if d.steps.stats_only == 'false' %}
         <h1 id="bioinformatic">Bioinformatic process</h1>
-        {% if d.steps.data_integrity_enable == 'true' or d.steps.longreads == 'false' %}
+        {% if d.steps.data_integrity_enable == 'true' %}
         <h3 id ="data-integrity">Data integrity [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -428,9 +431,38 @@
         {% endif %}
         <br>
         <!--  -->
+        <!-- Taxonomy filtering [optional] -->
+        <!--  -->
+        {% if d.steps.filtering_tax_enable == 'true' %}
+        <h3 id="tax-filtering">Taxonomy filtering [optional]</h3>
+        <br>
+        <div style="text-align: justify">
+            This step allows you to filter the ASV table and ASV sequences based on the taxonomy assignation and remove user-defined taxa.
+        </div>
+        <br>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined 'Taxonomy filtering' parameters</a>
+        <ul style="margin: 0 ; padding: 1 ;">
+            <li class="cmdline">List of taxa to exclude: <span class="highlight">{{d.tax_filtering.tax_to_exclude}}</span></li>
+        </ul>
+        <br>
+        <div class="results">Results</div>
+        <hr class="results">
+        <i class="fas fa-folder" style="margin-left: 20px; color: #007bff"></i><a class="link" target="_blank" href="./tax_filtering" style="font-size: 1.4rem"> Output folder</a>
+        <br>
+        <br>
+        <ul style="margin: 0 ; padding: 1 ;text-align: justify">
+            <li>ASV table: <a class="link" target="_blank" href="./tax_filtering/tax_filtered_table_with_tax.tsv">taxonomy filtered ASV table</a></li>
+            <li>Representative sequence: <a class="link" target="_blank" href="./tax_filtering/tax_filtered_output/sequences.fasta">taxonomy filtered ASV sequences</a></li>
+            <li>Descriptive statistics after the filtering step: <a class="link" target="_blank" href="./tax_filtering/tax_filtered_output/index.html">html file</a></li>
+            <br>
+            <font color="red"><b>A total of {{ r.tax_filtering.asv_rm }} ASVs, assigned to taxa to exclude, were removed. It remains {{ r.tax_filtering.asv_count }} ASVs.</b></font>
+        </ul>
+        <br>
+        {% endif %}
+        <!--  -->
         <!-- Samples decontamination (microDecon) [optional] -->
         <!--  -->
-        {% if d.steps.microDecon_enable == 'true' or d.steps.longreads == 'false' %}
+        {% if d.steps.microDecon_enable == 'true' %}
         <h3 id="microdecon">Samples decontamination (microDecon) [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -462,7 +494,7 @@
         <!--  -->
         <!-- Functional predictions (PICRUSt2) [optional] -->
         <!--  -->
-        {% if d.steps.picrust2_enable == 'true' or d.steps.longreads == 'false' %}
+        {% if d.steps.picrust2_enable == 'true' %}
         <h3 id="picrsut">Functional predictions (PICRUSt2) [optional]</h3>
         <br>
         <div style="text-align: justify">
@@ -518,7 +550,7 @@
         <!--  -->
         <!--  Differential abundance testing using ANCOM -->
         <!--  -->
-        {% if d.steps.longreads == 'false' %}
+        {% if d.steps.ancom_enable == 'true' %}
         <h3 id="ancom">Differential abundance testing using ANCOM</h3>
         <br>
         <div style="text-align: justify">

@@ -46,6 +46,9 @@
   * [`--taxo_db`](#--taxo_db)
   * [`--database`](#--database)
   * [`--confidence`](#--confidence)
+* [Taxonomy filtering](#tax-filtering)
+  * [`--filtering_tax_enable`](#--filtering_tax_enable)
+  * [`--tax_to_exclude`](#--tax_to_exclude)
 * [Samples decontamination](#samples-decontamination)
   * [`--microDecon_enable`](#--microDecon_enable)
   * [`--control_list`](#--control_list)
@@ -320,6 +323,18 @@ Path to preformatted QIIME2 format database (required if extract_db = false).
 ### `--confidence`
 
 Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.9).
+
+## Taxonomy filtering
+
+This process is optional and based on [Qiime2/taxa plugin](https://docs.qiime2.org/2020.11/tutorials/filtering/#taxonomy-based-filtering-of-tables-and-sequences).
+
+### `--filtering_tax_enable`
+
+Set to true to filter asv table and sequences based on taxonomic assignationSet to true to activate this step. (default = false)
+
+### `--tax_to_exclude`
+
+List of taxa you want to exclude (comma-separated list).
 
 ## Samples decontamination
 

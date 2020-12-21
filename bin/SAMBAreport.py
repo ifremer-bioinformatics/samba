@@ -77,6 +77,9 @@ def main(args):
         'dbotu3': {
             'fasta': 'dbotu3_output/sequences.fasta'
         },
+        'tax_filtering': {
+            'fasta': 'tax_filtering/tax_filtered_output/sequences.fasta'
+        },
         'microdecon': {
             'fasta': 'microDecon/decontaminated_ASV.fasta',
             'removed': 'microDecon/ASV_removed.txt'
@@ -141,14 +144,28 @@ def main(args):
             results['dbotu3']['clustering_perc'] = round(100 - (results['dbotu3']['asv_count'] * 100.00 / results['dada2']['asv_count']), 2)
 
         # _____________________________________________________________
+        ## Tax filtering
+        if nxt_params['steps']['filtering_tax_enable'] == 'true':
+            tax_filtering_fasta = os.path.join(args.path,structure['tax_filtering']['fasta'])
+            results['tax_filtering']['asv_count'] = count_seq_fasta(tax_filtering_fasta)
+            if nxt_params['steps']['dbotu3_enable'] == 'true':
+                results['tax_filtering']['asv_rm'] = results['dbotu3']['asv_count'] - results['tax_filtering']['asv_count']
+            else:
+                results['tax_filtering']['asv_rm'] = results['dada2']['asv_count'] - results['tax_filtering']['asv_count']
+
+        # _____________________________________________________________
         ## MicroDecon
         if nxt_params['steps']['microDecon_enable'] == 'true':
             microdecon_fasta = os.path.join(args.path,structure['microdecon']['fasta'])
             microdecon_removed = os.path.join(args.path,structure['microdecon']['removed'])
 
             results['microdecon']['asv_count'] = count_seq_fasta(microdecon_fasta)
-            results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
-            # -1 to rm header line count
+            if nxt_params['steps']['filtering_tax_enable'] == 'true':
+                results['microdecon']['asv_rm'] = results['tax_filtering']['asv_count'] - results['microdecon']['asv_count']
+            elif nxt_params['steps']['dbotu3_enable'] == 'true':
+                results['microdecon']['asv_rm'] = results['dbotu3']['asv_count'] - results['microdecon']['asv_count']
+            else:
+                results['microdecon']['asv_rm'] = results['dada2']['asv_count'] - results['microdecon']['asv_count']
             results['microdecon']['asv_rm_ctrl'] = count_lines_file(microdecon_removed) - 1
 
         # _____________________________________________________________

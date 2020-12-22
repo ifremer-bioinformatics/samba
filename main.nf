@@ -1320,7 +1320,7 @@ process stats_desc_comp {
 
     shell :
     """
-    Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${desc_comp_var} upset_plot_${desc_comp_var} &> stats_desc_comp.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${desc_comp_var} upset_plot_${desc_comp_var} ${params.desc_comp_tax_level} &> stats_desc_comp.log 2>&1
     touch process_desc_comp_report.ok
     """
 }

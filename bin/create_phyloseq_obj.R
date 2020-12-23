@@ -11,15 +11,23 @@ library("stringr")
 library("phyloseq")
 library("phangorn")
 
-create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, control, tree) {
+create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, control, tree, remove_sample, sample_to_remove) {
     #Input data
     rawASVtable = read.table(biom_tsv, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
     METADATA = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
 
     if (microDecon == "true") {
-    control_list =  unlist(strsplit(control,","))
-    METADATA = METADATA[!rownames(METADATA) %in% control_list, ]
-    write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
+        control_list =  unlist(strsplit(control,","))
+        METADATA = METADATA[!rownames(METADATA) %in% control_list, ]
+        write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
+    }
+
+    if (remove_sample == "true") {
+        sample_to_remove_list =  unlist(strsplit(sample_to_remove,","))
+        rawASVtable = rawASVtable[, !colnames(rawASVtable) %in% sample_to_remove_list ]
+        METADATA = METADATA[!rownames(METADATA) %in% sample_to_remove_list, ]
+        write.table(rawASVtable, biom_tsv, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
+        write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
     }
 
     #Reformatting of the input data
@@ -54,7 +62,9 @@ main <- function() {
     microDecon = args[4]
     control = args[[5]]
     tree = args[6]
-    create_phyloseq_obj(phyloseq_rds, biom_tsv, metadata, microDecon, control, tree)
+    remove_sample = args[7]
+    sample_to_remove = args[[8]]
+    create_phyloseq_obj(phyloseq_rds, biom_tsv, metadata, microDecon, control, tree, remove_sample, sample_to_remove)
 }
 
 if (!interactive()) {

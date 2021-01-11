@@ -24,10 +24,11 @@ and processes data using the following steps:
 * [Primers removal](#primers-removal) - Remove primers from raw reads
 * [QC and feature table](#qc-and-feature-table) - QC and feature table and counts table
 * [ASV clustering](#asv-clustering) - \[OPTIONAL\] Distribution and phylogeny based clustering
-* [Differential abundance](#differential-abundance) - ANCOM analysis
-* [Samples decontamination](#samples-decontamination) - \[OPTIONAL\] Samples decontamination based on control samples 
 * [Taxonomic assignation](#taxonomic-assignation) - QIIME2 Naive bayesian classifier assignation
+* [Taxonomy filtering](#tax-filtering) - \[OPTIONAL\] Filtering ASV table and sequences based on taxonomic assignation
+* [Samples decontamination](#samples-decontamination) - \[OPTIONAL\] Samples decontamination based on control samples
 * [Phylogeny](#phylogeny) - ASV sequences aligment and tree
+* [Differential abundance](#differential-abundance) - ANCOM analysis
 * [Functional predictions](#functional-predictions) - \[OPTIONAL\] PICRUSt2 functionnal predictions
 
 ### Statistic steps
@@ -104,16 +105,26 @@ The **output directory : `results/[projectName]/00_report/dbotu3_output`** conta
 - All ASV sequences in a fasta file : `sequences.fasta`
 - A biom counting table : `feature-table.biom`
 
-## Differential abundance
+## Taxonomic assignation
 
-[QIIME2 ANCOM](https://docs.qiime2.org/2019.10/plugins/available/composition/ancom/) analysis will compare the composition of microbiomes and identify ASV that differ in abundance.
-[ANCOM variable](usage.md#differential-abundance) can be specified in samba parameters.
+[QIIME2 feature-classifier](https://docs.qiime2.org/2019.10/tutorials/feature-classifier/) will use a Naive Bayes classifier that can be used on global marker reference database or be trained on only the region of the target sequences. Check the [available parameters](usage.md#taxonomic-assignation) for this step.
 
-The **output directory : `results/[projectName]/00_report/ancom_output`** contains :
-- the ANCOM analysis report : `export_ancom_[ancom_var]/index.html` :
-![QIIME2 ANCOM report](images/qiime2-ancom-report.png)
-- the ANCOM analysis report at family level : `export_ancom_[ancom_var]_family/index.html`  
-- the ANCOM analysis report at genus level : `export_ancom_[ancom_var]_genus/index.html`  
+The **output directory : `results/[projectName]/00_report/taxo_output`** contains :
+- QIIME2 taxonomy report `index.html` with ASV list, taxonomic assignation and confidence score.
+![QIIME2 taxonomy report](images/qiime2-taxo-report.png)
+- the merging of counts and taxonomy for each ASV in a TSV file : `ASV_taxonomy.tsv`
+
+## Taxonomy filtering
+
+**\[OPTIONAL\]**
+
+[QIIME2 taxa plugin](https://docs.qiime2.org/2020.11/tutorials/filtering/#taxonomy-based-filtering-of-tables-and-sequences) will use user-defined taxa to exclude these unwanted taxa from the count table and the representative ASV sequences.
+
+The **output directory : `results/[projectName]/00_report/tax_filtering`** contains :
+-
+-
+-
+-
 
 ## Samples decontamination
 
@@ -128,21 +139,23 @@ The **output directory : `results/[projectName]/00_report/microDecon`** contains
 - the list of removed ASV : `ASV_removed.txt`
 - the abundance of the removed ASV : `abundance_removed.txt`
 
-## Taxonomic assignation
-
-[QIIME2 feature-classifier](https://docs.qiime2.org/2019.10/tutorials/feature-classifier/) will use a Naive Bayes classifier that can be used on global marker reference database or be trained on only the region of the target sequences. Check the [available parameters](usage.md#taxonomic-assignation) for this step.
-
-The **output directory : `results/[projectName]/00_report/taxo_output`** contains :
-- QIIME2 taxonomy report `index.html` with ASV list, taxonomic assignation and confidence score.
-![QIIME2 taxonomy report](images/qiime2-taxo-report.png)
-- the merging of counts and taxonomy for each ASV in a TSV file : `ASV_taxonomy.tsv`
-
 ## Phylogeny
 
 QIIME2 sequences alignment and phylogeny are performed with [MAFFT](https://docs.qiime2.org/2019.10/plugins/available/alignment/) and [Fastree](https://docs.qiime2.org/2019.10/plugins/available/phylogeny/) algorithms.
 
 The **output directory : `results/[projectName]/00_report/tree_export_dir`** contains :
 - the ASV phylogenetic tree in newick format : `tree.nwk`
+
+## Differential abundance
+
+[QIIME2 ANCOM](https://docs.qiime2.org/2019.10/plugins/available/composition/ancom/) analysis will compare the composition of microbiomes and identify ASV that differ in abundance.
+[ANCOM variable](usage.md#differential-abundance) can be specified in samba parameters.
+
+The **output directory : `results/[projectName]/00_report/ancom_output`** contains :
+- the ANCOM analysis report : `export_ancom_[ancom_var]/index.html` :
+![QIIME2 ANCOM report](images/qiime2-ancom-report.png)
+- the ANCOM analysis report at family level : `export_ancom_[ancom_var]_family/index.html`
+- the ANCOM analysis report at genus level : `export_ancom_[ancom_var]_genus/index.html`
 
 ## Functional predictions
 

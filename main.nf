@@ -76,6 +76,10 @@ def helpMessage() {
 	--database [file]		Path to preformatted QIIME2 format database (required if extract_db = false).
 	--confidence [str]		Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.9).
 
+	Taxonomy filtering:
+	--filtering_tax_enable [bool]	Set to true to filter asv table and sequences based on taxonomic assignation (default = false)
+	--tax_to_exclude [str]		List of taxa you want to exclude (comma-separated list).
+
 	Decontamination:
 	--microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
 	--control_list [str]		Comma separated list of control samples (e.g : "sample1,sample4,sample7") (required if microDecon_enable = true).
@@ -178,6 +182,7 @@ if (params.stats_only) {
    params.dada2merge = false
    params.data_integrity_enable = false
    params.dbotu3_enable = false
+   params.filtering_tax_enable = false
    params.microDecon_enable = false
    params.picrust2_enable = false
 } else {
@@ -204,6 +209,7 @@ if (params.dada2merge) {
    //Force to false other processes options
    params.data_integrity_enable = false
    params.dbotu3_enable = false
+   params.filtering_tax_enable = false
    params.microDecon_enable = false
    params.picrust2_enable = false
    params.stats_only = false
@@ -243,6 +249,7 @@ if (params.longreads) {
    params.qiime2 = false
    params.dada2merge = false
    params.dbotu3_enable = false
+   params.filtering_tax_enable = false
    params.microDecon_enable = false
    params.ancom_enable = false
    params.asv = false
@@ -263,6 +270,7 @@ if (params.longreads) {
    params.database = ""
    params.seqs_db = ""
    params.taxo_db = ""
+   params.tax_to_exclude = ""
    params.nb_controls = ""
    params.nb_samples = ""
    params.remove_sample = false
@@ -300,6 +308,7 @@ summary['Config Profile'] = workflow.profile
 if (params.stats_only) summary['Stats only'] = "Pipeline running only statistics processes"
 if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
 if (params.dbotu3_enable) summary['Clustering'] = "Distribution based-clustering process enabled"
+if (params.filtering_tax_enable) summary['Tax filtering'] = "Filtering ASV table and sequences based on taxonomic assignation"
 if (params.microDecon_enable) summary['Decontamination'] = "Sample decontamination process enabled"
 if (params.dada2merge) summary['Dada2 merge'] = "Dada2 merge process enabled"
 if (params.picrust2_enable) summary['Prediction'] = "Functionnal prediction process enabled"
@@ -362,7 +371,7 @@ if (workflow.profile.contains('test')) {
         testmetadata.set { metadata4stats } 
       } else {
         testmanifest.into { manifest ; manifest4integrity }
-        testmetadata.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+        testmetadata.into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
       } 
    }
   
@@ -377,7 +386,7 @@ if (workflow.profile.contains('test')) {
          exit 1
       } else {
          Channel.fromPath(params.input_metadata, checkIfExists:true)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+                .into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; adata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
       }
       if (!params.input_manifest || params.input_manifest.isEmpty()) {
          log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
@@ -507,9 +516,9 @@ if (!params.longreads) {
     		file metadata from metadata4dada2
     
     	output :
-    		file 'rep_seqs.qza' into dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
+    		file 'rep_seqs.qza' into dada2_seqs_dbotu3, dada2_seqs_taxo, dada2_seqs_filtering_tax, dada2_seqs_decontam, dada2_seqs_phylo, dada2_seqs_picrust2, dada2_seqs_ancom
     		file 'rep_seqs.qzv' into visu_repseps
-    		file 'table.qza' into dada2_table_dbotu3, dada2_table_picrust2, dada2_table_ancom
+    		file 'table.qza' into dada2_table_dbotu3, dada2_table_filtering_tax, dada2_table_picrust2, dada2_table_ancom
     		file 'table.qzv' into visu_table
     		file 'stats.qza' into stats_table
     		file 'stats.qzv' into visu_stats
@@ -545,9 +554,9 @@ if (!params.longreads) {
     
         	output :
         		file 'dbotu3_details.txt' into dbotu3_details
-        		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
+        		file 'dbotu3_seqs.qza' into dbotu3_seqs_decontam, dbotu3_seqs_taxo, dbotu3_seqs_filtering_tax, dbotu3_seqs_phylo, dbotu3_seqs_picrust2, dbotu3_seqs_ancom
         		file 'dbotu3_seqs.qzv' into dbotu3_seqs_visu
-        		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_picrust2, dbotu3_table_ancom
+        		file 'dbotu3_table.qza' into dbotu3_table, dbotu3_table_filtering_tax, dbotu3_table_picrust2, dbotu3_table_ancom
         		file 'dbotu3_table.qzv' into dbotu3_table_visu
         		file 'dbotu3_output' into dbotu3_output
         		file 'completecmd' into complete_cmd_dbotu3
@@ -616,27 +625,70 @@ if (!params.longreads) {
                 file repseqs_taxo from seqs_taxo
     		file summary_output from taxonomy_output
            output :
-    		file 'taxonomy.qza' into data_taxonomy
+    		file 'taxonomy.qza' into data_taxonomy_filtering_tax, data_taxonomy_ancom
     		file 'taxonomy.qzv' into visu_taxonomy
-    		file 'ASV_taxonomy.tsv' into taxonomy_tsv
+    		file 'ASV_taxonomy.tsv' into taxonomy_tsv, taxonomy_tsv_filtering_tax
     		file 'taxo_output' into taxo_output
     		file 'ASV_table_with_taxonomy.biom' into biom
     		file 'ASV_table_with_taxonomy.tsv' into biom_tsv, biom_tsv_decontam
     		file 'taxonomic_database.qza' optional true into trained_database
     		file 'seqs_db_amplicons.qza' optional true into seqs_db_filtered
     		file 'completecmd' into complete_cmd_taxo
-            when :
+           when :
                 !params.stats_only
 
            script :
-    """
-       q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd tmpdir ${params.database} ${params.seqs_db} ${params.taxo_db} &> q2_taxo.log 2>&1
-    """ 
+           """
+           q2_taxo.sh ${task.cpus} ${params.extract_db} ${params.primerF} ${params.primerR} ${params.confidence} ${repseqs_taxo} taxonomy.qza taxonomy.qzv taxo_output ASV_taxonomy.tsv ${summary_output} ASV_table_with_taxonomy.biom ASV_table_with_taxonomy.tsv taxonomic_database.qza seqs_db_amplicons.qza completecmd tmpdir ${params.database} ${params.seqs_db} ${params.taxo_db} &> q2_taxo.log 2>&1
+           """ 
     }
-    
+
+    asv_table = params.dbotu3_enable ? dbotu3_table_filtering_tax : dada2_table_filtering_tax
+    asv_seq = params.dbotu3_enable ? dbotu3_seqs_filtering_tax : dada2_seqs_filtering_tax
+
      /*
-     * STEP 8 -  Decontaminate samples with MicroDecon
+     * STEP 8 -  Filtering ASVs based on taxonomy assignment
      */
+     if (params.filtering_tax_enable) {
+         process q2_filtering_tax {
+        
+             label 'qiime2_env'
+
+             publishDir "${params.outdir}/${params.tax_filtering_dirname}", mode: 'copy', pattern: '*.qz*'
+             publishDir "${params.outdir}/${params.report_dirname}/tax_filtering", mode: 'copy', pattern: 'tax_filtered_table_with_tax.*'
+             publishDir "${params.outdir}/${params.report_dirname}/tax_filtering", mode: 'copy', pattern: 'tax_filtered_output'
+             publishDir "${params.outdir}/${params.report_dirname}/version", mode: 'copy', pattern: 'v_*.txt'
+             publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/${task.process}_complete.sh" }
+
+             input :
+                 file asv_table from asv_table
+                 file asv_tax from data_taxonomy_filtering_tax
+                 file asv_seq from asv_seq
+                 file asv_tax_tsv from taxonomy_tsv_filtering_tax
+                 file metadata from metadata_filtering_tax
+             output :
+                 file 'tax_filtered_table.qza' into tax_filtered_table, tax_filtered_table_picrust2, tax_filtered_table_ancom
+                 file 'tax_filtered_seq.qza' into tax_filtered_seq, tax_filtered_seq_picrust2
+                 file 'tax_filtered_table.qzv' into tax_filtered_table_visu
+                 file 'tax_filtered_output' into tax_filtered_output
+                 file 'tax_filtered_seq.qzv' into tax_filtered_seq_visu
+                 file 'tax_filtered_table_with_tax.biom' into tax_filtered_table_biom
+                 file 'tax_filtered_table_with_tax.tsv' into tax_filtered_table_tsv, tax_filtered_table_tsv_stats
+                 file 'completecmd' into complete_cmd_filtering_tax
+             when :
+                 !params.stats_only
+             script :
+             """
+             q2_filtering_tax.sh ${asv_table} ${asv_tax} ${params.tax_to_exclude} tax_filtered_table.qza ${asv_seq} tax_filtered_seq.qza tax_filtered_table.qzv ${metadata} tax_filtered_output tax_filtered_seq.qzv ${asv_tax_tsv} tax_filtered_table_with_tax.biom tax_filtered_table_with_tax.tsv completecmd &> q2_filtering_tax.log 2>&1
+             """
+        }
+    }
+
+    microDecon_table = params.filtering_tax_enable ? tax_filtered_table_tsv : biom_tsv_decontam
+
+    /*
+    * STEP 9 -  Decontaminate samples with MicroDecon
+    */
     if (params.microDecon_enable) {
         process microDecon_step1 {
     
@@ -653,14 +705,14 @@ if (!params.longreads) {
         	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_microDecon -> "cmd/${task.process}_complete.sh" }
     
         	input :
-        		file microDecon_table from biom_tsv_decontam
+        		file microDecon_table from microDecon_table
     
         	output :
         		file 'decontaminated_ASV_table.tsv' into decontam_table, decontam_table_step2, decontam_table_step3
         		file 'abundance_removed.txt' into abund_removed
         		file 'ASV_removed.txt' into ASV_removed
         		file 'completecmd' into complete_cmd_microDecon
-                    file 'v_microdecon.txt' into microdecon_version
+                        file 'v_microdecon.txt' into microdecon_version
     
         	when :
         		!params.stats_only && !params.dada2merge && params.microDecon_enable
@@ -726,15 +778,12 @@ if (!params.longreads) {
         	"""
         }
     
-        /* Run phylogeny from decontaminated ASV sequences */
+        /* Reformat decontaminated sequence to QIIME2 format */
         process microDecon_step4 {
     
         	label 'qiime2_env'
     
         	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
-        	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.txt'
-        	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: 'tree_export_dir'
-        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'tree_export_dir'
         	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
     
         	input :
@@ -742,14 +791,6 @@ if (!params.longreads) {
     
         	output :
         		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
-        		file 'aligned_repseq.qza' into decontam_aligned_repseq
-        		file 'masked-aligned_repseq.qza' into decontam_masked_aligned
-        		file 'tree.qza' into decontam_tree
-        		file 'tree.log' into decontam_tree_bestmodel_log
-        		file 'rooted_tree.qza' into decontam_rooted_tree
-        		file 'tree_export_dir' into decontam_tree_export_dir
-        		file 'tree_export.log' into decontam_tree_export_log
-        		file 'tree.nwk' into decontam_newick
         		file 'completecmd' into complete_cmd_decontam_phylogeny
     
         	when :
@@ -758,9 +799,6 @@ if (!params.longreads) {
         	shell :
         	"""
                 qiime tools import --input-path ${ASV_fasta} --output-path decontam_seqs.qza --type 'FeatureData[Sequence]'
-        	q2_phylogeny.sh decontam_seqs.qza aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &> q2_phylogeny.log 2>&1
-        	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
-    
         	"""
         }
     }
@@ -848,10 +886,11 @@ if (!params.longreads) {
 if (!params.longreads) {
    seqs_phyloA = params.dada2merge ? merge_seqs_phylo : dada2_seqs_phylo
    seqs_phyloB = params.dbotu3_enable ? dbotu3_seqs_phylo : seqs_phyloA
-   seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloB
+   seqs_phyloC = params.filtering_tax_enable ? tax_filtered_seq : seqs_phyloB
+   seqs_phylo = params.microDecon_enable ? decontam_seqs_phylo : seqs_phyloC
 
     /*
-     * STEP 9 -  Run phylogeny construction
+     * STEP 10 -  Run phylogeny construction
      */
     process q2_phylogeny {
     
@@ -882,20 +921,20 @@ if (!params.longreads) {
     
     	script :
     	"""
-            SEQ="${repseqs_phylo}"
-    	q2_phylogeny.sh \$SEQ aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
+    	q2_phylogeny.sh ${repseqs_phylo} aligned_repseq.qza masked-aligned_repseq.qza tree.qza tree.log rooted_tree.qza tree_export_dir tree_export.log completecmd ${task.cpus} &>> q2_phylogeny.log 2>&1
     	cp tree_export_dir/tree.nwk tree.nwk &>> q2_phylogeny.log 2>&1
     	"""
     }
 
-
    table_picrust2A = params.dada2merge ? merge_table_picrust2 : dada2_table_picrust2
    table_picrust2B = params.dbotu3_enable ? dbotu3_table_picrust2 : table_picrust2A
-   table_picrust2 = params.microDecon_enable ? decontam_table_picrust2 : table_picrust2B
+   table_picrust2C = params.filtering_tax_enable ? tax_filtered_table_picrust2 : table_picrust2B
+   table_picrust2 = params.microDecon_enable ? decontam_table_picrust2 : table_picrust2C
    
    seqs_picrust2A = params.dada2merge ? merge_seqs_picrust2 : dada2_seqs_picrust2
    seqs_picrust2B = params.dbotu3_enable ? dbotu3_seqs_picrust2 : seqs_picrust2A
-   seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2B
+   seqs_picrust2C = params.filtering_tax_enable ? tax_filtered_seq_picrust2 : seqs_picrust2B
+   seqs_picrust2 = params.microDecon_enable ? decontam_seqs_picrust2 : seqs_picrust2C
    
    Channel
      .from(params.picrust_var)
@@ -904,7 +943,7 @@ if (!params.longreads) {
      .set { var_picrust2 }
    
    /*
-    * STEP 9 -  Run functional predictions
+    * STEP 11 -  Run functional predictions
     */
    if (params.picrust2_enable) {
    
@@ -977,7 +1016,8 @@ if (!params.longreads) {
    
    table_ancomA = params.dada2merge ? merge_table_ancom : dada2_table_ancom
    table_ancomB = params.dbotu3_enable ? dbotu3_table_ancom : table_ancomA
-   table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomB
+   table_ancomC = params.filtering_tax_enable ? tax_filtered_table_ancom : table_ancomB
+   table_ancom = params.microDecon_enable ? decontam_table_ancom : table_ancomC
    
    Channel
      .from(params.ancom_var)
@@ -986,7 +1026,7 @@ if (!params.longreads) {
      .set { ancom_var_list }
    
    /*
-    * STEP 10 -  Differential abundance testing with ANCOM
+    * STEP 12 -  Differential abundance testing with ANCOM
     */
    process q2_ancom {
    
@@ -1000,7 +1040,7 @@ if (!params.longreads) {
        input :
            file table4ancom from table_ancom
            file metadata from metadata4ancom
-           file taxonomy4ancom from data_taxonomy
+           file taxonomy4ancom from data_taxonomy_ancom
            each ancom_var from ancom_var_list
    
        output :
@@ -1024,13 +1064,14 @@ if (params.longreads) {
    tsv = lr_biom_tsv
    newick = "none"
 } else {   
-   tsvA= params.microDecon_enable ? decontam_table : biom_tsv
-   tsv = params.stats_only ? tsv_only : tsvA
+   tsvA = params.filtering_tax_enable ? tax_filtered_table_tsv_stats : biom_tsv
+   tsvB = params.microDecon_enable ? decontam_table : tsvA
+   tsv = params.stats_only ? tsv_only : tsvB
    newick = params.stats_only ? newick_only : newick_phylo
 }
 
 /*
- * STEP 11 -  Prepare data for statistics steps
+ * STEP 13 -  Prepare data for statistics steps
  */
 process prepare_data_for_stats {
 
@@ -1092,7 +1133,7 @@ Channel
   .set { alpha_list_var }
 
 /*
- * STEP 12 -  Alpha diversity community statistics analysis
+ * STEP 14 -  Alpha diversity community statistics analysis
  */
 process stats_alpha {
 
@@ -1135,7 +1176,7 @@ Channel
   .into { beta_var_nn ; beta_var_rare ; beta_var_deseq ; beta_var_css }
 
 /*
- * STEP 13 -  Beta diversity (non normalized) community statistics analysis
+ * STEP 15 -  Beta diversity (non normalized) community statistics analysis
  */
 process stats_beta {
 
@@ -1174,7 +1215,7 @@ process stats_beta {
 }
 
 /*
- * STEP 14 -  Beta diversity (rarefied) community statistics analysis
+ * STEP 16 -  Beta diversity (rarefied) community statistics analysis
  */
 process stats_beta_rarefied {
 
@@ -1214,7 +1255,7 @@ process stats_beta_rarefied {
 }
 
 /*
- * STEP 15 -  Beta diversity (DESeq2) community statistics analysis
+ * STEP 17 -  Beta diversity (DESeq2) community statistics analysis
  */
 process stats_beta_deseq2 {
 
@@ -1254,7 +1295,7 @@ process stats_beta_deseq2 {
 }
 
 /*
- * STEP 16 -  Beta diversity (CSS) community statistics analysis
+ * STEP 18 -  Beta diversity (CSS) community statistics analysis
  */
 process stats_beta_css {
 
@@ -1300,7 +1341,7 @@ Channel
   .set { desc_comp_list }
 
 /*
- * STEP 17 -  Descriptive comparisons statistics analysis
+ * STEP 19 -  Descriptive comparisons statistics analysis
  */
 process stats_desc_comp {
 
@@ -1340,7 +1381,7 @@ SAMBAreport_okpicrust2 = params.picrust2_enable ? complete_picrust2_stats_cmd : 
 SAMBAreport_okancom = params.ancom_enable ? completecmd_ancom : Channel.from('report_without_ancom_ok')
 
 /*
- * STEP 18 -  Save user parameters of the workflow and Generate analysis report
+ * STEP 20 -  Save user parameters of the workflow and Generate analysis report
  */
 if (params.report_enable) {
     process report {
@@ -1389,6 +1430,7 @@ if (params.report_enable) {
         data["steps"] = {}
         data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
         data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
+        data["steps"]["filtering_tax_enable"] = '$params.filtering_tax_enable'
         data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
         data["steps"]["picrust2_enable"] = '$params.picrust2_enable'
         data["steps"]["stats_alpha_enable"] = '$params.stats_alpha_enable'
@@ -1438,6 +1480,9 @@ if (params.report_enable) {
         data["picrust2"]["method"] = '$params.method' or None
         data["picrust2"]["nsti"] = '$params.nsti' or None
 
+        data["tax_filtering"] = {}
+        data["tax_filtering"]["tax_to_exclude"] = '$params.tax_to_exclude' or None
+
         data["microdecon"] = {}
         data["microdecon"]["control_list"] = '$params.control_list' or None
         data["microdecon"]["nb_controls"] = '$params.nb_controls' or None
@@ -1482,7 +1527,7 @@ if (params.report_enable) {
 }
 
 /*
- * STEP 19 -  Compress final report directory
+ * STEP 21 -  Compress final report directory
  */
 if (params.compress_result) {
     process compress_result {

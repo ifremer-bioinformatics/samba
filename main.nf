@@ -265,6 +265,8 @@ if (params.longreads) {
    params.taxo_db = ""
    params.nb_controls = ""
    params.nb_samples = ""
+   params.remove_sample = false
+   params.sample_to_remove = ""
    params.ancom_var = ""
 } else {
 // Initialized variables not used in short reads analysis
@@ -1057,7 +1059,7 @@ process prepare_data_for_stats {
         Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj_longreads.R phyloseq.rds ${biom_tsv} ${metadata} ${params.lr_rank} ${params.kingdom} table_with_taxo_for_stats.tsv &>> stats_prepare_data_lr.log 2&>1
     else
         prepare_data_for_stats.sh ${metadata} ${biom_tsv} table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.stats_only} &> stats_prepare_data.log 2&>1
-        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} &>> stats_prepare_data.log 2&>1
+        Rscript --vanilla ${baseDir}/bin/create_phyloseq_obj.R phyloseq.rds table_with_taxo_for_stats.tsv metadata_stats.tsv ${params.microDecon_enable} ${params.control_list} ${newick_tree} ${params.remove_sample} ${params.sample_to_remove} &>> stats_prepare_data.log 2&>1
     fi
     ## get statistics libraries version for report
     Rscript -e "write(x=as.character(paste0(R.Version()[c('major','minor')], collapse = '.')), file='v_R.txt')"

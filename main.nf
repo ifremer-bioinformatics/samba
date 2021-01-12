@@ -1373,8 +1373,8 @@ SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfEx
 SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIfExists:true) : Channel.empty()
 SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExists:true) : Channel.empty()
 betastats_reportok = params.stats_beta_enable ? process_beta_report.concat( process_beta_report_CSS, process_beta_report_DESeq2, process_beta_report_rarefied ) : Channel.empty()
-SAMBAreport_okstatsA = params.stats_alpha_enable ? process_alpha_report : Channel.from('report_without_stats_ok')
-SAMBAreport_okstats = params.stats_beta_enable ? betastats_reportok : SAMBAreport_okstatsA
+SAMBAreport_okstats_alpha = params.stats_alpha_enable ? process_alpha_report : Channel.from('report_without_stats_alpha_ok')
+SAMBAreport_okstats_beta = params.stats_beta_enable ? betastats_reportok : Channel.from('report_without_stats_beta_ok')
 
 SAMBAreport_okpicrust2 = params.picrust2_enable ? complete_picrust2_stats_cmd : Channel.from('report_without_picrust2_ok')
 
@@ -1397,7 +1397,8 @@ if (params.report_enable) {
         input :
             file SAMBAtemplate from SAMBAtemplate_ch
             file SAMBAcss from SAMBAcss_ch
-            file SAMBAreport_okstats from SAMBAreport_okstats
+            file SAMBAreport_okstats_alpha from SAMBAreport_okstats_alpha
+            file SAMBAreport_okstats_beta from SAMBAreport_okstats_beta
             file SAMBAreport_okpicrust2 from SAMBAreport_okpicrust2
             file SAMBAreport_okancom from SAMBAreport_okancom
             file logo from SAMBAlogo_ch

@@ -70,7 +70,7 @@ samba is written by [SeBiMER](https://ifremer-bioinformatics.github.io/), the Bi
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on [Slack](https://nfcore.slack.com/channels/samba) (you can join with [this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch with the samba developpers: ![samba email](assets/samba-email-address-image.png)
 
 ## Citation
 

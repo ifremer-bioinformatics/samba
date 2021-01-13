@@ -1,4 +1,4 @@
-name: nf-core-biopython-1.78
+name: biopython-1.78
 channels:
   - conda-forge
   - bioconda

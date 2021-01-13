@@ -1,4 +1,4 @@
-name: nf-core-qiime2-2019.10
+name: qiime2-2019.10
 channels:
   - gavinmdouglas
   - qiime2/label/r2019.10

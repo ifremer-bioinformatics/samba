@@ -1,4 +1,4 @@
-name: nf-core-jinja2-2.11.1
+name: jinja2-2.11.1
 channels:
   - anaconda
   - defaults

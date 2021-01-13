@@ -1664,7 +1664,7 @@ def nfcoreHeader() {
     ${c_blue}  __\\  |__ |__) | |  | |__ |  \\  ${c_reset}
                                             ${c_reset}
     ${c_yellow}  samba v${workflow.manifest.version}: Standardized and Automated MetaBarcoding Analyses workflow${c_reset}
-    -${c_dim}--------------------------------------------------${c_reset}-
+    -${c_cyan}--------------------------------------------------${c_reset}-
     """.stripIndent()
 }
 

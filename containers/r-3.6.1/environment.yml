@@ -1,4 +1,4 @@
-name: nf-core-r-3.6.1
+name: r-3.6.1
 channels:
   - bioconda
   - conda-forge

@@ -1,4 +1,4 @@
-name: nf-core-longreads-1.0
+name: longreads-1.0
 channels:
   - bioconda
 dependencies:

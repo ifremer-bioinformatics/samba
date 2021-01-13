@@ -15,9 +15,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Quick Start
 
-i. Install [`nextflow`](https://nf-co.re/usage/installation)
+i. Install [`nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
-ii. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))
+ii. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html) as a last resort)
 
 iii. Download the pipeline and test it on a minimal dataset with a single command
 
@@ -71,7 +71,9 @@ samba is written by [SeBiMER](https://ifremer-bioinformatics.github.io/), the Bi
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch with the samba developpers: ![samba email](assets/samba-email-address-image.png)
+For further information or help, don't hesitate to get in touch with the samba developpers: 
+
+![samba email](assets/samba-email-address-image.png)
 
 ## Citation
 

@@ -1,4 +1,4 @@
-# nf-core/samba: Usage
+# samba: Usage
 
 ## Table of contents
 * [Introduction](#introduction)

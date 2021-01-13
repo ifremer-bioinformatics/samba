@@ -332,10 +332,10 @@ Channel.from(summary.collect{ [it.key, it.value] })
     .map { k,v -> "<dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }
     .reduce { a, b -> return [a, b].join("\n            ") }
     .map { x -> """
-    id: 'nf-core-samba-summary'
+    id: 'samba-summary'
     description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/samba Workflow Summary'
-    section_href: 'https://github.com/nf-core/samba'
+    section_name: 'samba Workflow Summary'
+    section_href: 'https://github.com/ifremer-bioinformatics/samba'
     plot_type: 'html'
     data: |
         <dl class=\"dl-horizontal\">
@@ -1557,9 +1557,9 @@ if (params.compress_result) {
 workflow.onComplete {
 
     // Set up the e-mail variables
-    def subject = "[nf-core/samba] Successful: $workflow.runName"
+    def subject = "[samba workflow] Successful: $workflow.runName"
     if (!workflow.success) {
-        subject = "[nf-core/samba] FAILED: $workflow.runName"
+        subject = "[samba workflow] FAILED: $workflow.runName"
     }
     def email_fields = [:]
     email_fields['version'] = workflow.manifest.version
@@ -1613,11 +1613,11 @@ workflow.onComplete {
             if (params.plaintext_email) { throw GroovyException('Send plaintext e-mail, not HTML') }
             // Try to send HTML e-mail using sendmail
             [ 'sendmail', '-t' ].execute() << sendmail_html
-            log.info "[nf-core/samba] Sent summary e-mail to $email_address (sendmail)"
+            log.info "[samba workflow] Sent summary e-mail to $email_address (sendmail)"
         } catch (all) {
             // Catch failures and try with plaintext
             [ 'mail', '-s', subject, email_address ].execute() << email_txt
-            log.info "[nf-core/samba] Sent summary e-mail to $email_address (mail)"
+            log.info "[samba workflow] Sent summary e-mail to $email_address (mail)"
         }
     }
 
@@ -1643,10 +1643,10 @@ workflow.onComplete {
     }
 
     if (workflow.success) {
-        log.info "-${c_purple}[nf-core/samba]${c_green} Pipeline completed successfully${c_reset}-"
+        log.info "-${c_purple}[samba workflow]${c_green} Pipeline completed successfully${c_reset}-"
     } else {
         checkHostname()
-        log.info "-${c_purple}[nf-core/samba]${c_red} Pipeline completed with errors${c_reset}-"
+        log.info "-${c_purple}[samba workflow]${c_red} Pipeline completed with errors${c_reset}-"
     }
 }
 

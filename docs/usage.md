@@ -2,6 +2,9 @@
 
 ## Table of contents
 * [Introduction](#introduction)
+* [Install the pipeline](#install-the-pipeline)
+  * [Local installation](#local-installation)
+  * [Adding your own system config](#your-own-config)
 * [Running the pipeline](#running-the-pipeline)
   * [Updating the pipeline](#updating-the-pipeline)
   * [Reproducibility](#reproducibility)
@@ -85,6 +88,7 @@
   * [`--SAMBAcss`](#--SAMBAcss)
   * [`--SAMBAlogo`](#--SAMBAlogo)
   * [`--SAMBAwf`](#--SAMBAwf)
+* [Job resources](#job-resources)
 * [Other command line parameters](#other-command-line-parameters)
   * [`--outdir`](#--outdir)
   * [`--email`](#--email)
@@ -92,8 +96,6 @@
   * [`-name`](#-name)
   * [`-resume`](#-resume)
   * [`-c`](#-c)
-  * [`--custom_config_version`](#--custom_config_version)
-  * [`--custom_config_base`](#--custom_config_base)
   * [`--max_memory`](#--max_memory)
   * [`--max_time`](#--max_time)
   * [`--max_cpus`](#--max_cpus)
@@ -110,15 +112,34 @@ It is recommended to limit the Nextflow Java virtual machines memory. We recomme
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
 
+## Install the pipeline
+
+### Local installation
+
+Make sure that on your system either install [Nextflow](https://www.nextflow.io/) as well as [Docker](https://docs.docker.com/engine/installation/) or [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) allowing full reproducibility
+
+How to install samba:
+
+```bash
+git clone https://github.com/ifremer-bioinformatics/samba.git
+```
+
+### Adding your own system config
+
+To use samba on a computing cluster, it is necessary to provide a configuration file for your system. For some institutes, this one already exists and is referenced on [nf-core/configs](https://github.com/nf-core/configs#documentation). If so, you can simply download your institute custom config file and simply use `-c <institute_config_file>` in the samba launch command.
+
+If your institute does not have a referenced config file, you can create it using files from [other infrastructure](https://github.com/nf-core/configs/tree/master/docs)
+
+
 ## Running the pipeline
 
 The most simple command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/samba -profile conda,test
+nextflow run main.nf -profile shortreadstest,<docker/singularity/conda>
 ```
 
-This will launch the pipeline with the `conda` and `test` configuration profiles. See below for more information about profiles.
+This will launch the pipeline with the `shortreadstest` configuration profile using either `docker`, `singularity` or `conda`. See below for more information about profiles.
 
 Note that the pipeline will create the following files in your working directory:
 
@@ -131,25 +152,29 @@ results         # Finished results (configurable, see below)
 
 ### Updating the pipeline
 
-When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+When you run the above command, Nextflow automatically runs the pipeline code from your git clone - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the version of the pipeline:
 
 ```bash
-nextflow pull nf-core/samba
+cd samba
+git pull
 ```
 
 ### Reproducibility
 
 It's a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [nf-core/samba releases page](https://github.com/nf-core/samba/releases) and find the latest version number - numeric only (eg. `2.0.0`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 2.0.0`.
+First, go to the [samba releases page](https://github.com/ifremer-bioinformatics/samba/releases) and find the latest version number (eg. `v3.0.0`). Then, you can configure your local samba installation to use your desired version as follows:
 
-This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For running a (not necessarily stable) development version of the pipeline you can use the `dev` branch with `-r dev`.
+```bash
+cd samba
+git checkout v3.0.0
+```
 
 ## Mandatory arguments
 
 ### `-profile`
 
-Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments. Note that multiple profiles can be loaded, for example: `-profile docker,test` - the order of arguments is important!
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments. Note that multiple profiles can be loaded, for example: `-profile docker,shortreadstest`.
 
 If `-profile` is not specified at all the pipeline will be run locally and expects all software to be installed and available on the `PATH`.
 
@@ -158,15 +183,18 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
   * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `docker`
   * A generic configuration profile to be used with [Docker](http://docker.com/)
-  * Pulls software from dockerhub: [`nfcore/samba`](http://hub.docker.com/r/nfcore/samba/)
+  * Pulls software from Dockerhub: [`samba`](https://hub.docker.com/u/sebimer)
 * `singularity`
   * A generic configuration profile to be used with [Singularity](http://singularity.lbl.gov/)
-  * Pulls software from DockerHub: [`nfcore/samba`](http://hub.docker.com/r/nfcore/samba/)
+  * Pulls software from DockerHub: [`samba`](https://hub.docker.com/u/sebimer)
 
 Profiles are also available to configure the samba workflow and can be combined with execution profiles listed above.
 
-* `test`
-  * A profile with a complete configuration for automated testing
+* `shortreadstest`
+  * A profile with a complete configuration for automated testing of short reads metabarcoding analysis
+  * Includes training dataset so needs no other parameters
+* `longreadstest`
+  * A profile with a complete configuration for automated testing of long reads metabarcoding analysis
   * Includes training dataset so needs no other parameters
 * `custom`
   * A profile to complete according to your dataset and experiment
@@ -489,21 +517,9 @@ Path to samba workflow steps image.
 
 ## Job resources
 
-### Automatic resubmission
-
 Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the steps in the pipeline, if the job exits with an error code of `143` (exceeded requested resources) it will automatically resubmit with higher requests (2 x original, then 3 x original). If it still fails after three times then the pipeline is stopped.
 
-### Custom resource requests
-
-Wherever process-specific requirements are set in the pipeline, the default value can be changed by creating a custom config file. See the files hosted at [`nf-core/configs`](https://github.com/nf-core/configs/tree/master/conf) for examples.
-
-If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition below). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
-
-Samba job resources are defined in **conf/resources.config** file.
-
-If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack).
-
-## Other command line parameters
+# Other command line parameters
 
 ### `--outdir`
 
@@ -540,36 +556,6 @@ Specify the path to a specific config file (this is a core NextFlow command).
 **NB:** Single hyphen (core Nextflow option)
 
 Note - you can use this to override pipeline defaults.
-
-### `--custom_config_version`
-
-Provide git commit id for custom Institutional configs hosted at `nf-core/configs`. This was implemented for reproducibility purposes. Default: `master`.
-
-```bash
-## Download and use config file with following git commid id
---custom_config_version d52db660777c4bf36546ddb188ec530c3ada1b96
-```
-
-### `--custom_config_base`
-
-If you're running offline, nextflow will not be able to fetch the institutional config files
-from the internet. If you don't need them, then this is not a problem. If you do need them,
-you should download the files from the repo and tell nextflow where to find them with the
-`custom_config_base` option. For example:
-
-```bash
-## Download and unzip the config files
-cd /path/to/my/configs
-wget https://github.com/nf-core/configs/archive/master.zip
-unzip master.zip
-
-## Run the pipeline
-cd /path/to/my/data
-nextflow run /path/to/pipeline/ --custom_config_base /path/to/my/configs/configs-master/
-```
-
-> Note that the nf-core/tools helper package has a `download` command to download all required pipeline
-> files + singularity containers + institutional configs in one go for you, to make this process easier.
 
 ### `--max_memory`
 

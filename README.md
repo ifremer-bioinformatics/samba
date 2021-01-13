@@ -1,4 +1,4 @@
-# ![nf-core/samba](./docs/images/nfcore-samba_logo.png)
+# ![samba](./docs/images/nfcore-samba_logo.png)
 
 **Standardized and Automated MetaBarcoding Analyses workflow (SAMBA)**.
 
@@ -11,7 +11,7 @@
 
 ## Introduction
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
+The pipeline is built using [Nextflow](https://www.nextflow.io) and [nf-core best practices](https://nf-co.re/developers/guidelines), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
 ## Quick Start
 
@@ -31,7 +31,7 @@ nextflow run main.nf -profile shortreadstest,<docker/singularity/conda>
 nextflow run main.nf -profile longreadstest,<docker/singularity/conda>
 ```
 
-> Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply download your institute custom config file and simply use `-c <institute_config_file>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
+> To use samba on a computing cluster, it is necessary to provide a configuration file for your system. For some institutes, this one already exists and is referenced on [nf-core/configs](https://github.com/nf-core/configs#documentation). If so, you can simply download your institute custom config file and simply use `-c <institute_config_file>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
 
 iv. Start running your own analysis!
 
@@ -67,9 +67,14 @@ Full report description is available in [samba pipeline documentation](docs/outp
 
 samba is written by [SeBiMER](https://ifremer-bioinformatics.github.io/), the Bioinformatics Core Facility of [IFREMER](https://wwz.ifremer.fr/en/).
 
-## Contributions and Support
+## Contributions
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+We welcome contributions to the pipeline. If such case you can do one of the following:
+* Use issues to submit your questions 
+* Fork the project, do your developments and submit a pull request
+* Contact us (see email below) 
+
+## Support
 
 For further information or help, don't hesitate to get in touch with the samba developpers: 
 

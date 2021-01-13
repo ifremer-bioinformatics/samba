@@ -1,4 +1,4 @@
-# nf-core/samba: Quickstart guide
+# samba: Quickstart guide
 
 ## Input file requirements
 ### 1 - Manifest file

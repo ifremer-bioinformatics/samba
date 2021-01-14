@@ -616,8 +616,9 @@ if (!params.longreads) {
            label 'qiime2_highRAM'
 
            publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
-           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
-           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'taxo_output'
+           publishDir "${params.outdir}/${params.report_dirname}/taxo_output", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
 

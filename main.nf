@@ -784,7 +784,6 @@ if (!params.longreads) {
         	label 'qiime2_env'
     
         	publishDir "${params.outdir}/${params.phylogeny_dirname}", mode: 'copy', pattern: '*.qza'
-        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/${task.process}_complete.sh" }
     
         	input :
         		file ASV_fasta from decontam_ASV_fasta

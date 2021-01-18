@@ -790,7 +790,6 @@ if (!params.longreads) {
     
         	output :
         		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
-        		file 'completecmd' into complete_cmd_decontam_phylogeny
     
         	when :
         		!params.stats_only && !params.dada2merge && params.microDecon_enable

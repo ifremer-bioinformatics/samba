@@ -386,7 +386,7 @@ if (workflow.profile.contains('test')) {
          exit 1
       } else {
          Channel.fromPath(params.input_metadata, checkIfExists:true)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; adata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+                .into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
       }
       if (!params.input_manifest || params.input_manifest.isEmpty()) {
          log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
@@ -791,7 +791,6 @@ if (!params.longreads) {
     
         	output :
         		file 'decontam_seqs.qza' into decontam_seqs_qza, decontam_seqs_phylo, decontam_seqs_picrust2, decontam_seqs_ancom
-        		file 'completecmd' into complete_cmd_decontam_phylogeny
     
         	when :
         		!params.stats_only && !params.dada2merge && params.microDecon_enable

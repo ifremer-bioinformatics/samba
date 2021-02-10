@@ -1,6 +1,4 @@
-# ![samba](./docs/images/nfcore-samba_logo.png)
-
-**Standardized and Automated MetaBarcoding Analyses workflow (SAMBA)**.
+# **SAMBA: Standardized and Automated MetaBarcoding Analyses workflow**.
 
 [![SAMBA version](https://img.shields.io/badge/samba%20version-v3.0.0-red?labelColor=000000)](https://www.nextflow.io/)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)

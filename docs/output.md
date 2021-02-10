@@ -1,4 +1,4 @@
-# nf-core/samba: Output
+# samba: Output
 
 This document describes the output produced by the pipeline.
 
@@ -81,7 +81,7 @@ QIIME2 cutadapt report `index.html` is available in **output directory : `result
 The inference of ASV (Amplicon Sequence Variant) is performed using [QIIME2 Dada2](https://docs.qiime2.org/2019.10/plugins/available/dada2/) algorithm.
 DADA2 can filter and trim cleaned reads before running an error model learning algorithm which will correct the reads if necessary before the reads quality control and feature table are created. Then, reads each ASV sequences are merged (in running in paired-end mode) and chimeras are removed.
 
-[DADA2 specific parameters](usage.md#qc-and-feature-table) can be set for nf-core/samba custom usage.
+[DADA2 specific parameters](usage.md#qc-and-feature-table) can be set for samba custom usage.
 
 The **output directory : `results/[projectName]/00_report/dada2_output`** contains :
 - QIIME2 DADA2 report `index.html` with the remaining number of sequences and ASV in each sample :

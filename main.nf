@@ -1,24 +1,24 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                         nf-core/samba
+                         samba
 ========================================================================================
- nf-core/samba Analysis Pipeline.
+ samba Analysis Pipeline.
  #### Homepage / Documentation
- https://github.com/nf-core/samba
+ https://github.com/ifremer-bioinformatics/samba
 ----------------------------------------------------------------------------------------
 */
 
 def helpMessage() {
     // Add to this help message with new command line parameters
-    log.info nfcoreHeader()
+    log.info SeBiMERHeader()
     log.info"""
 
     Usage:
 
     The typical command for running the pipeline after filling the conf/custom.config file is as follows:
 
-	nextflow run nf-core/samba -profile conda,custom
+	nextflow run main.nf -profile <docker,singularity,conda>,custom
 
 	Mandatory arguments:
 	--input_metadata [file]		Path to input file with project samples metadata (csv format).
@@ -332,10 +332,10 @@ Channel.from(summary.collect{ [it.key, it.value] })
     .map { k,v -> "<dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }
     .reduce { a, b -> return [a, b].join("\n            ") }
     .map { x -> """
-    id: 'nf-core-samba-summary'
+    id: 'samba-summary'
     description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/samba Workflow Summary'
-    section_href: 'https://github.com/nf-core/samba'
+    section_name: 'samba Workflow Summary'
+    section_href: 'https://github.com/ifremer-bioinformatics/samba'
     plot_type: 'html'
     data: |
         <dl class=\"dl-horizontal\">
@@ -616,8 +616,9 @@ if (!params.longreads) {
            label 'qiime2_highRAM'
 
            publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
-           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv*'
-           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'taxo_output'
+           publishDir "${params.outdir}/${params.report_dirname}/taxo_output", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
 
@@ -1555,9 +1556,9 @@ if (params.compress_result) {
 workflow.onComplete {
 
     // Set up the e-mail variables
-    def subject = "[nf-core/samba] Successful: $workflow.runName"
+    def subject = "[samba workflow] Successful: $workflow.runName"
     if (!workflow.success) {
-        subject = "[nf-core/samba] FAILED: $workflow.runName"
+        subject = "[samba workflow] FAILED: $workflow.runName"
     }
     def email_fields = [:]
     email_fields['version'] = workflow.manifest.version
@@ -1611,11 +1612,11 @@ workflow.onComplete {
             if (params.plaintext_email) { throw GroovyException('Send plaintext e-mail, not HTML') }
             // Try to send HTML e-mail using sendmail
             [ 'sendmail', '-t' ].execute() << sendmail_html
-            log.info "[nf-core/samba] Sent summary e-mail to $email_address (sendmail)"
+            log.info "[samba workflow] Sent summary e-mail to $email_address (sendmail)"
         } catch (all) {
             // Catch failures and try with plaintext
             [ 'mail', '-s', subject, email_address ].execute() << email_txt
-            log.info "[nf-core/samba] Sent summary e-mail to $email_address (mail)"
+            log.info "[samba workflow] Sent summary e-mail to $email_address (mail)"
         }
     }
 
@@ -1641,34 +1642,28 @@ workflow.onComplete {
     }
 
     if (workflow.success) {
-        log.info "-${c_purple}[nf-core/samba]${c_green} Pipeline completed successfully${c_reset}-"
+        log.info "-${c_purple}[samba workflow]${c_green} Pipeline completed successfully${c_reset}-"
     } else {
         checkHostname()
-        log.info "-${c_purple}[nf-core/samba]${c_red} Pipeline completed with errors${c_reset}-"
+        log.info "-${c_purple}[samba workflow]${c_red} Pipeline completed with errors${c_reset}-"
     }
 }
 
 /* Other functions */
 def nfcoreHeader() {
     // Log colors ANSI codes
-    c_black = params.monochrome_logs ? '' : "\033[0;30m";
     c_blue = params.monochrome_logs ? '' : "\033[0;34m";
     c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
-    c_dim = params.monochrome_logs ? '' : "\033[2m";
-    c_green = params.monochrome_logs ? '' : "\033[0;32m";
-    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
     c_reset = params.monochrome_logs ? '' : "\033[0m";
-    c_white = params.monochrome_logs ? '' : "\033[0;37m";
     c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
 
-    return """    -${c_dim}--------------------------------------------------${c_reset}-
-                                            ${c_green},--.${c_black}/${c_green},-.${c_reset}
-    ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
-    ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
-    ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
-                                            ${c_green}`._,._,\'${c_reset}
-    ${c_purple}  nf-core/samba v${workflow.manifest.version}${c_reset}
-    -${c_dim}--------------------------------------------------${c_reset}-
+    return """    -${c_cyan}--------------------------------------------------${c_reset}-
+    ${c_blue}    __  __  __  .       __  __  ${c_reset}
+    ${c_blue}   \\   |_  |__) | |\\/| |_  |__)  ${c_reset}
+    ${c_blue}  __\\  |__ |__) | |  | |__ |  \\  ${c_reset}
+                                            ${c_reset}
+    ${c_yellow}  samba v${workflow.manifest.version}: Standardized and Automated MetaBarcoding Analyses workflow${c_reset}
+    -${c_cyan}--------------------------------------------------${c_reset}-
     """.stripIndent()
 }
 

@@ -1,4 +1,4 @@
-name: nf-core-seqtk-1.2
+name: seqtk-1.2
 channels:
   - https://repo.continuum.io/pkgs/free
   - conda-forge

@@ -1650,7 +1650,7 @@ workflow.onComplete {
 }
 
 /* Other functions */
-def nfcoreHeader() {
+def SeBiMERHeader() {
     // Log colors ANSI codes
     c_blue = params.monochrome_logs ? '' : "\033[0;34m";
     c_cyan = params.monochrome_logs ? '' : "\033[0;36m";

@@ -289,7 +289,7 @@ if (params.longreads) {
  */
 
 // Header log info
-log.info nfcoreHeader()
+log.info SeBiMERHeader()
 def summary = [:]
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName

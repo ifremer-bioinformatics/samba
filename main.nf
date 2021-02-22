@@ -284,6 +284,26 @@ if (params.longreads) {
    params.lr_taxo_flat = ""
 }
 
+if (!params.stats_alpha_enable) {
+   params.alpha_div_group = ""
+   params.kingdom = ""
+   params.taxa_nb = ""
+}
+
+if (!params.stats_beta_enable) {
+   params.beta_div_var = ""
+   params.hc_method = ""
+}
+
+if (!params.desc_comp_enable) {
+   params.desc_comp_crit = ""
+   params.desc_comp_tax_level = ""
+}
+
+if (!params.filtering_tax_enable) {
+   params.tax_to_exclude = ""
+}
+
 /*
  * PIPELINE INFO
  */
@@ -616,9 +636,8 @@ if (!params.longreads) {
            label 'qiime2_highRAM'
 
            publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.qz*'
-           publishDir "${params.outdir}/${params.taxo_dirname}", mode: 'copy', pattern: '*.tsv'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'taxo_output'
-           publishDir "${params.outdir}/${params.report_dirname}/taxo_output", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
+           publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_taxonomy.tsv'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'ASV_table*'
            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_taxo -> "cmd/${task.process}_complete.sh" }
 
@@ -1134,38 +1153,40 @@ Channel
 /*
  * STEP 14 -  Alpha diversity community statistics analysis
  */
-process stats_alpha {
-
-    tag "$alpha_var"
-    label 'r_stats_env'
-    label 'internet_access'
-
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots/${alpha_var}", mode: 'copy', pattern : 'barplot_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'rarefaction_curve*'
-
-    input :
-       file phyloseq_rds from phyloseq_rds_alpha
-       each alpha_var from alpha_list_var
-
-    output :
-        file 'alpha_div_values.txt' into alpha_div_values
-        file "alpha_div_plots_${alpha_var}*" into alpha_div_plots
-        file 'index_significance_tests.txt' into index_significance_tests
-        file "barplot_*_${alpha_var}*" into barplots
-        file 'rarefaction_curve*' into rarefaction_curve
-        file 'process_alpha_report.ok' into process_alpha_report
-
-    when :
-        params.stats_alpha_enable
-
-    shell :
-    """
-    Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve ${params.longreads} ${params.lr_rank} &> stats_alpha_diversity.log 2>&1
-    touch process_alpha_report.ok
-    """
+if (params.stats_alpha_enable) {
+    process stats_alpha {
+    
+        tag "$alpha_var"
+        label 'r_stats_env'
+        label 'internet_access'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'alpha_div_values.txt'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'index_significance_tests.txt'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_index", mode: 'copy', pattern : 'alpha_div_plots*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity/diversity_barplots/${alpha_var}", mode: 'copy', pattern : 'barplot_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/alpha_diversity", mode: 'copy', pattern : 'rarefaction_curve*'
+    
+        input :
+           file phyloseq_rds from phyloseq_rds_alpha
+           each alpha_var from alpha_list_var
+    
+        output :
+            file 'alpha_div_values.txt' into alpha_div_values
+            file "alpha_div_plots_${alpha_var}*" into alpha_div_plots
+            file 'index_significance_tests.txt' into index_significance_tests
+            file "barplot_*_${alpha_var}*" into barplots
+            file 'rarefaction_curve*' into rarefaction_curve
+            file 'process_alpha_report.ok' into process_alpha_report
+    
+        when :
+            params.stats_alpha_enable
+    
+        shell :
+        """
+        Rscript --vanilla ${baseDir}/bin/alpha_diversity.R ${phyloseq_rds} alpha_div_values.txt alpha_div_plots_${alpha_var} ${params.kingdom} ${params.taxa_nb} barplot_phylum_${alpha_var} barplot_class_${alpha_var} barplot_order_${alpha_var} barplot_family_${alpha_var} barplot_genus_${alpha_var} ${alpha_var} index_significance_tests.txt $workflow.projectDir rarefaction_curve ${params.longreads} ${params.lr_rank} &> stats_alpha_diversity.log 2>&1
+        touch process_alpha_report.ok
+        """
+    }
 }
 
 Channel
@@ -1177,160 +1198,162 @@ Channel
 /*
  * STEP 15 -  Beta diversity (non normalized) community statistics analysis
  */
-process stats_beta {
-
-    tag "$beta_var"
-    label 'r_stats_env'
-    label 'internet_access'
-
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/hclustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'variance_significance_tests_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/ExpVar", mode:'copy', pattern : 'pie_ExpVar_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
-
-    input :
-        file phyloseq_rds from phyloseq_rds_beta
-        file metadata from metadata_beta
-        each beta_var from beta_var_nn
-
-    output :
-        file "NMDS_${beta_var}*" into NMDS
-        file "PCoA_${beta_var}*" into PCoA
-        file "hclustering_${beta_var}*" into hclustering
-        file 'variance_significance_tests_*' into variance_significance_tests
-        file 'pie_ExpVar_*' into pie_ExpVar
-        file 'process_beta_report.ok' into process_beta_report
-
-    when :
-        params.stats_beta_enable
-
-    shell :
-    """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ ${params.longreads} &> stats_beta_diversity.log 2>&1
-    touch process_beta_report.ok
-    """
-}
-
-/*
- * STEP 16 -  Beta diversity (rarefied) community statistics analysis
- */
-process stats_beta_rarefied {
-
-    tag "$beta_var"
-    label 'r_stats_env'
-    label 'internet_access'
-
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/hclustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : 'variance_significance_tests_rarefied_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/ExpVar", mode:'copy', pattern : 'pie_ExpVar_rarefied_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
-
-    input :
-        file phyloseq_rds from phyloseq_rds_beta_rarefied
-        file metadata from metadata_beta_rarefied
-        each beta_var from beta_var_rare
-
-    output :
-        file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
-        file "NMDS_rarefied_${beta_var}*" into NMDS_rarefied
-        file "PCoA_rarefied_${beta_var}*" into PCoA_rarefied
-        file "hclustering_rarefied_${beta_var}*" into hclustering_rarefied
-        file 'variance_significance_tests_rarefied_*' into variance_significance_tests_rarefied
-        file 'pie_ExpVar_rarefied_*' into pie_ExpVar_rarefied
-        file 'process_beta_report_rarefied.ok' into process_beta_report_rarefied
-
-    when :
-        params.stats_beta_enable
-
-    shell :
-    """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ ${params.longreads} &> stats_beta_diversity_rarefied.log 2>&1
-    touch process_beta_report_rarefied.ok
-    """
-}
-
-/*
- * STEP 17 -  Beta diversity (DESeq2) community statistics analysis
- */
-process stats_beta_deseq2 {
-
-    tag "$beta_var"
-    label 'r_stats_env'
-    label 'internet_access'
-
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/hclustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2", mode: 'copy',pattern : 'variance_significance_tests_DESeq2_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/ExpVar", mode: 'copy',pattern : 'pie_ExpVar_DESeq2_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
-
-    input :
-        file phyloseq_rds from phyloseq_rds_beta_deseq2
-        file metadata from metadata_beta_deseq2
-        each beta_var from beta_var_deseq
-
-    output :
-        file 'Final_DESeq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
-        file "NMDS_DESeq2_${beta_var}*" into NMDS_deseq2
-        file "PCoA_DESeq2_${beta_var}*" into PCoA_deseq2
-        file "hclustering_DESeq2_${beta_var}*" into hclustering_deseq2
-        file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
-        file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
-        file 'process_beta_report_DESeq2.ok' into process_beta_report_DESeq2
-
-    when :
-        params.stats_beta_enable
-
-    shell :
-    """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ ${params.longreads} &> stats_beta_diversity_deseq2.log 2>&1
-    touch process_beta_report_DESeq2.ok
-    """
-}
-
-/*
- * STEP 18 -  Beta diversity (CSS) community statistics analysis
- */
-process stats_beta_css {
-
-    tag "$beta_var"
-    label 'r_stats_env'
-    label 'internet_access'
-
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/hclustering", mode: 'copy', pattern : 'hclustering*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS", mode: 'copy', pattern : 'variance_significance_tests_CSS_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/ExpVar", mode: 'copy', pattern : 'pie_ExpVar_CSS_*'
-    publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
-
-    input :
-        file phyloseq_rds from phyloseq_rds_beta_css
-        file metadata from metadata_beta_css
-        each beta_var from beta_var_css
-
-    output :
-        file 'Final_CSS_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
-        file "NMDS_CSS_${beta_var}*" into NMDS_css
-        file "PCoA_CSS_${beta_var}*" into PCoA_css
-        file "hclustering_CSS_${beta_var}*" into hclustering_css
-        file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
-        file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
-        file 'process_beta_report_CSS.ok' into process_beta_report_CSS
-
-    when :
-        params.stats_beta_enable
-
-    shell :
-    """
-    Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ ${params.longreads} &> stats_beta_diversity_css.log 2>&1
-    touch process_beta_report_CSS.ok
-    """
+if (params.stats_beta_enable) {
+    process stats_beta {
+    
+        tag "$beta_var"
+        label 'r_stats_env'
+        label 'internet_access'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/NMDS", mode: 'copy', pattern : 'NMDS*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/PCoA", mode: 'copy', pattern : 'PCoA*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/hclustering", mode: 'copy', pattern : 'hclustering*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized", mode:'copy', pattern : 'variance_significance_tests_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_non_normalized/ExpVar", mode:'copy', pattern : 'pie_ExpVar_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    
+        input :
+            file phyloseq_rds from phyloseq_rds_beta
+            file metadata from metadata_beta
+            each beta_var from beta_var_nn
+    
+        output :
+            file "NMDS_${beta_var}*" into NMDS
+            file "PCoA_${beta_var}*" into PCoA
+            file "hclustering_${beta_var}*" into hclustering
+            file 'variance_significance_tests_*' into variance_significance_tests
+            file 'pie_ExpVar_*' into pie_ExpVar
+            file 'process_beta_report.ok' into process_beta_report
+    
+        when :
+            params.stats_beta_enable
+    
+        shell :
+        """
+        Rscript --vanilla ${baseDir}/bin/beta_diversity.R ${phyloseq_rds} ${beta_var} ${metadata} $workflow.projectDir NMDS_${beta_var}_ PCoA_${beta_var}_ ${params.hc_method} hclustering_${beta_var}_ variance_significance_tests_ pie_ExpVar_ ${params.longreads} &> stats_beta_diversity.log 2>&1
+        touch process_beta_report.ok
+        """
+    }
+    
+    /*
+     * STEP 16 -  Beta diversity (rarefied) community statistics analysis
+     */
+    process stats_beta_rarefied {
+    
+        tag "$beta_var"
+        label 'r_stats_env'
+        label 'internet_access'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/NMDS", mode: 'copy', pattern : 'NMDS*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/PCoA", mode: 'copy', pattern : 'PCoA*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/hclustering", mode: 'copy', pattern : 'hclustering*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied", mode: 'copy', pattern : 'variance_significance_tests_rarefied_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_rarefied/ExpVar", mode:'copy', pattern : 'pie_ExpVar_rarefied_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    
+        input :
+            file phyloseq_rds from phyloseq_rds_beta_rarefied
+            file metadata from metadata_beta_rarefied
+            each beta_var from beta_var_rare
+    
+        output :
+            file 'Final_rarefied_ASV_table_with_taxonomy.tsv' into final_rarefied_ASV_table_with_taxonomy
+            file "NMDS_rarefied_${beta_var}*" into NMDS_rarefied
+            file "PCoA_rarefied_${beta_var}*" into PCoA_rarefied
+            file "hclustering_rarefied_${beta_var}*" into hclustering_rarefied
+            file 'variance_significance_tests_rarefied_*' into variance_significance_tests_rarefied
+            file 'pie_ExpVar_rarefied_*' into pie_ExpVar_rarefied
+            file 'process_beta_report_rarefied.ok' into process_beta_report_rarefied
+    
+        when :
+            params.stats_beta_enable
+    
+        shell :
+        """
+        Rscript --vanilla ${baseDir}/bin/beta_diversity_rarefied.R ${phyloseq_rds} Final_rarefied_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_rarefied_${beta_var}_ PCoA_rarefied_${beta_var}_ ${params.hc_method} hclustering_rarefied_${beta_var}_ variance_significance_tests_rarefied_ pie_ExpVar_rarefied_ ${params.longreads} &> stats_beta_diversity_rarefied.log 2>&1
+        touch process_beta_report_rarefied.ok
+        """
+    }
+    
+    /*
+     * STEP 17 -  Beta diversity (DESeq2) community statistics analysis
+     */
+    process stats_beta_deseq2 {
+    
+        tag "$beta_var"
+        label 'r_stats_env'
+        label 'internet_access'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/NMDS", mode: 'copy', pattern : 'NMDS*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/PCoA", mode: 'copy', pattern : 'PCoA*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/hclustering", mode: 'copy', pattern : 'hclustering*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2", mode: 'copy',pattern : 'variance_significance_tests_DESeq2_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_DESeq2/ExpVar", mode: 'copy',pattern : 'pie_ExpVar_DESeq2_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    
+        input :
+            file phyloseq_rds from phyloseq_rds_beta_deseq2
+            file metadata from metadata_beta_deseq2
+            each beta_var from beta_var_deseq
+    
+        output :
+            file 'Final_DESeq2_ASV_table_with_taxonomy.tsv' into final_deseq2_ASV_table_with_taxonomy
+            file "NMDS_DESeq2_${beta_var}*" into NMDS_deseq2
+            file "PCoA_DESeq2_${beta_var}*" into PCoA_deseq2
+            file "hclustering_DESeq2_${beta_var}*" into hclustering_deseq2
+            file 'variance_significance_tests_DESeq2_*' into variance_significance_tests_DESeq2
+            file 'pie_ExpVar_DESeq2_*' into pie_ExpVar_DESeq2
+            file 'process_beta_report_DESeq2.ok' into process_beta_report_DESeq2
+    
+        when :
+            params.stats_beta_enable
+    
+        shell :
+        """
+        Rscript --vanilla ${baseDir}/bin/beta_diversity_deseq2.R ${phyloseq_rds} Final_DESeq2_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_DESeq2_${beta_var}_ PCoA_DESeq2_${beta_var}_ ${params.hc_method} hclustering_DESeq2_${beta_var}_ variance_significance_tests_DESeq2_ pie_ExpVar_DESeq2_ ${params.longreads} &> stats_beta_diversity_deseq2.log 2>&1
+        touch process_beta_report_DESeq2.ok
+        """
+    }
+    
+    /*
+     * STEP 18 -  Beta diversity (CSS) community statistics analysis
+     */
+    process stats_beta_css {
+    
+        tag "$beta_var"
+        label 'r_stats_env'
+        label 'internet_access'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/NMDS", mode: 'copy', pattern : 'NMDS*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/PCoA", mode: 'copy', pattern : 'PCoA*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/hclustering", mode: 'copy', pattern : 'hclustering*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS", mode: 'copy', pattern : 'variance_significance_tests_CSS_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/beta_diversity_CSS/ExpVar", mode: 'copy', pattern : 'pie_ExpVar_CSS_*'
+        publishDir "${params.outdir}/${params.report_dirname}/R/DATA", mode: 'copy', pattern : '*.tsv'
+    
+        input :
+            file phyloseq_rds from phyloseq_rds_beta_css
+            file metadata from metadata_beta_css
+            each beta_var from beta_var_css
+    
+        output :
+            file 'Final_CSS_ASV_table_with_taxonomy.tsv' into final_css_ASV_table_with_taxonomy
+            file "NMDS_CSS_${beta_var}*" into NMDS_css
+            file "PCoA_CSS_${beta_var}*" into PCoA_css
+            file "hclustering_CSS_${beta_var}*" into hclustering_css
+            file 'variance_significance_tests_CSS_*' into variance_significance_tests_CSS
+            file 'pie_ExpVar_CSS_*' into pie_ExpVar_CSS
+            file 'process_beta_report_CSS.ok' into process_beta_report_CSS
+    
+        when :
+            params.stats_beta_enable
+    
+        shell :
+        """
+        Rscript --vanilla ${baseDir}/bin/beta_diversity_css.R ${phyloseq_rds} Final_CSS_ASV_table_with_taxonomy.tsv ${beta_var} ${metadata} $workflow.projectDir NMDS_CSS_${beta_var}_ PCoA_CSS_${beta_var}_ ${params.hc_method} hclustering_CSS_${beta_var}_ variance_significance_tests_CSS_ pie_ExpVar_CSS_ ${params.longreads} &> stats_beta_diversity_css.log 2>&1
+        touch process_beta_report_CSS.ok
+        """
+    }
 }
 
 Channel
@@ -1342,29 +1365,31 @@ Channel
 /*
  * STEP 19 -  Descriptive comparisons statistics analysis
  */
-process stats_desc_comp {
-
-    tag "$desc_comp_var"
-    label 'r_stats_env'
-
-    publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/descriptive_comparison", mode: 'copy', pattern : 'upset_plot*'
-
-    input :
-        file phyloseq_rds from phyloseq_rds_set
-        each desc_comp_var from desc_comp_list
-
-    output :
-        file "upset_plot_${desc_comp_var}*" into upset_plot
-        file 'process_desc_comp_report.ok' into process_desc_comp_report
-
-    when :
-        params.stats_desc_comp_enable
-
-    shell :
-    """
-    Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${desc_comp_var} upset_plot_${desc_comp_var} ${params.desc_comp_tax_level} &> stats_desc_comp.log 2>&1
-    touch process_desc_comp_report.ok
-    """
+if (params.stats_desc_comp_enable) {
+    process stats_desc_comp {
+    
+        tag "$desc_comp_var"
+        label 'r_stats_env'
+    
+        publishDir "${params.outdir}/${params.report_dirname}/R/FIGURES/descriptive_comparison", mode: 'copy', pattern : 'upset_plot*'
+    
+        input :
+            file phyloseq_rds from phyloseq_rds_set
+            each desc_comp_var from desc_comp_list
+    
+        output :
+            file "upset_plot_${desc_comp_var}*" into upset_plot
+            file 'process_desc_comp_report.ok' into process_desc_comp_report
+    
+        when :
+            params.stats_desc_comp_enable
+    
+        shell :
+        """
+        Rscript --vanilla ${baseDir}/bin/desc_comp.R ${phyloseq_rds} ${desc_comp_var} upset_plot_${desc_comp_var} ${params.desc_comp_tax_level} &> stats_desc_comp.log 2>&1
+        touch process_desc_comp_report.ok
+        """
+    }
 }
 
 SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate, checkIfExists:true) : Channel.empty()
@@ -1374,6 +1399,7 @@ SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExis
 betastats_reportok = params.stats_beta_enable ? process_beta_report.concat( process_beta_report_CSS, process_beta_report_DESeq2, process_beta_report_rarefied ) : Channel.empty()
 SAMBAreport_okstats_alpha = params.stats_alpha_enable ? process_alpha_report : Channel.from('report_without_stats_alpha_ok')
 SAMBAreport_okstats_beta = params.stats_beta_enable ? betastats_reportok : Channel.from('report_without_stats_beta_ok')
+SAMBAreport_okdesc_comp = params.stats_desc_comp_enable ? process_desc_comp_report : Channel.from('report_without_desc_comp_ok')
 
 SAMBAreport_okpicrust2 = params.picrust2_enable ? complete_picrust2_stats_cmd : Channel.from('report_without_picrust2_ok')
 
@@ -1398,6 +1424,7 @@ if (params.report_enable) {
             file SAMBAcss from SAMBAcss_ch
             file SAMBAreport_okstats_alpha from SAMBAreport_okstats_alpha
             file SAMBAreport_okstats_beta from SAMBAreport_okstats_beta
+            file SAMBAreport_okdesc_comp from SAMBAreport_okdesc_comp
             file SAMBAreport_okpicrust2 from SAMBAreport_okpicrust2
             file SAMBAreport_okancom from SAMBAreport_okancom
             file logo from SAMBAlogo_ch

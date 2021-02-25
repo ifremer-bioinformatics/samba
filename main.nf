@@ -285,9 +285,9 @@ if (params.longreads) {
 }
 
 if (!params.microDecon_enable) {
-   params.nb_controls = ""
+   params.nb_controls = "0"
    params.nb_samples = ""
-   params.control_list = ""
+   params.control_list = "none"
 }
 
 if (!params.stats_alpha_enable) {

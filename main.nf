@@ -313,6 +313,13 @@ if (!params.extract_db) {
    params.taxo_db = ""
 }
 
+if (!params.picrust2_enable) {
+   params.picrust_var = ""
+   params.method = ""
+   params.nsti = ""
+}
+
+
 /*
  * PIPELINE INFO
  */

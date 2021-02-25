@@ -295,7 +295,7 @@ if (!params.stats_beta_enable) {
    params.hc_method = ""
 }
 
-if (!params.desc_comp_enable) {
+if (!params.stats_desc_comp_enable) {
    params.desc_comp_crit = ""
    params.desc_comp_tax_level = ""
 }

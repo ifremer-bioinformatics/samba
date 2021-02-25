@@ -308,6 +308,11 @@ if (!params.remove_sample) {
    params.sample_to_remove = ""
 }
 
+if (!params.extract_db) {
+   params.seqs_db = ""
+   params.taxo_db = ""
+}
+
 /*
  * PIPELINE INFO
  */

@@ -304,6 +304,10 @@ if (!params.filtering_tax_enable) {
    params.tax_to_exclude = ""
 }
 
+if (!params.remove_sample) {
+   params.sample_to_remove = ""
+}
+
 /*
  * PIPELINE INFO
  */

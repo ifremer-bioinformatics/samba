@@ -284,6 +284,12 @@ if (params.longreads) {
    params.lr_taxo_flat = ""
 }
 
+if (!params.microDecon_enable) {
+   params.nb_controls = ""
+   params.nb_samples = ""
+   params.control_list = ""
+}
+
 if (!params.stats_alpha_enable) {
    params.alpha_div_group = ""
    params.kingdom = ""

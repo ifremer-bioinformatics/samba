@@ -95,6 +95,10 @@ def helpMessage() {
 	Differential abundance testing:
 	--ancom_var [str]	        According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
 
+	Samples removing:
+    --remove_sample [bool]      Set to true to enable samples removing. (default = false)
+    --sample_to_remove [str]    List of samples you to remove (comma-separated list).
+
 	Statistics:
 	--stats_alpha_enable [bool]	Set to false to deactivate Alpha diversity statistics step. (default = true)
 	--stats_beta_enable [bool]	Set to false to deactivate Beta diversity statistics steps. (default = true)

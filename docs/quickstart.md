@@ -76,11 +76,12 @@ In this section, we will describe the most important parameters for each process
 - ```input_metadata = "/path/to/samba/analysis/q2_metadata"```
 
 #### Cleaning primers step using cutadapt
-```primerF```:
+```primerF```: must be entered in the 5'-to-3' direction
 
-```primerR```:
+```primerR```: must be entered in the 5'-to-3' direction
 
 ```overlap```: length shortest primer - 1
+
 #### ASV taxonomic assignation using QIIME2 RDP-like program
 ```database```:
 
@@ -91,11 +92,17 @@ In this section, we will describe the most important parameters for each process
 
 ```nb_samples```:
 
+#### Taxonomy filtering
+```tax_to_exclude```:
+
 #### Differential abundance testing with ANCOM
 ```ancom_var```: 
 
 #### Functional predictions with PICRUSt2
 ```picrust_var```: 
+
+#### Remove samples for statistical analyses
+```sample_to_remove```:
 
 #### Statistics steps parameters
 ```alpha_div_group```: 

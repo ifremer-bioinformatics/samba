@@ -69,6 +69,9 @@
   * [`--lr_tax_fna`](#--lr_tax_fna)
   * [`--lr_taxo_flat`](#--lr_taxo_flat)
   * [`--lr_rank`](#--lr_rank)
+* [Sample removing](#sample-removing)
+  * [`--remove_sample`](#--remove_sample)
+  * [`--sample_to_remove`](#--sample_to_remove)
 * [Statistics](#statistics)
   * [`--stats_alpha_enable`](#--stats_alpha_enable)
   * [`--stats_beta_enable`](#--stats_beta_enable)
@@ -413,7 +416,6 @@ Step based on [Qiime2/Composition ancom](https://docs.qiime2.org/2020.2/plugins/
 According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
 
 
-
 ## Long reads
 
 Analysis based on mapping with [Minimap2](https://github.com/lh3/minimap2) and Python script developed by the SeBiMER team based on the preprint [Freshwater monitoring by nanopore sequencing](https://dx.doi.org/10.1101/2020.02.06.936302) for the taxonomic assignation.
@@ -424,7 +426,7 @@ Long reads technology. For pacbio, [map-pb] and for nanopore, [map-ont]
 
 ### `--lr_tax_fna`
 
- Path to reference database indexed with Minimap2 (required).
+Path to reference database indexed with Minimap2 (required).
 
 ### `--lr_taxo_flat`
 
@@ -433,6 +435,17 @@ Path to taxonomic reference file (required).
 ### `--lr_rank`
 
 Minimal rank level to keep a hit as assigned [5]. 1:Kingdom, 2:Phylum, 3:Class, 4:Order, 5:Family, 6:Genus, 7:Species
+
+## Samples removing
+
+### `--remove_sample`
+
+Set to true to enable samples removing. (default = false)
+This optional step allow you to remove any problematic samples 
+
+### `--sample_to_remove`
+
+Names of samples you want to delete
 
 ## Statistics
 

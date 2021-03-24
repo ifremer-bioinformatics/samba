@@ -44,7 +44,10 @@ create_phyloseq_obj <- function(phyloseq_rds, biom_tsv, metadata, microDecon, co
     abund = abund[,colSums(abund) > 0]
     ABUND = otu_table(abund,taxa_are_rows=TRUE)
     TAX = tax_table(tax)
-    METADATA = METADATA[rownames(METADATA) %in% colnames(abund), ]
+    var_data = data.frame(METADATA[rownames(METADATA) %in% colnames(abund), ])
+    colnames(var_data) = colnames(METADATA)
+    rownames(var_data) = rownames(METADATA)[rownames(METADATA) %in% colnames(abund)]
+    METADATA = var_data
     write.table(METADATA, metadata, col.names=TRUE, row.names=TRUE, sep="\t",quote=FALSE)
     METADATA_phyloseq = sample_data(METADATA)
     TREE = read_tree(tree)

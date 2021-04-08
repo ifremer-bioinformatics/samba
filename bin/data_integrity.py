@@ -9,6 +9,7 @@ import argparse
 import subprocess
 import multiprocessing as mp
 from Bio import SeqIO
+import xlrd
 
 # For errors / warnings
 def eprint(*args, **kwargs):
@@ -16,6 +17,7 @@ def eprint(*args, **kwargs):
 
 def getArgs():
     parser = argparse.ArgumentParser(description="")
+    # parser.add_argument('-x', dest="xlsx", type=str, required=False, help='Data description (Excel file)')
     parser.add_argument('-a',dest="manifest",type=str,required=True,help='q2_manifest file')
     parser.add_argument('-e',dest="metadata",type=str,required=True,help='q2_metadata file')
     parser.add_argument('-p',dest="primer",type=int,default=70,help='Percentage of primers supposed to be found in raw reads [%(default)s]')
@@ -27,33 +29,37 @@ def getArgs():
 
     return arg
 
-def collect_check_metadata(metadata_file, data_type):
-    collect_data = {}
+def import_metadata(metadata_file, data_type):
+    samba_samples = {}
     # read metadata line by line
     for l in open(metadata_file, 'r'):
         # ignore header
         if not l.startswith('sampleid'):
             sampleid = re.split(r'\t', l.rstrip('\n'))[0]
-            collect_data[sampleid] = {}
-            collect_data[sampleid]['barcode'] = re.split(r'\t', l.rstrip('\n'))[1]
+            samba_samples[sampleid] = {}
+            samba_samples[sampleid]['barcode'] = re.split(r'\t', l.rstrip('\n'))[1]
+            samba_samples[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2]
             if data_type == 'paired':
-                collect_data[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2]
-                collect_data[sampleid]['primerR'] = re.split(r'\t', l.rstrip('\n'))[3]
-                collect_data[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[4:]
+                samba_samples[sampleid]['primerR'] = re.split(r'\t', l.rstrip('\n'))[3]
+                samba_samples[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[4:]
             else:
-                collect_data[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2]
-                collect_data[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[3:]
+                samba_samples[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[3:]
             # check that var(s) didn't contains any NA
-            for var in collect_data[sampleid]['vars']:
+            for var in samba_samples[sampleid]['vars']:
                 if var == 'NA' or var == '':
                     eprint('ERROR: '+sampleid+' has NA value(s) in q2_metadata, please remove them before running SAMBA')
                     exit(1)
+    # Overlap param for Cutadapt
+    primers_lgth = [samba_samples[sampleid]['primerF']]
+    if data_type == 'paired':
+        primers_lgth = [samba_samples[sampleid]['primerF'], samba_samples[sampleid]['primerR']]
+    cutadapt_overlap = len(min(primers_lgth, key=len)) - 1
     # return results
-    return collect_data, data_type
+    return samba_samples, cutadapt_overlap
 
-def collect_manifest(manifest_file, collect_data, data_type):
+def import_manifest(manifest_file, metadata, data_type):
     # in order to check that metadata and manifest have the same number of lines
-    metadata_size = len(collect_data)
+    metadata_size = len(metadata)
     manifest_size = 0
     # read manifest
     for l in open(manifest_file, 'r'):
@@ -72,8 +78,8 @@ def collect_manifest(manifest_file, collect_data, data_type):
                 check_fastq_path(R2)
                 # add to collect_data
                 try:
-                    collect_data[sampleid]['R1'] = R1
-                    collect_data[sampleid]['R2'] = R2
+                    metadata[sampleid]['R1'] = R1
+                    metadata[sampleid]['R2'] = R2
                 except KeyError:
                     eprint('ERROR: '+sampleid+' from q2_manifest is absent in q2_metadata')
                     exit(1)
@@ -88,7 +94,7 @@ def collect_manifest(manifest_file, collect_data, data_type):
                 check_fastq_path(R1)
                 # add to collect_data
                 try:
-                    collect_data[sampleid]['R1'] = R1
+                    metadata[sampleid]['R1'] = R1
                 except KeyError:
                     eprint('ERROR: '+sampleid+' from q2_manifest is absent in q2_metadata')
                     exit(1)
@@ -99,12 +105,12 @@ def collect_manifest(manifest_file, collect_data, data_type):
         eprint('ERROR: q2_manifest and q2_metadata did not have the same number of lines')
         exit(1)
     # return update dict
-    return collect_data
+    return metadata
 
-def check_fastq(collect_data, sample, data_type):
+def check_fastq(samba_samples, sample, data_type):
     out = {}
     print("\tanalyse sample: "+sample)
-    barcode = collect_data[sample]['barcode']
+    barcode = samba_samples[sample]['barcode']
     # by default, single-end
     reads = ['R1']
     # in case of paired, add R2 analysis
@@ -112,26 +118,26 @@ def check_fastq(collect_data, sample, data_type):
         reads.append('R2')
     # check fastq
     for r in reads:
-        R=collect_data[sample][r]
+        R=samba_samples[sample][r]
         if r == 'R1':
-            primer=collect_data[sample]['primerF']
+            primer=samba_samples[sample]['primerF']
         else:
-            primer=collect_data[sample]['primerR']
+            primer=samba_samples[sample]['primerR']
         instrument, index, reads_count, primer = read_fastq(R, primer)
-        collect_data[sample]['reads_count_'+r] = reads_count
-        collect_data[sample]['instrument_'+r] = instrument
-        collect_data[sample]['nb_instrument_'+r] = len(instrument)
-        collect_data[sample]['index_'+r] = index
-        collect_data[sample]['primer_'+r] = primer
-        collect_data[sample]['perc_primer_'+r] = round(primer * 100 / reads_count, 2)
-        collect_data[sample]['nb_barcode_'+r] = len(index)
-        collect_data[sample]['barcode_seq_'+r] = 'FALSE'
+        samba_samples[sample]['reads_count_' + r] = reads_count
+        samba_samples[sample]['instrument_' + r] = instrument
+        samba_samples[sample]['nb_instrument_' + r] = len(instrument)
+        samba_samples[sample]['index_' + r] = index
+        samba_samples[sample]['primer_' + r] = primer
+        samba_samples[sample]['perc_primer_' + r] = round(primer * 100 / reads_count, 2)
+        samba_samples[sample]['nb_barcode_' + r] = len(index)
+        samba_samples[sample]['barcode_seq_' + r] = 'FALSE'
         # chech that barcode are the same as in metadata
         if len(index) == 1:
             if index[0] == barcode:
-                collect_data[sample]['barcode_seq_'+r]  = 'TRUE'
+                samba_samples[sample]['barcode_seq_' + r]  = 'TRUE'
     # return updated dict
-    out[sample] = collect_data[sample]
+    out[sample] = samba_samples[sample]
     return out
 
 def read_fastq(fastq, primer):
@@ -163,7 +169,7 @@ def check_fastq_path(path):
         eprint('ERROR: ' + path + ' from q2_manifest not exit. Wrong path?')
         exit(1)
 
-def write_report(collect_data, data_type):
+def write_report(integrity_data, data_type):
     # open output file for writting
     report = open('data_integrity.txt', 'w')
     # header
@@ -173,17 +179,17 @@ def write_report(collect_data, data_type):
         report.write('\t'.join(header_P)+'\n')
     else:
         report.write('\t'.join(header_S)+'\n')
-    for sample, val in collect_data.items():
+    for sample, val in integrity_data.items():
         if data_type == 'paired':
             report.write(sample+'\t'+'{reads_count_R1}\t{reads_count_R2}\t{barcode}\t{nb_barcode_R1}\t{barcode_seq_R1}\t{nb_barcode_R2}\t{barcode_seq_R2}\t{nb_instrument_R1}\t{nb_instrument_R2}\t{primer_R1}\t{perc_primer_R1}\t{primer_R2}\t{perc_primer_R2}\n'.format(**val))
         else:
             report.write(sample+'\t'+'{reads_count_R1}\t{barcode}\t{nb_barcode_R1}\t{barcode_seq_R1}\t{nb_instrument_R1}\t{primer_R1}\t{perc_primer_R1}\n'.format(**val))
 
-def integrity_validation(collect_data_out,control_list, data_type, primer_threshold):
+def integrity_validation(integrity_data,control_list, data_type, primer_threshold):
     # collect control(s)
     controls = [str(control) for control in control_list.split(',')]
     # let's check the integrity
-    for sample_id, val in collect_data_out.items():
+    for sample_id, val in integrity_data.items():
         if data_type == 'paired':
             # 1 - check reads count R1 vs R2
             if val['reads_count_R1'] != val['reads_count_R2']:
@@ -219,43 +225,47 @@ def sort_process(input_file, output_file):
         exit(1)
 
 def main(args):
-
     # 1 - Collect metadata infos and check variable names
     print("Step 1 - parse and collect data from q2_metadata")
-    collect_data, data_type = collect_check_metadata(args.metadata, args.readtype)
+    metadata, cutadapt_overlap = import_metadata(args.metadata, args.readtype)
 
     # 2 - Collect reads location from manifest
     print("Step 2 - parse and collect data from q2_manifest")
-    collect_data = collect_manifest(args.manifest, collect_data, data_type)
+    metadata = import_manifest(args.manifest, metadata, args.readtype)
 
     # 3 - Check fastq integrity
-    print("Step 3 - collect fastq integrity")
+    print("Step 3 - check fastq integrity")
     pool = mp.Pool(args.threads)
-    collect_data_para = pool.starmap(check_fastq, [(collect_data, sample,data_type) for sample in collect_data.keys()])
+    fastq = pool.starmap(check_fastq, [(metadata, sample, args.readtype) for sample in metadata.keys()])
     pool.close()
     # Clean all this mess
-    collect_data_out = {}
-    for result in collect_data_para:
+    integrity_data = {}
+    for result in fastq:
         for sample, vals in result.items():
-            collect_data_out[sample] = vals
+            integrity_data[sample] = vals
 
     # 4 - Report fastq intergrity before validation
     # Allow exploration by user for a better understanding
     print("Step 4 - write integrity report")
-    write_report(collect_data_out, data_type)
+    write_report(integrity_data, args.readtype)
 
     # 5 - Validate manifest, metadata and fastq
     print("Step 5 - validation of data")
-    integrity_validation(collect_data_out, args.control, data_type, args.primer)
+    integrity_validation(integrity_data, args.control, args.readtype, args.primer)
 
     # 6 - Sort manifest and metadata
     print("Step 6 - Sort manifest and metadata by sample id")
     print("\tsort manifest...")
-    output_file_manifest = args.manifest + ".sort"
-    sort_process(args.manifest, output_file_manifest)
+    sorted_manifest = args.manifest + ".sort"
+    sort_process(args.manifest, sorted_manifest)
     print("\tsort metadata...")
-    output_file_metadata = args.metadata + ".sort"
-    sort_process(args.metadata, output_file_metadata)
+    sorted_metadata = args.metadata + ".sort"
+    sort_process(args.metadata, sorted_metadata)
+
+    # 7 - Output cutadapt overlap length
+    cutovl = open('cutovl.txt','w')
+    cutovl.write(str(cutadapt_overlap))
+    cutovl.close()
 
 if __name__ == '__main__':
     args = getArgs()

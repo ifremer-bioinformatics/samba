@@ -5,11 +5,11 @@ import re
 import os
 import sys
 import gzip
+import xlrd
 import argparse
 import subprocess
 import multiprocessing as mp
 from Bio import SeqIO
-import xlrd
 
 # For errors / warnings
 def eprint(*args, **kwargs):
@@ -17,15 +17,22 @@ def eprint(*args, **kwargs):
 
 def getArgs():
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument('-x', dest="xlsx", type=str, required=True, help='Data description (Excel file)')
-    # parser.add_argument('-a',dest="manifest",type=str,required=True,help='q2_manifest file')
-    # parser.add_argument('-e',dest="metadata",type=str,required=True,help='q2_metadata file')
+    # for bio
+    parser.add_argument('-x', dest="xlsx", type=str, required=False, help='Excel file for manifest & metadata')
+    # for bioinfo
+    parser.add_argument('-a',dest="manifest",type=str,required="-e" in sys.argv,help='q2_manifest file - Required by -e')
+    parser.add_argument('-e',dest="metadata",type=str,required="-a" in sys.argv,help='q2_metadata file - Required by -a')
+    # common
     parser.add_argument('-p',dest="primer",type=int,default=70,help='Percentage of primers supposed to be found in raw reads [%(default)s]')
     parser.add_argument('-c',dest="control",type=str, default='',help='Delimited list of control (comma separated)')
     parser.add_argument('-r',dest="readtype",type=str,default='paired',choices=['paired','single'],help='Sequencing format [%(default)s]')
     parser.add_argument('-t',dest="threads",type=int,default=4,help='Number of threads [%(default)s]')
 
     arg = parser.parse_args()
+
+    # check input files
+    if arg.xlsx and (arg.manifest or arg.metadata):
+        parser.error('-a and -e | -x are mutually exclusive. Please, give an Excel file OR metadata and manifest in plain text format')
 
     return arg
 
@@ -35,15 +42,15 @@ def import_metadata(metadata_file, data_type):
     for l in open(metadata_file, 'r'):
         # ignore header
         if not l.startswith('sampleid'):
-            sampleid = re.split(r'\t', l.rstrip('\n'))[0]
+            sampleid = re.split(r'\t', l.rstrip('\n'))[0].strip(' ')
             samba_metadata[sampleid] = {}
-            samba_metadata[sampleid]['barcode'] = re.split(r'\t', l.rstrip('\n'))[1]
-            samba_metadata[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2]
+            samba_metadata[sampleid]['barcode'] = re.split(r'\t', l.rstrip('\n'))[1].strip(' ')
+            samba_metadata[sampleid]['primerF'] = re.split(r'\t', l.rstrip('\n'))[2].strip(' ')
             if data_type == 'paired':
-                samba_metadata[sampleid]['primerR'] = re.split(r'\t', l.rstrip('\n'))[3]
-                samba_metadata[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[4:]
+                samba_metadata[sampleid]['primerR'] = re.split(r'\t', l.rstrip('\n'))[3].strip(' ')
+                samba_metadata[sampleid]['vars'] = [x.strip(' ') for x in map(str, re.split(r'\t', l.rstrip('\n'))[4:])]
             else:
-                samba_metadata[sampleid]['vars'] = re.split(r'\t', l.rstrip('\n'))[3:]
+                samba_metadata[sampleid]['vars'] = [x.strip(' ') for x in map(str, re.split(r'\t', l.rstrip('\n'))[3:])]
             # check that var(s) didn't contains any NA
             for var in samba_metadata[sampleid]['vars']:
                 if var == 'NA' or var == '':
@@ -65,7 +72,8 @@ def import_manifest(manifest_file, data_type):
         if not l.startswith('sample-id'):
             if data_type == 'paired':
                 try:
-                    sampleid, R1, R2 = re.split(r'\t', l.rstrip('\n'))
+                    sampleid, R1, R2 = [x.strip(' ') for x in re.split(r'\t', l.rstrip('\n'))]
+
                 except ValueError:
                     size = len(re.split(r'\t', l.rstrip('\n')))
                     eprint('ERROR: q2_manifest contains '+str(size)+ 'column(s) instead of 3')
@@ -79,7 +87,7 @@ def import_manifest(manifest_file, data_type):
                 samba_manifest[sampleid]['R2'] = R2
             else:
                 try:
-                    sampleid, R1 = l.split()
+                    sampleid, R1 = [x.strip(' ') for x in re.split(r'\t', l.rstrip('\n'))]
                 except ValueError:
                     size = len(re.split(r'\t', l.rstrip('\n')))
                     eprint('ERROR: q2_manifest contains '+str(size)+ 'column(s) instead of 2')
@@ -252,9 +260,9 @@ def import_excel(xlsx, single=False):
     metadata_samples = set()
     # collect samples in manifest and metadata
     for row in range(1, row_count_manifest):
-        manifest_samples.add(manifest.row_values(row, start_colx=0, end_colx=None)[0])
+        manifest_samples.add(manifest.row_values(row, start_colx=0, end_colx=None)[0].strip(' '))
     for row in range(1, row_count_metadata):
-        metadata_samples.add(metadata.row_values(row, start_colx=0, end_colx=None)[0])
+        metadata_samples.add(metadata.row_values(row, start_colx=0, end_colx=None)[0].strip(' '))
     # stop if any difference
     if manifest_samples != metadata_samples:
         uniq_manifest = manifest_samples.difference(metadata_samples)
@@ -282,34 +290,34 @@ def import_excel(xlsx, single=False):
         if single:
             sample, R1 = manifest.row_values(row, start_colx=0, end_colx=None)
             # check that file path are good
-            check_fastq_path(R1)
+            check_fastq_path(R1.strip(' '))
             # add to samba_samples
             samba_samples[sample] = {}
-            samba_samples[sample]['R1'] = R1
+            samba_samples[sample]['R1'] = R1.strip(' ')
         else:
             sample, R1, R2 = manifest.row_values(row, start_colx=0, end_colx=None)
             # check that file path are good
-            check_fastq_path(R1)
-            check_fastq_path(R2)
+            check_fastq_path(R1.strip(' '))
+            check_fastq_path(R2.strip(' '))
             # add to samba_samples
             samba_samples[sample] = {}
-            samba_samples[sample]['R1'] = R1
-            samba_samples[sample]['R2'] = R2
+            samba_samples[sample]['R1'] = R1.strip(' ')
+            samba_samples[sample]['R2'] = R2.strip(' ')
 
     # 4 - metadata
     ## 4.1 - parse the metadata sheet
     for row in range(1, row_count_metadata):
         tmp = metadata.row_values(row, start_colx=0, end_colx=None)
-        sample = tmp[0]
+        sample = tmp[0].strip(' ')
         # store metadata
-        samba_samples[sample]['barcode'] = tmp[1]
-        samba_samples[sample]['primerF'] = tmp[2]
+        samba_samples[sample]['barcode'] = tmp[1].strip(' ')
+        samba_samples[sample]['primerF'] = tmp[2].strip(' ')
         if single:
-            samba_samples[sample]['vars'] = tmp[3:]
+            samba_samples[sample]['vars'] = [x.strip(' ') for x in map(str,tmp[3:])]
         else:
-            samba_samples[sample]['primerR'] = tmp[3]
-            samba_samples[sample]['vars'] = tmp[4:]
-        # check empty variable and replace \s
+            samba_samples[sample]['primerR'] = tmp[3].strip(' ')
+            samba_samples[sample]['vars'] = [x.strip(' ') for x in map(str,tmp[4:])]
+        # check empty variable
         for var in samba_samples[sample]['vars']:
             if var in ['NA', '', 'Nan', 'NaN', 'nan']:
                 eprint(
@@ -324,9 +332,10 @@ def import_excel(xlsx, single=False):
 
     ## 4.3 - get the header (vars)
     if single:
-        metadata_header = metadata.row_values(0, start_colx=3, end_colx=None)
+        metadata_header = [x.strip(' ') for x in map(str, metadata.row_values(0, start_colx=3, end_colx=None))]
+
     else:
-        metadata_header = metadata.row_values(0, start_colx=4, end_colx=None)
+        metadata_header = [x.strip(' ') for x in map(str, metadata.row_values(0, start_colx=4, end_colx=None))]
 
     # 5 - return data
     return samba_samples, cutadapt_overlap, metadata_header
@@ -414,7 +423,7 @@ def main(args):
 
     # 6 - Output cutadapt overlap length
     print("Step 6 - save Cutadapt overlap size")
-    cutovl = open('cutovl.txt','w')
+    cutovl = open('cutovlsize','w')
     cutovl.write(str(cutadapt_overlap))
     cutovl.close()
 

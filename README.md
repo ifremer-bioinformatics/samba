@@ -1,6 +1,6 @@
 # **SAMBA: Standardized and Automated MetaBarcoding Analyses workflow**.
 
-[![SAMBA version](https://img.shields.io/badge/samba%20version-v3.0.0-red?labelColor=000000)](https://www.nextflow.io/)
+[![SAMBA version](https://img.shields.io/badge/samba%20version-v3.0.1-red?labelColor=000000)](https://www.nextflow.io/)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![Run with with conda](https://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![Run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)

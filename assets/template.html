@@ -83,7 +83,9 @@
                         {% if d.steps.picrust2_enable == 'true' %}
                             <li><a href="#picrsut">Functional predictions</a></li>
                         {% endif %}
+                        {% if d.steps.ancom_enable == 'true' %}
                         <li><a href="#ancom">Differential abundance</a></li>
+                        {% endif %}
                         <li><a href="#final-output">Final outputs</a></li>
                     {% else %}
                         <li><a href="#taxo-assign">Taxonomic assignation</a></li>

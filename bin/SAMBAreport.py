@@ -184,27 +184,28 @@ def main(args):
 
         # _____________________________________________________________
         ## ancom
-        ancom_out_dir = os.path.join(args.path,structure['ancom']['folder'])
-        ancom_listdir = collect_from_folder(ancom_out_dir)
+        if nxt_params['steps']['ancom_enable'] == 'true':
+            ancom_out_dir = os.path.join(args.path,structure['ancom']['folder'])
+            ancom_listdir = collect_from_folder(ancom_out_dir)
 
-        ### Collect variable names
-        results['ancom']['var'] = []
-        for f in ancom_listdir:
-            if not f.endswith('_family') and not f.endswith('_genus'):
-                var = re.sub(r'export_ancom_', '', f)
-                results['ancom']['var'].append(var)
+            ### Collect variable names
+            results['ancom']['var'] = []
+            for f in ancom_listdir:
+                if not f.endswith('_family') and not f.endswith('_genus'):
+                    var = re.sub(r'export_ancom_', '', f)
+                    results['ancom']['var'].append(var)
 
-        ### Collect ASV folder and DE
-        for var in results['ancom']['var']:
-            # Folder path
-            var_path_base = os.path.join(ancom_out_dir, ('export_ancom_'+ var))
-            var_path_family = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_family'))
-            var_path_genus = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_genus'))
-            # ASV DE
-            results['ancom'][var] = {}
-            results['ancom'][var]['base'] = len(get_true_from_csv(os.path.join(var_path_base, 'ancom.tsv')))
-            results['ancom'][var]['family'] = len(get_true_from_csv(os.path.join(var_path_family, 'ancom.tsv')))
-            results['ancom'][var]['genus'] = len(get_true_from_csv(os.path.join(var_path_genus, 'ancom.tsv')))
+            ### Collect ASV folder and DE
+            for var in results['ancom']['var']:
+                # Folder path
+                var_path_base = os.path.join(ancom_out_dir, ('export_ancom_'+ var))
+                var_path_family = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_family'))
+                var_path_genus = os.path.join(ancom_out_dir, ('export_ancom_' + var + '_genus'))
+                # ASV DE
+                results['ancom'][var] = {}
+                results['ancom'][var]['base'] = len(get_true_from_csv(os.path.join(var_path_base, 'ancom.tsv')))
+                results['ancom'][var]['family'] = len(get_true_from_csv(os.path.join(var_path_family, 'ancom.tsv')))
+                results['ancom'][var]['genus'] = len(get_true_from_csv(os.path.join(var_path_genus, 'ancom.tsv')))
 
     # _____________________________________________________________
     # Step 2.2 - Long reads

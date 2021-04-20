@@ -52,6 +52,7 @@
 * [Taxonomy filtering](#tax-filtering)
   * [`--filtering_tax_enable`](#--filtering_tax_enable)
   * [`--tax_to_exclude`](#--tax_to_exclude)
+  * [`--tax_to_exclude`](#--tax_to_include)
 * [Samples decontamination](#samples-decontamination)
   * [`--microDecon_enable`](#--microDecon_enable)
   * [`--control_list`](#--control_list)
@@ -366,6 +367,10 @@ Set to true to filter asv table and sequences based on taxonomic assignationSet 
 ### `--tax_to_exclude`
 
 List of taxa you want to exclude (comma-separated list).
+
+### `--tax_to_include`
+
+List of taxa you want to include (comma-separated list).
 
 ## Samples decontamination
 

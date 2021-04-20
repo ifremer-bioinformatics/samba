@@ -79,6 +79,7 @@ def helpMessage() {
 	Taxonomy filtering:
 	--filtering_tax_enable [bool]	Set to true to filter asv table and sequences based on taxonomic assignation (default = false)
 	--tax_to_exclude [str]		List of taxa you want to exclude (comma-separated list).
+	--tax_to_include [str]		List of taxa you want to include (comma-separated list).
 
 	Decontamination:
 	--microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
@@ -725,7 +726,7 @@ if (!params.longreads) {
                  !params.stats_only
              script :
              """
-             q2_filtering_tax.sh ${asv_table} ${asv_tax} ${params.tax_to_exclude} tax_filtered_table.qza ${asv_seq} tax_filtered_seq.qza tax_filtered_table.qzv ${metadata} tax_filtered_output tax_filtered_seq.qzv ${asv_tax_tsv} tax_filtered_table_with_tax.biom tax_filtered_table_with_tax.tsv completecmd &> q2_filtering_tax.log 2>&1
+             q2_filtering_tax.sh ${asv_table} ${asv_tax} ${params.tax_to_exclude} ${params.tax_to_include} tax_filtered_table.qza ${asv_seq} tax_filtered_seq.qza tax_filtered_table.qzv ${metadata} tax_filtered_output tax_filtered_seq.qzv ${asv_tax_tsv} tax_filtered_table_with_tax.biom tax_filtered_table_with_tax.tsv completecmd &> q2_filtering_tax.log 2>&1
              """
         }
     }

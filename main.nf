@@ -1486,6 +1486,7 @@ if (params.report_enable) {
         data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
         data["steps"]["filtering_tax_enable"] = '$params.filtering_tax_enable'
         data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
+        data["steps"]["ancom_enable"] = '$params.ancom_enable'
         data["steps"]["picrust2_enable"] = '$params.picrust2_enable'
         data["steps"]["stats_alpha_enable"] = '$params.stats_alpha_enable'
         data["steps"]["stats_beta_enable"] = '$params.stats_beta_enable'

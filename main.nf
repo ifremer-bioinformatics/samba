@@ -768,6 +768,7 @@ if (!params.longreads) {
         	"""
         	sed '1d' ${microDecon_table} > microDecon_table
         	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
+            sed -i "s/'//g" microDecon_table
         	microDecon.R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
         	cp ${baseDir}/bin/microDecon.R completecmd &>> microDecon.log 2>&1
             Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"

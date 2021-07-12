@@ -9,7 +9,9 @@
 
 ## Introduction
 
-The pipeline is built using [Nextflow](https://www.nextflow.io) and [nf-core best practices](https://nf-co.re/developers/guidelines), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
+SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-art bioinformatics and statistical methods to conduct reproducible eDNA analyses using [Nextflow](https://www.nextflow.io). SAMBA starts processing by verifying integrity of raw reads and metadata. Then all bioinformatics processing is done using commonly used procedure ([QIIME 2](https://qiime2.org/) and [DADA2](https://docs.qiime2.org/2019.10/plugins/available/dada2/)) but adds new steps relying on [dbOTU3](https://github.com/swo/dbotu3) and [microDecon](https://github.com/donaldtmcknight/microDecon) to build high quality ASV count tables. Extended statistical analyses are also performed. Finally, SAMBA produces a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures.
+
+The SAMBA pipeline can run tasks across multiple compute infrastructures in a very portable manner. It comes with singularity containers making installation trivial and results highly reproducible.
 
 ## Quick Start
 

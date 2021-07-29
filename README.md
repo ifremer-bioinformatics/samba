@@ -55,7 +55,7 @@ The samba workflow comes with documentation about the pipeline, found in the `do
 
 Here is an overview of the many steps available in samba pipeline:
 
-![SAMBA Workflow](./docs/images/samba-v2.0.0.png)
+![SAMBA Workflow](./docs/images/samba-v3.0.png)
 
 At the end of samba pipeline execution, you get an interactive HTML report that's look like this one:
 

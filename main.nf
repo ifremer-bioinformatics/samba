@@ -622,21 +622,27 @@ if (!params.longreads) {
      * STEP 6 - Use Dada2 merge to merge ASVs tables and sequences
      */
     if (params.dada2merge) {
+
+Channel.fromPath(params.input_metadata, checkIfExists:true)
+    .set { metadata_merge_ch }
+
         process q2_dada2_merge {
     
                 label 'qiime2_env'
     
                 publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
+                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'dada2_output'
                 publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
     
                 input :
                         path table_dir from dada2merge_tabledir_ch
                         path seq_dir from dada2merge_repseqsdir_ch
+                        path metadata_merge from metadata_merge_ch
     
                 output :
                         file 'merged_table.qza' into merge_table_picrust2, merge_table_ancom
                         file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merge_seqs_ancom
-                        file 'merge_output' into merge_output
+                        file 'dada2_output' into dada2merge_output
                         file 'completecmd' into complete_cmd_dada2merge
     
                 when :
@@ -644,12 +650,12 @@ if (!params.longreads) {
     
                 script :
                 """
-                q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza merge_output completecmd &> q2_merge.log 2>&1
+                q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza ${metadata_merge} merged_table.qzv dada2_output merged_seq.qzv completecmd &> q2_merge.log 2>&1
                 """
         }
     }
     
-    outputA = params.dada2merge ? merge_output : dada2_output
+    outputA = params.dada2merge ? dada2merge_output : dada2_output
     output_ch = params.dbotu3_enable ? dbotu3_output : outputA
     output_ch.into { taxonomy_output ; decontam_output }
     

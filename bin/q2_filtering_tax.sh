@@ -21,7 +21,7 @@ final_filtered_table_biom=${args[12]}
 final_filtered_table_tsv=${args[13]}
 logcmd=${args[14]}
 
-if [$tax_to_exclude != "none"]
+if [ "${tax_to_exclude}" != *"none"* ]
 then
     #Filtering ASV table based on taxonomy
     cmd="qiime taxa filter-table \

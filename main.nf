@@ -28,7 +28,7 @@ def helpMessage() {
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
 	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
-    --compress_result [bool]        Zip the final result directory (default = true) 
+	--compress_result [bool]        Zip the final result directory (default = true) 
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.
@@ -43,6 +43,7 @@ def helpMessage() {
 	--primer_filter [str]		Percentage of primers supposed to be found in raw reads (default : 70).
 
 	Raw reads cleaning:
+	--cutadapt_enable [bool]	Primer removal process. Set to false to deactivate this step. (default = true)
 	--primerF [str]			Forward primer (to be used in Cutadapt cleaning step).
 	--primerR [str]			Reverse primer (to be used in Cutadapt cleaning step).
 	--errorRate [str]		Cutadapt error rate allowed to match primers (default : 0.1).
@@ -97,8 +98,8 @@ def helpMessage() {
 	--ancom_var [str]	        According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
 
 	Samples removing:
-    --remove_sample [bool]      Set to true to enable samples removing. (default = false)
-    --sample_to_remove [str]    List of samples you to remove (comma-separated list).
+	--remove_sample [bool]      Set to true to enable samples removing. (default = false)
+	--sample_to_remove [str]    List of samples you to remove (comma-separated list).
 
 	Statistics:
 	--stats_alpha_enable [bool]	Set to false to deactivate Alpha diversity statistics step. (default = true)
@@ -186,6 +187,7 @@ if (params.stats_only) {
    //Force to false other processes options
    params.dada2merge = false
    params.data_integrity_enable = false
+   params.cutadapt_enable = false
    params.dbotu3_enable = false
    params.filtering_tax_enable = false
    params.microDecon_enable = false
@@ -213,6 +215,7 @@ if (params.dada2merge) {
    }
    //Force to false other processes options
    params.data_integrity_enable = false
+   params.cutadapt_enable = false
    params.dbotu3_enable = false
    params.filtering_tax_enable = false
    params.microDecon_enable = false
@@ -251,6 +254,7 @@ if (params.microDecon_enable && !params.control_list) {
 if (params.longreads) {
 //Force to false other processes options
    params.data_integrity_enable = false
+   params.cutadapt_enable = false
    params.qiime2 = false
    params.dada2merge = false
    params.dbotu3_enable = false
@@ -354,6 +358,7 @@ summary['Config Profile'] = workflow.profile
 
 if (params.stats_only) summary['Stats only'] = "Pipeline running only statistics processes"
 if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
+if (params.cutadapt_enable) summary['Primer removal'] = "Primer removal process enabled"
 if (params.dbotu3_enable) summary['Clustering'] = "Distribution based-clustering process enabled"
 if (params.filtering_tax_enable) summary['Tax filtering'] = "Filtering ASV table and sequences based on taxonomic assignation"
 if (params.microDecon_enable) summary['Decontamination'] = "Sample decontamination process enabled"
@@ -521,32 +526,36 @@ if (!params.longreads) {
     /*
      * STEP 3 - Trim metabarcode data with cutadapt
      */
-    process q2_cutadapt {
-    
-    	label 'qiime2_env'
-    
-    	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
-    
-    	input :
-    		file imported_data from imported_data
-    
-    	output :
-    		file 'data_trimmed.qza' into trimmed_data
-    		file 'data_trimmed.qzv' into trimmed_visu
-    		file 'trimmed_output' into trimmed_output
-    		file 'completecmd' into complete_cmd_cutadapt
-    
-    	when :
-    		!params.stats_only && !params.dada2merge
-    
-    	script :
-    	"""
-    	q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
-    	"""
+    if (params.cutadapt_enable) { 
+        process q2_cutadapt {
+        
+        	label 'qiime2_env'
+        
+        	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+        
+        	input :
+        		file imported_data from imported_data
+        
+        	output :
+        		file 'data_trimmed.qza' into trimmed_data
+        		file 'data_trimmed.qzv' into trimmed_visu
+        		file 'trimmed_output' into trimmed_output
+        		file 'completecmd' into complete_cmd_cutadapt
+        
+        	when :
+        		params.cutadapt_enable && !params.stats_only && !params.dada2merge
+        
+        	script :
+        	"""
+        	q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
+        	"""
+        }
     }
     
+    dada2_input = params.cutadapt_enable ? trimmed_data : imported_data
+
     /*
      * STEP 4 - Dada2 ASVs inference
      */
@@ -559,7 +568,7 @@ if (!params.longreads) {
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
     
     	input :
-    		file trimmed_data from trimmed_data
+    		file dada2_input from dada2_input
     		file metadata from metadata4dada2
     
     	output :
@@ -577,7 +586,7 @@ if (!params.longreads) {
     
     	script :
     	"""
-    	q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+    	q2_dada2.sh ${params.singleEnd} ${dada2_input} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
     	"""
     }
     
@@ -1487,6 +1496,7 @@ if (params.report_enable) {
         data["outdir"] = '$params.outdir'
         data["steps"] = {}
         data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
+        data["steps"]["cutadapt_enable"] = '$params.cutadapt_enable'
         data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
         data["steps"]["filtering_tax_enable"] = '$params.filtering_tax_enable'
         data["steps"]["microDecon_enable"] = '$params.microDecon_enable'

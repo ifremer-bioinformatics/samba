@@ -21,6 +21,7 @@
   * [`--data_integrity_enable`](#--data_integrity_enable)
   * [`--primer_filter`](#--primer_filter)
 * [Primers removal](#primers-removal)
+  * [`--cutadapt_enable`](#--cutadapt_enable)
   * [`--primerF`](#--primerF)
   * [`--primerR`](#--primerR)
   * [`--errorRate`](#--errorRate)
@@ -235,6 +236,10 @@ This process is optional and checks if input datasets are correctly demultiplexe
 ### `--data_integrity_enable`
 
 Data integrity checking step. Set to false to deactivate this step. (default = true)
+
+### `--cutadapt_enable`
+
+Primer removal process. Set to false to deactivate this step. (default = true)
 
 ### `--primer_filter`
 

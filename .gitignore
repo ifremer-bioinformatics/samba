@@ -1,9 +1,8 @@
 *.pbs
-*log*
-.nextflow
+*.log
+.nextflow*
 tax.databases.test
-.nxf_temp
-SAMBA_results_of_*
-tmp_SAMBA
 training_dataset/
-.idea/
+runSAMBA_test.o*
+results
+work

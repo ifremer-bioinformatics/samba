@@ -871,9 +871,10 @@ Channel.fromPath(params.input_metadata, checkIfExists:true)
      longreadstofasta = testmanifest.splitCsv(header: true, sep:'\t')
                                     .map { row -> file(row."absolute-filepath") }
    } else {
-     longreadsmanifest = manifest.splitCsv(header: true, sep:'\t')
+     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest_lr ; manifest_lr2fasta }
+     longreadsmanifest = manifest_lr.splitCsv(header: true, sep:'\t')
                                  .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
-     longreadstofasta = manifest.splitCsv(header: true, sep:'\t')
+     longreadstofasta = manifest_lr2fasta.splitCsv(header: true, sep:'\t')
                                 .map { row -> file(row."absolute-filepath") }
    }
 

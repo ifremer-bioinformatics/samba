@@ -135,7 +135,7 @@ def check_fastq(collect_data, sample, data_type):
     return out
 
 def read_fastq(fastq, primer):
-    primer = re.sub(r"([RYSWKMBDHVN])", r".", primer)
+    primer = re.sub(r"([RYSWKMBDHVNI])", r".", primer)
     reads_count = 0
     primers_count = 0
     instrument = []

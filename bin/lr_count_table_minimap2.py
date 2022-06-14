@@ -57,6 +57,18 @@ def hits_to_taxo(taxonomy, bam_lst):
                 read['lr_nm_score'] = l.get_tag('NM')
                 read['lr_tax'] = taxonomy[l.reference_name]
                 read['lr_asm_length'] = l.query_alignment_length
+                
+                # compute aln length from cigar line
+                aln_length = sum([event[1] for event in l.cigar if event[0] != 4])
+
+                # Possible metric to compute from the alignement length:
+
+                # read['blast_like_identity'] = (aln_length - l.get_tag('NM') )/aln_length
+                # read['gap_compressed_identity'] = 1 - l.get_tag('de')
+                # read['query_coverage'] = l.query_alignment_length / l.infer_read_length()
+
+                # select matching_bases because it give an idea of length and identity of the alignment.
+                read['matching_bases'] = aln_length - l.get_tag('NM')
 
                 ################################################################
                 # DEV: add query/subject coverage filtering (at least for 12S) #
@@ -75,10 +87,10 @@ def hits_to_taxo(taxonomy, bam_lst):
             if not l.query_name in lr_reads[sample]:
                 lr_reads[sample][l.query_name] = read
             ## Replace taxonomy if the alignment score of another hit is better
-            elif lr_reads[sample][l.query_name]['lr_nm_score'] > read['lr_nm_score']:
+            elif lr_reads[sample][l.query_name]['matching_bases'] < read['matching_bases']:
                 lr_reads[sample][l.query_name] = read
             ## In case of same alignment score...
-            elif lr_reads[sample][l.query_name]['lr_nm_score'] == read['lr_nm_score']:
+            elif lr_reads[sample][l.query_name]['matching_bases'] == read['matching_bases']:
                 ### 1 - split taxo
                 # c for current and n for new
                 c =  lr_reads[sample][l.query_name]['lr_tax'].split(';')

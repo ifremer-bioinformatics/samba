@@ -75,7 +75,7 @@ def hits_to_taxo(taxonomy, bam_lst):
             if not l.query_name in lr_reads[sample]:
                 lr_reads[sample][l.query_name] = read
             ## Replace taxonomy if the alignment score of another hit is better
-            elif lr_reads[sample][l.query_name]['lr_nm_score'] < read['lr_nm_score']:
+            elif lr_reads[sample][l.query_name]['lr_nm_score'] > read['lr_nm_score']:
                 lr_reads[sample][l.query_name] = read
             ## In case of same alignment score...
             elif lr_reads[sample][l.query_name]['lr_nm_score'] == read['lr_nm_score']:

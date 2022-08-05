@@ -1090,36 +1090,38 @@ if (!params.longreads) {
    /*
     * STEP 12 -  Differential abundance testing with ANCOM
     */
-   process q2_ancom {
+    if (params.ancom_enable) {
+        process q2_ancom {
    
-       tag "$ancom_var"
-       label 'qiime2_env'
+        tag "$ancom_var"
+        label 'qiime2_env'
    
-       publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
-       publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'
-       publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
+        publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
+        publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
    
-       input :
-           file table4ancom from table_ancom
-           file metadata from metadata4ancom
-           file taxonomy4ancom from data_taxonomy_ancom
-           each ancom_var from ancom_var_list
+        input :
+            file table4ancom from table_ancom
+            file metadata from metadata4ancom
+            file taxonomy4ancom from data_taxonomy_ancom
+            each ancom_var from ancom_var_list
    
-       output :
-           file 'compo_table*.qza' into compo_table
-           file 'ancom_*.qzv' into ancom_table
-           file 'export_ancom_*' into export_ancom
-           file 'collapsed_table_*.qza' into collapsed_taxolevel_table
-           file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
+        output :
+            file 'compo_table*.qza' into compo_table
+            file 'ancom_*.qzv' into ancom_table
+            file 'export_ancom_*' into export_ancom
+            file 'collapsed_table_*.qza' into collapsed_taxolevel_table
+            file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
    
-       when :
-           !params.stats_only && params.ancom_enable
+        when :
+            !params.stats_only && params.ancom_enable
    
-       script :
-       """
-       q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
-       """
-   }
+        script :
+        """
+        q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
+        """
+        }
+    }
 }
 
 if (params.longreads) {

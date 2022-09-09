@@ -42,10 +42,10 @@ fi
 if [ ! -f "$BASEDIR/tax.databases.test/$datatype/$DB" ]
 then
     mkdir -p $BASEDIR/tax.databases.test/$datatype
-    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v138/$datatype/$DB -O $BASEDIR/tax.databases.test/$datatype/$DB
+    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/SILVA_v138/$DB -O $BASEDIR/tax.databases.test/$datatype/$DB
     if [ "$datatype" == "longreads" ] 
     then
-       wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v138/$datatype/$TAX -O $BASEDIR/tax.databases.test/$datatype/$TAX
+       wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/SILVA_v138/$TAX -O $BASEDIR/tax.databases.test/$datatype/$TAX
     fi
 fi
 if ([ -f "$BASEDIR/tax.databases.test/$datatype/$DB" ] && [ -f "$BASEDIR/training_dataset/$datatype/q2_manifest" ])

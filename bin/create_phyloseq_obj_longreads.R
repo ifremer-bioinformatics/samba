@@ -18,7 +18,7 @@ create_phyloseq_obj <- function(phyloseq_rds, nanopore_count_table, metadata, ra
     rawtable$Taxonomy = str_split_fixed(rawtable$Taxonomy, ";",7)[,as.numeric(rank)]
     rawtable_rank = rawtable %>% select (-Read_id) %>% group_by(Taxonomy) %>% summarise_each(funs(sum))
     rawtable_rank[1,1] = "Unclassified"
-    rawtable_rank = data.frame(rawtable_rank)
+    rawtable_rank = data.frame(rawtable_rank, check.names=F)
     write.table(rawtable_rank,final_table, sep="\t", dec=",", col.names=T,row.names=T,quote=F)
     nanopore_metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
 

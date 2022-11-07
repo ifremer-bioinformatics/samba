@@ -21,6 +21,7 @@
   * [`--data_integrity_enable`](#--data_integrity_enable)
   * [`--primer_filter`](#--primer_filter)
 * [Primers removal](#primers-removal)
+  * [`--cutadapt_enable`](#--cutadapt_enable)
   * [`--primerF`](#--primerF)
   * [`--primerR`](#--primerR)
   * [`--errorRate`](#--errorRate)
@@ -52,6 +53,7 @@
 * [Taxonomy filtering](#tax-filtering)
   * [`--filtering_tax_enable`](#--filtering_tax_enable)
   * [`--tax_to_exclude`](#--tax_to_exclude)
+  * [`--tax_to_exclude`](#--tax_to_include)
 * [Samples decontamination](#samples-decontamination)
   * [`--microDecon_enable`](#--microDecon_enable)
   * [`--control_list`](#--control_list)
@@ -235,6 +237,10 @@ This process is optional and checks if input datasets are correctly demultiplexe
 
 Data integrity checking step. Set to false to deactivate this step. (default = true)
 
+### `--cutadapt_enable`
+
+Primer removal process. Set to false to deactivate this step. (default = true)
+
 ### `--primer_filter`
 
 Percentage of primers supposed to be found in raw reads (default : 70).
@@ -366,6 +372,10 @@ Set to true to filter asv table and sequences based on taxonomic assignationSet 
 ### `--tax_to_exclude`
 
 List of taxa you want to exclude (comma-separated list).
+
+### `--tax_to_include`
+
+List of taxa you want to include (comma-separated list).
 
 ## Samples decontamination
 

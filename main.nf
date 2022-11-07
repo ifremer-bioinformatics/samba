@@ -28,7 +28,7 @@ def helpMessage() {
 	Generic:
 	--singleEnd [bool]		Set to true to specify that the inputs are single-end reads.
 	--longreads [bool]		Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
-    --compress_result [bool]        Zip the final result directory (default = true) 
+	--compress_result [bool]        Zip the final result directory (default = true) 
 
 	Other options
 	--outdir [path]			The output directory where the results will be saved.
@@ -43,6 +43,7 @@ def helpMessage() {
 	--primer_filter [str]		Percentage of primers supposed to be found in raw reads (default : 70).
 
 	Raw reads cleaning:
+	--cutadapt_enable [bool]	Primer removal process. Set to false to deactivate this step. (default = true)
 	--primerF [str]			Forward primer (to be used in Cutadapt cleaning step).
 	--primerR [str]			Reverse primer (to be used in Cutadapt cleaning step).
 	--errorRate [str]		Cutadapt error rate allowed to match primers (default : 0.1).
@@ -79,6 +80,7 @@ def helpMessage() {
 	Taxonomy filtering:
 	--filtering_tax_enable [bool]	Set to true to filter asv table and sequences based on taxonomic assignation (default = false)
 	--tax_to_exclude [str]		List of taxa you want to exclude (comma-separated list).
+	--tax_to_include [str]		List of taxa you want to include (comma-separated list).
 
 	Decontamination:
 	--microDecon_enable [bool]	Sample decontamination step. Set to true to activate this step. (default = false)
@@ -96,8 +98,8 @@ def helpMessage() {
 	--ancom_var [str]	        According to your metadata file, list the column names corresponding to the variables to group samples for ANCOM analysis (comma-separated list).
 
 	Samples removing:
-    --remove_sample [bool]      Set to true to enable samples removing. (default = false)
-    --sample_to_remove [str]    List of samples you to remove (comma-separated list).
+	--remove_sample [bool]      Set to true to enable samples removing. (default = false)
+	--sample_to_remove [str]    List of samples you to remove (comma-separated list).
 
 	Statistics:
 	--stats_alpha_enable [bool]	Set to false to deactivate Alpha diversity statistics step. (default = true)
@@ -185,6 +187,7 @@ if (params.stats_only) {
    //Force to false other processes options
    params.dada2merge = false
    params.data_integrity_enable = false
+   params.cutadapt_enable = false
    params.dbotu3_enable = false
    params.filtering_tax_enable = false
    params.microDecon_enable = false
@@ -212,6 +215,7 @@ if (params.dada2merge) {
    }
    //Force to false other processes options
    params.data_integrity_enable = false
+   params.cutadapt_enable = false
    params.dbotu3_enable = false
    params.filtering_tax_enable = false
    params.microDecon_enable = false
@@ -250,6 +254,7 @@ if (params.microDecon_enable && !params.control_list) {
 if (params.longreads) {
 //Force to false other processes options
    params.data_integrity_enable = false
+   params.cutadapt_enable = false
    params.qiime2 = false
    params.dada2merge = false
    params.dbotu3_enable = false
@@ -353,6 +358,7 @@ summary['Config Profile'] = workflow.profile
 
 if (params.stats_only) summary['Stats only'] = "Pipeline running only statistics processes"
 if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
+if (params.cutadapt_enable) summary['Primer removal'] = "Primer removal process enabled"
 if (params.dbotu3_enable) summary['Clustering'] = "Distribution based-clustering process enabled"
 if (params.filtering_tax_enable) summary['Tax filtering'] = "Filtering ASV table and sequences based on taxonomic assignation"
 if (params.microDecon_enable) summary['Decontamination'] = "Sample decontamination process enabled"
@@ -520,32 +526,36 @@ if (!params.longreads) {
     /*
      * STEP 3 - Trim metabarcode data with cutadapt
      */
-    process q2_cutadapt {
-    
-    	label 'qiime2_env'
-    
-    	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
-    	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
-    
-    	input :
-    		file imported_data from imported_data
-    
-    	output :
-    		file 'data_trimmed.qza' into trimmed_data
-    		file 'data_trimmed.qzv' into trimmed_visu
-    		file 'trimmed_output' into trimmed_output
-    		file 'completecmd' into complete_cmd_cutadapt
-    
-    	when :
-    		!params.stats_only && !params.dada2merge
-    
-    	script :
-    	"""
-    	q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
-    	"""
+    if (params.cutadapt_enable) { 
+        process q2_cutadapt {
+        
+        	label 'qiime2_env'
+        
+        	publishDir "${params.outdir}/${params.trimmed_dirname}", mode: 'copy', pattern: 'data*.qz*'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*_output'
+        	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+        
+        	input :
+        		file imported_data from imported_data
+        
+        	output :
+        		file 'data_trimmed.qza' into trimmed_data
+        		file 'data_trimmed.qzv' into trimmed_visu
+        		file 'trimmed_output' into trimmed_output
+        		file 'completecmd' into complete_cmd_cutadapt
+        
+        	when :
+        		params.cutadapt_enable && !params.stats_only && !params.dada2merge
+        
+        	script :
+        	"""
+        	q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} ${params.overlap} data_trimmed.qza data_trimmed.qzv trimmed_output completecmd &> q2_cutadapt.log 2>&1
+        	"""
+        }
     }
     
+    dada2_input = params.cutadapt_enable ? trimmed_data : imported_data
+
     /*
      * STEP 4 - Dada2 ASVs inference
      */
@@ -558,7 +568,7 @@ if (!params.longreads) {
     	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
     
     	input :
-    		file trimmed_data from trimmed_data
+    		file dada2_input from dada2_input
     		file metadata from metadata4dada2
     
     	output :
@@ -576,7 +586,7 @@ if (!params.longreads) {
     
     	script :
     	"""
-    	q2_dada2.sh ${params.singleEnd} ${trimmed_data} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
+    	q2_dada2.sh ${params.singleEnd} ${dada2_input} ${metadata} rep_seqs.qza rep_seqs.qzv table.qza table.qzv stats.qza stats.qzv dada2_output ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.FmaxEE} ${params.RmaxEE} ${params.minQ} ${params.chimeras} ${task.cpus} completecmd &> q2_dada2.log 2>&1
     	"""
     }
     
@@ -621,21 +631,27 @@ if (!params.longreads) {
      * STEP 6 - Use Dada2 merge to merge ASVs tables and sequences
      */
     if (params.dada2merge) {
+
+Channel.fromPath(params.input_metadata, checkIfExists:true)
+    .set { metadata_merge_ch }
+
         process q2_dada2_merge {
     
                 label 'qiime2_env'
     
                 publishDir "${params.outdir}/${params.dada2_dirname}/merged", mode: 'copy', pattern: '*.qza'
+                publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'dada2_output'
                 publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2merge -> "cmd/${task.process}_complete.sh" }
     
                 input :
                         path table_dir from dada2merge_tabledir_ch
                         path seq_dir from dada2merge_repseqsdir_ch
+                        path metadata_merge from metadata_merge_ch
     
                 output :
                         file 'merged_table.qza' into merge_table_picrust2, merge_table_ancom
                         file 'merged_seq.qza' into merge_seqs_taxo, merge_seqs_phylo, merge_seqs_picrust2, merge_seqs_ancom
-                        file 'merge_output' into merge_output
+                        file 'dada2_output' into dada2merge_output
                         file 'completecmd' into complete_cmd_dada2merge
     
                 when :
@@ -643,12 +659,12 @@ if (!params.longreads) {
     
                 script :
                 """
-                q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza merge_output completecmd &> q2_merge.log 2>&1
+                q2_merge.sh ${table_dir} ${seq_dir} merged_table.qza merged_seq.qza ${metadata_merge} merged_table.qzv dada2_output merged_seq.qzv completecmd &> q2_merge.log 2>&1
                 """
         }
     }
     
-    outputA = params.dada2merge ? merge_output : dada2_output
+    outputA = params.dada2merge ? dada2merge_output : dada2_output
     output_ch = params.dbotu3_enable ? dbotu3_output : outputA
     output_ch.into { taxonomy_output ; decontam_output }
     
@@ -725,7 +741,7 @@ if (!params.longreads) {
                  !params.stats_only
              script :
              """
-             q2_filtering_tax.sh ${asv_table} ${asv_tax} ${params.tax_to_exclude} tax_filtered_table.qza ${asv_seq} tax_filtered_seq.qza tax_filtered_table.qzv ${metadata} tax_filtered_output tax_filtered_seq.qzv ${asv_tax_tsv} tax_filtered_table_with_tax.biom tax_filtered_table_with_tax.tsv completecmd &> q2_filtering_tax.log 2>&1
+             q2_filtering_tax.sh ${asv_table} ${asv_tax} ${params.tax_to_exclude} ${params.tax_to_include} tax_filtered_table.qza ${asv_seq} tax_filtered_seq.qza tax_filtered_table.qzv ${metadata} tax_filtered_output tax_filtered_seq.qzv ${asv_tax_tsv} tax_filtered_table_with_tax.biom tax_filtered_table_with_tax.tsv completecmd &> q2_filtering_tax.log 2>&1
              """
         }
     }
@@ -767,6 +783,7 @@ if (!params.longreads) {
         	"""
         	sed '1d' ${microDecon_table} > microDecon_table
         	sed -i 's/#OTU ID/ASV_ID/g' microDecon_table
+            sed -i "s/'//g" microDecon_table
         	microDecon.R microDecon_table ${params.control_list} ${params.nb_controls} ${params.nb_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microDecon.log 2>&1
         	cp ${baseDir}/bin/microDecon.R completecmd &>> microDecon.log 2>&1
             Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"
@@ -854,9 +871,10 @@ if (!params.longreads) {
      longreadstofasta = testmanifest.splitCsv(header: true, sep:'\t')
                                     .map { row -> file(row."absolute-filepath") }
    } else {
-     longreadsmanifest = manifest.splitCsv(header: true, sep:'\t')
+     Channel.fromPath(params.input_manifest, checkIfExists:true).into { manifest_lr ; manifest_lr2fasta }
+     longreadsmanifest = manifest_lr.splitCsv(header: true, sep:'\t')
                                  .map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
-     longreadstofasta = manifest.splitCsv(header: true, sep:'\t')
+     longreadstofasta = manifest_lr2fasta.splitCsv(header: true, sep:'\t')
                                 .map { row -> file(row."absolute-filepath") }
    }
 
@@ -1072,36 +1090,38 @@ if (!params.longreads) {
    /*
     * STEP 12 -  Differential abundance testing with ANCOM
     */
-   process q2_ancom {
+    if (params.ancom_enable) {
+        process q2_ancom {
    
-       tag "$ancom_var"
-       label 'qiime2_env'
+        tag "$ancom_var"
+        label 'qiime2_env'
    
-       publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
-       publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'
-       publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
+        publishDir "${params.outdir}/${params.ancom_dirname}", mode: 'copy', pattern: '*.qz*'
+        publishDir "${params.outdir}/${params.report_dirname}/ancom_output", mode: 'copy', pattern: 'export_ancom_*'
+        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd_ancom', saveAs : { completecmd_ancom -> "cmd/${task.process}_complete.sh" }
    
-       input :
-           file table4ancom from table_ancom
-           file metadata from metadata4ancom
-           file taxonomy4ancom from data_taxonomy_ancom
-           each ancom_var from ancom_var_list
+        input :
+            file table4ancom from table_ancom
+            file metadata from metadata4ancom
+            file taxonomy4ancom from data_taxonomy_ancom
+            each ancom_var from ancom_var_list
    
-       output :
-           file 'compo_table*.qza' into compo_table
-           file 'ancom_*.qzv' into ancom_table
-           file 'export_ancom_*' into export_ancom
-           file 'collapsed_table_*.qza' into collapsed_taxolevel_table
-           file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
+        output :
+            file 'compo_table*.qza' into compo_table
+            file 'ancom_*.qzv' into ancom_table
+            file 'export_ancom_*' into export_ancom
+            file 'collapsed_table_*.qza' into collapsed_taxolevel_table
+            file 'completecmd_ancom' into completecmd_ancom, completcmd_ancom4compress
    
-       when :
-           !params.stats_only && params.ancom_enable
+        when :
+            !params.stats_only && params.ancom_enable
    
-       script :
-       """
-       q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
-       """
-   }
+        script :
+        """
+        q2_ANCOM.sh ${table4ancom} compo_table.qza ${metadata} ${ancom_var} ancom_${ancom_var}.qzv export_ancom_${ancom_var} ${taxonomy4ancom} collapsed_table_family.qza compo_table_family.qza ancom_${ancom_var}_family.qzv export_ancom_${ancom_var}_family collapsed_table_genus.qza compo_table_genus.qza ancom_${ancom_var}_genus.qzv export_ancom_${ancom_var}_genus completecmd_ancom &> q2_ancom.log 2>&1
+        """
+        }
+    }
 }
 
 if (params.longreads) {
@@ -1420,7 +1440,6 @@ if (params.stats_desc_comp_enable) {
 
 SAMBAtemplate_ch = params.report_enable ? Channel.fromPath(params.SAMBAtemplate, checkIfExists:true) : Channel.empty()
 SAMBAcss_ch = params.report_enable ? Channel.fromPath(params.SAMBAcss, checkIfExists:true) : Channel.empty()
-SAMBAlogo_ch = params.report_enable ? Channel.fromPath(params.SAMBAlogo, checkIfExists:true) : Channel.empty()
 SAMBAwf_ch = params.report_enable ? Channel.fromPath(params.SAMBAwf, checkIfExists:true) : Channel.empty()
 betastats_reportok = params.stats_beta_enable ? process_beta_report.concat( process_beta_report_CSS, process_beta_report_DESeq2, process_beta_report_rarefied ) : Channel.empty()
 SAMBAreport_okstats_alpha = params.stats_alpha_enable ? process_alpha_report : Channel.from('report_without_stats_alpha_ok')
@@ -1441,7 +1460,6 @@ if (params.report_enable) {
 
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'SAMBA_report.html'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'style.css'
-        publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'nfcore-samba_logo.png'
         publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'samba_wf.png'
         publishDir "${params.outdir}/conf", mode: 'copy', pattern : 'data.json'
 
@@ -1453,14 +1471,12 @@ if (params.report_enable) {
             file SAMBAreport_okdesc_comp from SAMBAreport_okdesc_comp
             file SAMBAreport_okpicrust2 from SAMBAreport_okpicrust2
             file SAMBAreport_okancom from SAMBAreport_okancom
-            file logo from SAMBAlogo_ch
             file wf_image from SAMBAwf_ch
             file 'version_ok' from version_collected
 
        output :
             file 'style.css' into SAMBA_css_output
             file 'SAMBA_report.html' into Report
-            file 'nfcore-samba_logo.png' into SAMBAlogo_output
             file 'samba_wf.png' into wf_image_output
             file 'data.json' into data_json
 
@@ -1482,6 +1498,7 @@ if (params.report_enable) {
         data["outdir"] = '$params.outdir'
         data["steps"] = {}
         data["steps"]["data_integrity_enable"] = '$params.data_integrity_enable'
+        data["steps"]["cutadapt_enable"] = '$params.cutadapt_enable'
         data["steps"]["dbotu3_enable"] = '$params.dbotu3_enable'
         data["steps"]["filtering_tax_enable"] = '$params.filtering_tax_enable'
         data["steps"]["microDecon_enable"] = '$params.microDecon_enable'
@@ -1716,7 +1733,7 @@ def SeBiMERHeader() {
     ${c_blue}   \\   |_  |__) | |\\/| |_  |__)  ${c_reset}
     ${c_blue}  __\\  |__ |__) | |  | |__ |  \\  ${c_reset}
                                             ${c_reset}
-    ${c_yellow}  samba v${workflow.manifest.version}: Standardized and Automated MetaBarcoding Analyses workflow${c_reset}
+    ${c_yellow}  samba ${workflow.manifest.version}: Standardized and Automated MetaBarcoding Analyses workflow${c_reset}
     -${c_cyan}--------------------------------------------------${c_reset}-
     """.stripIndent()
 }

@@ -188,14 +188,16 @@ def main(args):
             ancom_out_dir = os.path.join(args.path,structure['ancom']['folder'])
             ancom_listdir = collect_from_folder(ancom_out_dir)
 
-            ### Collect variable names
+        ### Collect variable names
+        if nxt_params['steps']['ancom_enable'] == 'true':
             results['ancom']['var'] = []
             for f in ancom_listdir:
                 if not f.endswith('_family') and not f.endswith('_genus'):
                     var = re.sub(r'export_ancom_', '', f)
                     results['ancom']['var'].append(var)
 
-            ### Collect ASV folder and DE
+        ### Collect ASV folder and DE
+        if nxt_params['steps']['ancom_enable'] == 'true':
             for var in results['ancom']['var']:
                 # Folder path
                 var_path_base = os.path.join(ancom_out_dir, ('export_ancom_'+ var))

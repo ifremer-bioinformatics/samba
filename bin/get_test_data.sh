@@ -21,7 +21,7 @@ elif [ "$datatype" == "shortreads" ]
 then
   # short reads dataset
   datadir="$BASEDIR/training_dataset/$datatype"
-  DB="DATABASE_silva_v132_99_16S_V4_515F-806R.qza"
+  DB="silva_v138_99_515F_806rB.qza"
   TAX=""
 else 
   echo "Datatype is incorrect"
@@ -42,10 +42,10 @@ fi
 if [ ! -f "$BASEDIR/tax.databases.test/$datatype/$DB" ]
 then
     mkdir -p $BASEDIR/tax.databases.test/$datatype
-    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v132/$datatype/$DB -O $BASEDIR/tax.databases.test/$datatype/$DB
+    wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/SILVA_v138/$DB -O $BASEDIR/tax.databases.test/$datatype/$DB
     if [ "$datatype" == "longreads" ] 
     then
-       wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10/SILVA_v132/$datatype/$TAX -O $BASEDIR/tax.databases.test/$datatype/$TAX
+       wget ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/SILVA_v138/$TAX -O $BASEDIR/tax.databases.test/$datatype/$TAX
     fi
 fi
 if ([ -f "$BASEDIR/tax.databases.test/$datatype/$DB" ] && [ -f "$BASEDIR/training_dataset/$datatype/q2_manifest" ])

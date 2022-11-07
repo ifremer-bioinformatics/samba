@@ -23,9 +23,14 @@ output_genus=${args[13]}
 export_genus=${args[14]}
 logcmd=${args[15]}
 
-# Build a composition table artefact file
-cmd="qiime composition add-pseudocount --i-table ${table} --o-composition-table ${compo_table}"
+# Filter low abundant ASV
+cmd="qiime feature-table filter-features --i-table ${table} --p-min-samples 3 --p-min-frequency 100 --o-filtered-table ${table%.*}_wLow.qza"
 echo $cmd > $logcmd
+eval $cmd
+
+# Build a composition table artefact file
+cmd="qiime composition add-pseudocount --i-table ${table%.*}_wLow.qza --o-composition-table ${compo_table}"
+echo $cmd >> $logcmd
 eval $cmd
 
 # ANCOM analysis based on the user-selected variable
@@ -35,7 +40,7 @@ echo $cmd >> $logcmd
 eval $cmd
 
 # ANCOM analysis based on the user-selected variable at the family level
-cmd="qiime taxa collapse --i-table ${table} --i-taxonomy ${taxonomy} --p-level 5 --o-collapsed-table ${collaped_table_family} ;
+cmd="qiime taxa collapse --i-table ${table%.*}_wLow.qza --i-taxonomy ${taxonomy} --p-level 5 --o-collapsed-table ${collaped_table_family} ;
 qiime composition add-pseudocount --i-table ${collaped_table_family} --o-composition-table ${compo_table_family} ;
 qiime composition ancom --i-table ${compo_table_family} --m-metadata-file ${metadata} --m-metadata-column ${criteria} --p-transform-function log --p-difference-function f_statistic --o-visualization ${output_family} ;
 qiime tools export --input-path ${output_family} --output-path ${export_family}"
@@ -43,7 +48,7 @@ echo $cmd >> $logcmd
 eval $cmd
 
 # ANCOM analysis based on the user-selected variable at the genus level
-cmd="qiime taxa collapse --i-table ${table} --i-taxonomy ${taxonomy} --p-level 6 --o-collapsed-table ${collaped_table_genus} ;
+cmd="qiime taxa collapse --i-table ${table%.*}_wLow.qza --i-taxonomy ${taxonomy} --p-level 6 --o-collapsed-table ${collaped_table_genus} ;
 qiime composition add-pseudocount --i-table ${collaped_table_genus} --o-composition-table ${compo_table_genus} ;
 qiime composition ancom --i-table ${compo_table_genus} --m-metadata-file ${metadata} --m-metadata-column ${criteria} --p-transform-function log --p-difference-function f_statistic --o-visualization ${output_genus} ;
 qiime tools export --input-path ${output_genus} --output-path ${export_genus}"

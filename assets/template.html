@@ -68,7 +68,9 @@
                             <li><a href="#data-integrity">Data integrity</a></li>
                         {% endif %}
                         <li><a href="#importing-raw-data">Importing raw data</a></li>
+                        {% if d.steps.cutadapt_enable == 'true' %}
                         <li><a href="#primers-removal">Primers removal</a></li>
+                        {% endif %}
                         <li><a href="#qc-feature-table">QC and feature table</a></li>
                         {% if d.steps.dbotu3_enable == 'true' %}
                             <li><a href="#asv-clustering">ASV clustering</a></li>
@@ -116,10 +118,7 @@
         </nav>
         <!-- Page Content  -->
     <div id="content">
-        <a class="link" target="_blank" href="https://github.com/ifremer-bioinformatics/samba" id="home" style="margin-left: -25px">
-            <img src="nfcore-samba_logo.png" style="width:600px">
-        </a>
-        <p class="subtitle">Standardized and Automated MetaBarcoding Analyses workflow</p>
+        <p class="subtitle">SAMBA: Standardized and Automated MetaBarcoding Analyses workflow</p>
         <hr class="title">
         <br>
         <h1 id="description">Description of the workflow</h1>
@@ -257,6 +256,7 @@
         <p align="center"> <img src="./import_output/demultiplex-summary.png" style="width:40%"></p>
         <ul style="margin: 0 ; padding: 1 ;"><li>All descriptive statistics of your samples are available <a class="link" target="_blank" href="./import_output/overview.html">here</a> (html output)</li></ul>
         <br>
+        {% if d.steps.cutadapt_enable == 'true' %}
         <h3 id="primers-removal">Primers removal</h3>
         <br>
         <div style="text-align: justify">
@@ -295,6 +295,7 @@
             <li>The quality of your data before any quality filtering step is viewable <a class="link" target="_blank" href="./trimmed_output/quality-plot.html">here</a> (html output)</li>
         </ul>
         <br>
+        {% endif %}
         <!--  -->
         <!-- Sequence quality control and feature table construction -->
         <!--  -->
@@ -407,7 +408,7 @@
         <br>
         <ul style="margin: 0 ; padding: 1 ;text-align: justify">
             <li>The result of the taxonomic affiliation is available in <a class="link" target="_blank" href="./taxo_output/index.html">html</a> and
-                <a class="link" target="_blank" href="./taxo_output/ASV_taxonomy.tsv">tabulated</a> formats</li>
+                <a class="link" target="_blank" href="./ASV_taxonomy.tsv">tabulated</a> formats</li>
         </ul>
         {% else  %}
         <div style="text-align: justify">
@@ -503,7 +504,7 @@
             This optional step allows you to predic the functional potential of the communities using PICRUSt2
         </div>
         <br>
-        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined microDecon parameters</a>
+        <i class="fas fa-terminal" style="margin-left: 20px; color: #3e3e3e"></i><a style="color: #3e3e3e; font-weight: bold"> User-defined PICRUSt2 parameters</a>
         <ul style="margin: 0 ; padding: 1 ;">
             <li class="cmdline">HSP method: <span class="highlight">{{d.picrust2.method}}</span></li>
             <li class="cmdline">Max nsti: <span class="highlight">{{d.picrust2.nsti}}</span></li>

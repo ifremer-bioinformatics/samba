@@ -8,37 +8,61 @@ args=("$@")
 asv_table=${args[0]}
 asv_tax=${args[1]}
 tax_to_exclude=${args[2]}
-filtered_table=${args[3]}
-asv_seq=${args[4]}
-filtered_seq=${args[5]}
-filtered_table_qzv=${args[6]}
-metadata=${args[7]}
-filtered_tax_output=${args[8]}
-filtered_seq_qzv=${args[9]}
-asv_taxo_tsv=${args[10]}
-final_filtered_table_biom=${args[11]}
-final_filtered_table_tsv=${args[12]}
-logcmd=${args[13]}
+tax_to_include=${args[3]}
+filtered_table=${args[4]}
+asv_seq=${args[5]}
+filtered_seq=${args[6]}
+filtered_table_qzv=${args[7]}
+metadata=${args[8]}
+filtered_tax_output=${args[9]}
+filtered_seq_qzv=${args[10]}
+asv_taxo_tsv=${args[11]}
+final_filtered_table_biom=${args[12]}
+final_filtered_table_tsv=${args[13]}
+logcmd=${args[14]}
 
-#Filtering ASV table based on taxonomy
-cmd="qiime taxa filter-table \
-  --i-table $asv_table \
-  --i-taxonomy $asv_tax \
-  --p-exclude $tax_to_exclude \
-  --o-filtered-table $filtered_table"
-echo $cmd >> $logcmd
-eval $cmd
-if [ ! $? -eq 0 ]; then exit 1; fi
+if [ "${tax_to_exclude}" != *"none"* ]
+then
+    #Filtering ASV table based on taxonomy
+    cmd="qiime taxa filter-table \
+      --i-table $asv_table \
+      --i-taxonomy $asv_tax \
+      --p-exclude $tax_to_exclude \
+      --o-filtered-table $filtered_table"
+    echo $cmd >> $logcmd
+    eval $cmd
+    if [ ! $? -eq 0 ]; then exit 1; fi
+    
+    #Filtering ASV sequences based on taxonomy
+    cmd="qiime taxa filter-seqs \
+      --i-sequences $asv_seq \
+      --i-taxonomy $asv_tax \
+      --p-exclude $tax_to_exclude \
+      --o-filtered-sequences $filtered_seq"
+    echo $cmd >> $logcmd
+    eval $cmd
+    if [ ! $? -eq 0 ]; then exit 1; fi
+else
+    #Filtering ASV table based on taxonomy
+    cmd="qiime taxa filter-table \
+      --i-table $asv_table \
+      --i-taxonomy $asv_tax \
+      --p-include $tax_to_include \
+      --o-filtered-table $filtered_table"
+    echo $cmd >> $logcmd
+    eval $cmd
+    if [ ! $? -eq 0 ]; then exit 1; fi
 
-#Filtering ASV sequences based on taxonomy
-cmd="qiime taxa filter-seqs \
-  --i-sequences $asv_seq \
-  --i-taxonomy $asv_tax \
-  --p-exclude $tax_to_exclude \
-  --o-filtered-sequences $filtered_seq"
-echo $cmd >> $logcmd
-eval $cmd
-if [ ! $? -eq 0 ]; then exit 1; fi
+    #Filtering ASV sequences based on taxonomy
+    cmd="qiime taxa filter-seqs \
+      --i-sequences $asv_seq \
+      --i-taxonomy $asv_tax \
+      --p-include $tax_to_include \
+      --o-filtered-sequences $filtered_seq"
+    echo $cmd >> $logcmd
+    eval $cmd
+    if [ ! $? -eq 0 ]; then exit 1; fi
+fi
 
 #Export data
 cmd="qiime feature-table summarize \

@@ -60,8 +60,8 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
     theme(legend.title = element_blank()) +
     theme(axis.text = element_text(colour = "black", size = 10)) +
     labs(caption = paste("Stress:",pred_nmds_stress,
-                         "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
-                         paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
+                         "\nPERMANOVA statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
+                         paste("\nPERMANOVA based on ", criteria,": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
   ggsave(filename=paste(name,pred_plot,".svg",sep=""), device="svg", width = 12, height = 10)
   ggsave(filename=paste(name,pred_plot,".png",sep=""), device="png", width = 12, height = 10)
 
@@ -75,8 +75,8 @@ functional_predictions <- function(pred,metadata,criteria,pred_plot,name,microDe
     theme(plot.background = element_rect(fill="#fafafa")) +
     theme(axis.text = element_text(colour = "black", size = 10)) +
     labs(caption = paste("Stress:",pred_nmds_stress,
-                       "\nAdonis statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
-                       paste("\nAdonis based on ", "transect_name",": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
+                       "\nPERMANOVA statistic R:",round(pred_adonis$aov.tab$R2[1]*100,2),
+                       paste("\nPERMANOVA based on ", criteria,": p-value"),pred_adonis$aov.tab$`Pr(>F)`[1],sep=" "))
 
   plotly_nmds = ggplotly(plot_pred_nmds) %>% partial_bundle(local=FALSE) %>% layout(autosize=F,margin=list(r=0,l=0,t=0,b=0,pad=0),legend=list(bgcolor="#fafafa"),paper_bgcolor="#fafafa")
   for (i in c(1:length(plotly_nmds$x$data))) {

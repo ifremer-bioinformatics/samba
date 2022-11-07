@@ -1,6 +1,6 @@
 # **SAMBA: Standardized and Automated MetaBarcoding Analyses workflow**.
 
-[![SAMBA version](https://img.shields.io/badge/samba%20version-v3.0.0-red?labelColor=000000)](https://www.nextflow.io/)
+[![SAMBA version](https://img.shields.io/badge/samba%20version-v3.0.2-red?labelColor=000000)](https://www.nextflow.io/)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![Run with with conda](https://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![Run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -9,7 +9,9 @@
 
 ## Introduction
 
-The pipeline is built using [Nextflow](https://www.nextflow.io) and [nf-core best practices](https://nf-co.re/developers/guidelines), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
+SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-art bioinformatics and statistical methods to conduct reproducible eDNA analyses using [Nextflow](https://www.nextflow.io). SAMBA starts processing by verifying integrity of raw reads and metadata. Then all bioinformatics processing is done using commonly used procedure ([QIIME 2](https://qiime2.org/) and [DADA2](https://docs.qiime2.org/2019.10/plugins/available/dada2/)) but adds new steps relying on [dbOTU3](https://github.com/swo/dbotu3) and [microDecon](https://github.com/donaldtmcknight/microDecon) to build high quality ASV count tables. Extended statistical analyses are also performed. Finally, SAMBA produces a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures.
+
+The SAMBA pipeline can run tasks across multiple compute infrastructures in a very portable manner. It comes with singularity containers making installation trivial and results highly reproducible.
 
 ## Quick Start
 
@@ -53,7 +55,7 @@ The samba workflow comes with documentation about the pipeline, found in the `do
 
 Here is an overview of the many steps available in samba pipeline:
 
-![SAMBA Workflow](./docs/images/samba-v2.0.0.png)
+![SAMBA Workflow](./docs/images/samba-v3.0.png)
 
 At the end of samba pipeline execution, you get an interactive HTML report that's look like this one:
 

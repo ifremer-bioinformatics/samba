@@ -1,17 +1,15 @@
-# samba: Changelog
+# SAMBA: Changelog
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+## v4.0.0 - November 2022
 
-## v3.0.0 - January 2021
-
-This release integrates the analysis of long reads data. The pipeline has also been incremented with new steps to provide a multitude of options to users (interactive figures, taxonomic filter, ...)
+This release includes the transition to DSL2 of the SAMBA workflow. The pipeline has also been incremented with new statistical and ecological analyses as well as simplified management of input data through the use of an EXCEL file.
 
 ### `Added`
 
-* Long read processing
-* Filter based on taxonomic assignation
-* Automated unwanted sample removal
+* EXCEL file as input with a template available
+* Management of data with forward and reverse barcodes (e.g. ATCTTC+GACCTA)
+* Update of PICRUSt2 analyses
+* Reformatting of statistical processes with addition of new analyses
 
 ### `Fixed`
 

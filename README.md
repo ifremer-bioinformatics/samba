@@ -1,15 +1,20 @@
 # **SAMBA: Standardized and Automated MetaBarcoding Analyses workflow**.
 
-[![SAMBA version](https://img.shields.io/badge/samba%20version-v3.0.2-red?labelColor=000000)](https://www.nextflow.io/)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
-[![Run with with conda](https://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
-[![Run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![SAMBA version](https://img.shields.io/badge/samba%20version-v4.0.0-red?labelColor=000000)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A522.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![Run with with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![SeBiMER Docker](https://img.shields.io/badge/docker%20build-SeBiMER-yellow?labelColor=000000)](https://hub.docker.com/u/sebimer)
+[![Developers](https://img.shields.io/badge/Developers-SeBiMER-yellow?labelColor=000000)](https://ifremer-bioinformatics.github.io/)
 
 ## Introduction
 
-SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-art bioinformatics and statistical methods to conduct reproducible eDNA analyses using [Nextflow](https://www.nextflow.io). SAMBA starts processing by verifying integrity of raw reads and metadata. Then all bioinformatics processing is done using commonly used procedure ([QIIME 2](https://qiime2.org/) and [DADA2](https://docs.qiime2.org/2019.10/plugins/available/dada2/)) but adds new steps relying on [dbOTU3](https://github.com/swo/dbotu3) and [microDecon](https://github.com/donaldtmcknight/microDecon) to build high quality ASV count tables. Extended statistical analyses are also performed. Finally, SAMBA produces a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures.
+SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-art bioinformatics and statistical methods to conduct reproducible eDNA analyses using [Nextflow](https://www.nextflow.io) (Di Tommaso *et al.*, 2017). SAMBA performs complete metabarcoding analysis by :
+- verifying integrity of raw reads and metadata
+- processing data using commonly used procedure with [QIIME 2](https://qiime2.org/) (version 2022.08 ; Bolyen *et al.*, 2019) and [DADA2](https://docs.qiime2.org/2022.8/plugins/available/dada2/?highlight=dada2) (Callahan *et al.*, 2016)
+- adding new steps to build high quality ASV count tables relying on [dbOTU3](https://github.com/swo/dbotu3) (Olesen *et al.*, 2017) and [microDecon](https://github.com/donaldtmcknight/microDecon) (McKnight *et al.*, 2019)
+- conducting extended statistical and ecological analyses using homemade Rscript
+- producing a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures
+
+Optional processes can also be performed through SAMBA such as analysis of compositions of microbiomes using [ANCOM-BC](https://bioconductor.org/packages/devel/bioc/vignettes/ANCOMBC/inst/doc/ANCOMBC.html) (Lin & Peddada, 2020) and functional prediction analysis using [PICRUSt2](https://github.com/picrust/picrust2) (Douglas *et al.*, 2020). 
 
 The SAMBA pipeline can run tasks across multiple compute infrastructures in a very portable manner. It comes with singularity containers making installation trivial and results highly reproducible.
 
@@ -17,26 +22,26 @@ The SAMBA pipeline can run tasks across multiple compute infrastructures in a ve
 
 i. Install [`nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
-ii. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html) as a last resort)
+ii. Install [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility
 
 iii. Download the pipeline and test it on a minimal dataset with a single command
 
 * for short reads test :
 ```bash
-nextflow run main.nf -profile shortreadstest,<docker/singularity/conda>
+nextflow run main.nf -profile shortreadstest,singularity
 ```
 
 * for long reads test :
 ```bash
-nextflow run main.nf -profile longreadstest,<docker/singularity/conda>
+nextflow run main.nf -profile longreadstest,singularity
 ```
 
-> To use samba on a computing cluster, it is necessary to provide a configuration file for your system. For some institutes, this one already exists and is referenced on [nf-core/configs](https://github.com/nf-core/configs#documentation). If so, you can simply download your institute custom config file and simply use `-c <institute_config_file>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
+> To use samba on a computing cluster, it is necessary to provide a configuration file for your system. For some institutes, this one already exists and is referenced on [nf-core/configs](https://github.com/nf-core/configs#documentation). If so, you can simply download your institute custom config file and simply use `-c <institute_config_file>` in your command. This will enable `singularity` and set the appropriate execution settings for your local compute environment.
 
 iv. Start running your own analysis!
 
 ```bash
-nextflow run main.nf -profile <docker/singularity/conda>,custom [-c <institute_config_file>]
+nextflow run main.nf -profile singularity,custom [-c <institute_config_file>]
 ```
 
 See [usage docs](docs/usage.md) for a complete description of all of the options available when running the pipeline.
@@ -86,6 +91,6 @@ For further information or help, don't hesitate to get in touch with the samba d
 
 ### References 
 
-References databases (SILVA v132, PR2, UNITE) are available on IFREMER FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10).
+<!-- References databases (SILVA v132, PR2, UNITE) are available on IFREMER FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10).  -->
 
 Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils), [associated publication](https://msystems.asm.org/content/2/3/e00195-16).

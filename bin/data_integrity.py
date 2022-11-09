@@ -4,7 +4,6 @@ from __future__ import print_function
 import re
 import os
 import gzip
-# import subprocess
 import multiprocessing as mp
 from Bio import SeqIO
 from loguru import logger
@@ -25,7 +24,6 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('--thread', '-t', type=click.IntRange(1, max=None), default=4,
               help='Number of threads [4]')
 def main(manifest, metadata, primer, control, seqtype, thread):
-
     extract_metadata = {}
     extract_manifest = {}
 
@@ -50,28 +48,13 @@ def main(manifest, metadata, primer, control, seqtype, thread):
     merged_data = check_fastq_threading(merged_data, thread, seqtype)
     merged_data = convert_check_fastq_threading(merged_data)
     write_report(merged_data, seqtype)
+    integrity_validation(merged_data, control, seqtype, primer)
 
-    cutadapt_overlap = get_primer_overlap(extract_metadata, seqtype)
-
+    logger.info(f'Export q2_manifest and q2_metadata')
+    metadata_vars_names = get_vars_names_from_metadata(metadata, seqtype)
+    write_sorted_manifest_and_metadata(merged_data, metadata_vars_names, seqtype)
+    export_primer_overlap(extract_metadata, seqtype)
     logger.info('Done')
-
-
-    #
-    # logger.info(f"Validation of data")
-    # integrity_validation(integrity_data, control, seqtype, primer)
-    #
-    # logger.info(f"Sort manifest and metadata by sample id")
-    # logger.info(f"sort manifest")
-    # sorted_manifest = manifest + ".sort"
-    # sort_process(manifest, sorted_manifest)
-    # logger.info(f"Sort metadata...")
-    # sorted_metadata = metadata + ".sort"
-    # sort_process(metadata, sorted_metadata)
-    #
-    # logger.info(f"Save Cutadapt overlap size")
-    # cutovl = open('cutovlsize', 'w')
-    # cutovl.write(str(cutadapt_overlap))
-    # cutovl.close()
 
 
 def import_metadata(metadata_file, seqtype, extract_metadata):
@@ -85,9 +68,11 @@ def import_metadata(metadata_file, seqtype, extract_metadata):
                 extract_metadata[sampleid]['primerF'] = re.split(r'\t', line.rstrip('\n'))[2].strip(' ')
                 if seqtype == 'paired':
                     extract_metadata[sampleid]['primerR'] = re.split(r'\t', line.rstrip('\n'))[3].strip(' ')
-                    extract_metadata[sampleid]['vars'] = [x.strip(' ') for x in map(str, re.split(r'\t', line.rstrip('\n'))[4:])]
+                    extract_metadata[sampleid]['vars'] = [x.strip(' ') for x in
+                                                          map(str, re.split(r'\t', line.rstrip('\n'))[4:])]
                 else:
-                    extract_metadata[sampleid]['vars'] = [x.strip(' ') for x in map(str, re.split(r'\t', line.rstrip('\n'))[3:])]
+                    extract_metadata[sampleid]['vars'] = [x.strip(' ') for x in
+                                                          map(str, re.split(r'\t', line.rstrip('\n'))[3:])]
         logger.success('Successfully import q2_metadata')
         return extract_metadata
     except Exception as e:
@@ -136,20 +121,23 @@ def check_primer_sequence_uniq(extract_metadata, seqtype):
     logger.success('No multiple primers in q2_metadata')
 
 
-def get_primer_overlap(extract_metadata, seqtype):
-    logger.info(f'Calculate cutadapt overlap')
+def export_primer_overlap(extract_metadata, seqtype):
+    logger.info(f'Calculate and export cutadapt overlap')
     cutadapt_overlap = None
     for sample in extract_metadata:
         primers_lgth = [extract_metadata[sample]['primerF']]
         if seqtype == 'paired':
             primers_lgth = [extract_metadata[sample]['primerF'], extract_metadata[sample]['primerR']]
         cutadapt_overlap = len(min(primers_lgth, key=len)) - 1
-    logger.success(f'Cutadpat overlap: {cutadapt_overlap}')
-    return cutadapt_overlap
+    cutovl = open('cutovlsize', 'w')
+    cutovl.write(str(cutadapt_overlap))
+    cutovl.close()
+    logger.info(f'Cutadpat overlap: {cutadapt_overlap}')
+    logger.success(f'Successfully exported cutadapt overlap')
 
 
 def import_manifest(manifest_file, seqtype, extract_manifest):
-    logger.info('Import q2_metadata')
+    logger.info('Import q2_manifest')
     try:
         for line in open(manifest_file, 'r'):
             if not line.startswith('sample-id'):
@@ -189,7 +177,7 @@ def check_manifest_fastq_path(extract_manifest, seqtype):
 
 
 def check_manifest_vs_metadata(manifest, metadata):
-    logger.info(f'Samples names and number consistency')
+    logger.info(f'Check samples names and number consistency')
     manifest_samples = set()
     metadata_samples = set()
     for k in manifest.keys():
@@ -217,10 +205,11 @@ def merge_manifest_and_metadata(manifest, metadata):
 
 
 def check_fastq_threading(merged_data, thread, seqtype):
-    logger.info("Check fastq integrity")
+    logger.info(f"Start extract fastq's information")
     pool = mp.Pool(thread)
     check_fastq_out = pool.starmap(check_fastq, [(merged_data, sample, seqtype) for sample in merged_data.keys()])
     pool.close()
+    logger.success(f"Successfully extracted information")
     return check_fastq_out
 
 
@@ -301,7 +290,8 @@ def write_report(integrity_data, data_type):
     tab = '\t'
     try:
         report = open('data_integrity.txt', 'w')
-        header_S = ['SampleID', 'Reads_R1', 'Barcode', 'Uniq_in_R1', 'Same_as_ref_R1', 'Uniq_sequencer_R1', 'PrimerF_in_R1',
+        header_S = ['SampleID', 'Reads_R1', 'Barcode', 'Uniq_in_R1', 'Same_as_ref_R1', 'Uniq_sequencer_R1',
+                    'PrimerF_in_R1',
                     'Perc_primerF_R1']
         header_P = ['SampleID', 'Reads_R1', 'Reads_R2', 'Barcode', 'Uniq_in_R1', 'Same_as_ref_R1', 'Uniq_in_R2',
                     'Same_as_ref_R2', 'Uniq_sequencer_R1', 'Uniq_sequencer_R2', 'PrimerF_in_R1', 'Perc_primerF_R1',
@@ -311,87 +301,110 @@ def write_report(integrity_data, data_type):
         else:
             report.write(f'{tab.join(header_S)}\n')
         for sample, val in integrity_data.items():
+            v = {**val}
             if data_type == 'paired':
                 report.write(
-                    sample + '\t' + '{reads_count_R1}\t{reads_count_R2}\t{barcode}\t{nb_barcode_R1}\t{barcode_seq_R1}\t{nb_barcode_R2}\t{barcode_seq_R2}\t{nb_instrument_R1}\t{nb_instrument_R2}\t{primer_R1}\t{perc_primer_R1}\t{primer_R2}\t{perc_primer_R2}\n'.format(
-                        **val))
+                    f"{sample}\t{v['reads_count_R1']}\t{v['reads_count_R2']}\t{v['barcode']}\t{v['nb_barcode_R1']}\t{v['barcode_seq_R1']}\t{v['nb_barcode_R2']}\t{v['barcode_seq_R2']}\t{v['nb_instrument_R1']}\t{v['nb_instrument_R2']}\t{v['primer_R1']}\t{v['perc_primer_R1']}\t{v['primer_R2']}\t{v['perc_primer_R2']}\n")
             else:
                 report.write(
-                    sample + '\t' + '{reads_count_R1}\t{barcode}\t{nb_barcode_R1}\t{barcode_seq_R1}\t{nb_instrument_R1}\t{primer_R1}\t{perc_primer_R1}\n'.format(
-                        **val))
-        logger.info(f"Successfully writing report")
+                    f"{sample}\t{v['reads_count_R1']}\t{v['barcode']}\t{v['nb_barcode_R1']}\t{v['barcode_seq_R1']}\t{v['nb_instrument_R1']}\t{v['primer_R1']}\t{v['perc_primer_R1']}\n")
+        logger.success(f"Successfully writing report")
     except Exception as e:
         logger.error(str(e))
         exit(1)
 
 
-# def integrity_validation(integrity_data, control_list, data_type, primer_threshold):
-#     # collect control(s)
-#     controls = [str(control) for control in control_list.split(',')]
-#     # let's check the integrity
-#     for sample_id, val in integrity_data.items():
-#         if data_type == 'paired':
-#             # 1 - check reads count R1 vs R2
-#             if val['reads_count_R1'] != val['reads_count_R2']:
-#                 eprint('ERROR: different number of reads between R1 and R2 for ' + sample_id)
-#                 exit(1)
-#             # 2 - check single sequencing instrument in reads
-#             if val['nb_instrument_R1'] != 1 or val['nb_instrument_R2'] != 1:
-#                 eprint('ERROR: multiple sequencing machines detected in ' + sample_id)
-#                 exit(1)
-#             # 3 - check primer percentage found, except for control(s)
-#             if not sample_id in controls:
-#                 if val['perc_primer_R1'] < primer_threshold or val['perc_primer_R2'] < primer_threshold:
-#                     eprint('ERROR: ' + sample_id + " did not reach the minimum threshold for primer percentage [" + str(
-#                         primer_threshold) + "%]")
-#                     exit(1)
-#         else:
-#             # 1 - check single sequencing instrument in reads
-#             if val['nb_instrument_R1'] != 1:
-#                 eprint('ERROR: multiple sequencing machines detected in ' + sample_id)
-#                 exit(1)
-#             # 2 - check primer percentage found, except for control(s)
-#             if not sample_id in controls:
-#                 if val['perc_primer_R1'] < primer_threshold:
-#                     eprint('ERROR: ' + sample_id + " did not reach the minimum threshold for primer percentage [" + str(
-#                         primer_threshold) + "%]")
-#                     exit(1)
+def integrity_validation(integrity_data, control_list, data_type, primer_threshold):
+    logger.info(f'Start fastq checklist from extracted information')
+    controls = [str(control) for control in control_list.split(',')]
+
+    for sample, reads in integrity_data.items():
+        if data_type == 'paired':
+            R1_counts = reads['reads_count_R1']
+            R2_counts = reads['reads_count_R2']
+            paired_end_validation_pairing(R1_counts, R2_counts, sample)
+
+            instrument_R1 = reads['nb_instrument_R1']
+            instrument_R2 = reads['nb_instrument_R2']
+            paired_end_validation_instrument(instrument_R1, instrument_R2, sample)
+
+            perc_primer_R1 = reads['perc_primer_R1']
+            perc_primer_R2 = reads['perc_primer_R2']
+            if sample not in controls:
+                paired_end_validation_primer_threshold(sample, primer_threshold, perc_primer_R1, perc_primer_R2)
+
+        else:
+            instrument_R1 = reads['nb_instrument_R1']
+            single_end_validation_instrument(instrument_R1, sample)
+
+            perc_primer_R1 = reads['perc_primer_R1']
+            if sample not in controls:
+                if reads['perc_primer_R1'] < primer_threshold:
+                    single_end_validation_primer_threshold(sample, primer_threshold, perc_primer_R1)
+    logger.success(f'Successfully check each fastq')
 
 
-# def sort_process(input_file, output_file):
-#     cmd_sort = '(head -n 1 {in_file} && tail -n +2 {in_file} | sort) > {out_file}'.format(in_file=input_file,
-#                                                                                           out_file=output_file)
-#     p = subprocess.Popen(cmd_sort, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-#     stdout, stderr = p.communicate()
-#     if p.returncode != 0:
-#         eprint('ERROR: sort metadata/manifest failed')
-#         raise Exception(stderr)
-#         exit(1)
+def paired_end_validation_pairing(R1_counts, R2_counts, sample):
+    if R1_counts != R2_counts:
+        logger.error(f'R1 and R2 not properly paired for {sample}')
+        exit(1)
 
 
-# def write_qiime_input(samba_samples, metadata_header, single=False):
-#     manifest = open('q2_manifest.sort', 'w')
-#     metadata = open('q2_metadata.sort', 'w')
-#     # write header
-#     p_manifest = ['sample-id', 'forward-absolute-filepath', 'reverse-absolute-filepath']
-#     s_manifest = ['sample-id', 'absolute-filepath']
-#     p_metadata = ['sampleid', 'barcode', 'PrimerF', 'PrimerR']
-#     s_metadata = ['sampleid', 'barcode', 'PrimerF']
-#     if single:
-#         manifest.write('\t'.join(s_manifest) + '\n')
-#         metadata.write('\t'.join(s_metadata) + '\t' + '\t'.join(metadata_header) + '\n')
-#     else:
-#         manifest.write('\t'.join(p_manifest) + '\n')
-#         metadata.write('\t'.join(p_metadata) + '\t' + '\t'.join(metadata_header) + '\n')
-#     # write core file
-#     for sample, values in samba_samples.items():
-#         manifest.write(sample + '\t' + values['R1'] + '\t' + values['R2'] + '\n')
-#         metadata.write(
-#             sample + '\t' + values['barcode'] + '\t' + values['primerF'] + '\t' + values['primerR'] + '\t' + '\t'.join(
-#                 map(str, values['vars'])) + '\n')
-#     # close
-#     manifest.close()
-#     metadata.close()
+def paired_end_validation_instrument(instrument_R1, instrument_R2, sample):
+    if instrument_R1 != 1 or instrument_R2 != 1:
+        logger.error(f'Multiple sequencing machines detected in {sample}')
+        exit(1)
+
+
+def paired_end_validation_primer_threshold(sample, primer_threshold, perc_primer_R1, perc_primer_R2):
+    if perc_primer_R1 < primer_threshold or perc_primer_R2 < primer_threshold:
+        logger.error(f'{sample} did not reach the minimum threshold for primer percentage [{primer_threshold}]')
+        exit(1)
+
+
+def single_end_validation_instrument(instrument_R1, sample):
+    if instrument_R1 != 1:
+        logger.error(f'Multiple sequencing machines detected in {sample}')
+        exit(1)
+
+
+def single_end_validation_primer_threshold(sample, primer_threshold, perc_primer_R1):
+    if perc_primer_R1 < primer_threshold:
+        logger.error(f'{sample} did not reach the minimum threshold for primer percentage [{primer_threshold}]')
+        exit(1)
+
+
+def get_vars_names_from_metadata(metadata, seqtype):
+    with open(metadata) as f:
+        fl = f.readline()
+    if seqtype == 'paired':
+        metadata_vars = [x.strip(' ') for x in map(str, re.split(r'\t', fl.rstrip('\n'))[4:])]
+    else:
+        metadata_vars = [x.strip(' ') for x in map(str, re.split(r'\t', fl.rstrip('\n'))[3:])]
+    return metadata_vars
+
+
+def write_sorted_manifest_and_metadata(merged_data, metadata_vars, seqtype):
+    logger.info(f'Start writting q2_manifest and q2_metadata')
+    manifest = open('q2_manifest.sort.tsv', 'w')
+    metadata = open('q2_metadata.sort.tsv', 'w')
+    p_manifest = ['sample-id', 'forward-absolute-filepath', 'reverse-absolute-filepath']
+    s_manifest = ['sample-id', 'absolute-filepath']
+    p_metadata = ['sampleid', 'barcode', 'PrimerF', 'PrimerR']
+    s_metadata = ['sampleid', 'barcode', 'PrimerF']
+    tab = '\t'
+    if seqtype == 'single':
+        manifest.write(f"{tab.join(s_manifest)}\n")
+        metadata.write(f"{tab.join(s_metadata)}\t{tab.join(metadata_vars)}\n")
+    else:
+        manifest.write(f"{tab.join(p_manifest)}\n")
+        metadata.write(f"{tab.join(p_metadata)}\t{tab.join(metadata_vars)}\n")
+    for sample, values in merged_data.items():
+        manifest.write(f"{sample}\t{values['R1']}\t{values['R2']}\n")
+        metadata.write(f"{sample}\t{values['barcode']}\t{values['primerF']}\t{values['primerR']}\t{tab.join(map(str, values['vars']))}\n")
+    manifest.close()
+    metadata.close()
+    logger.success(f'Successfully exported q2_manifest and q2_metadata')
 
 
 if __name__ == '__main__':

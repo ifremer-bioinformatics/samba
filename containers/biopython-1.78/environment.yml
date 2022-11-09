@@ -6,4 +6,6 @@ channels:
 dependencies:
   - biopython=1.78
   - pysam=0.16.0.1
-  - xlrd=1.2.0
+  - xlrd=2.0.1
+  - loguru=0.6.0
+  - rich-click=1.5.2

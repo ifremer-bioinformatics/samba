@@ -7,3 +7,4 @@ runSAMBA_test.o*
 results
 work
 .idea/
+containers/*.img

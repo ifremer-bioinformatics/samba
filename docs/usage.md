@@ -10,6 +10,7 @@
   * [Reproducibility](#reproducibility)
 * [Main arguments](#main-arguments)
 * [Mandatory arguments](#mandatory-arguments)
+  * [`--excel_sample_file`](#--excel_sample_file)
   * [`--input_metadata`](#--input_metadata)
   * [`--input_manifest`](#--input_manifest)
   * [`-profile`](#-profile)
@@ -168,11 +169,11 @@ git pull
 
 It's a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [samba releases page](https://github.com/ifremer-bioinformatics/samba/releases) and find the latest version number (eg. `v3.0.0`). Then, you can configure your local samba installation to use your desired version as follows:
+First, go to the [samba releases page](https://github.com/ifremer-bioinformatics/samba/releases) and find the latest version number (eg. `v3.1.0`). Then, you can configure your local samba installation to use your desired version as follows:
 
 ```bash
 cd samba
-git checkout v3.0.0
+git checkout v3.1.0
 ```
 
 ## Mandatory arguments
@@ -203,6 +204,12 @@ Profiles are also available to configure the samba workflow and can be combined 
   * Includes training dataset so needs no other parameters
 * `custom`
   * A profile to complete according to your dataset and experiment
+
+### `--excel_sample_file`
+
+Path to a XSL file containing a sheet with samples reads files paths (like the manifest file) and an other sheet with samples metadata (tsv format) (like the metadata file).
+
+/!\ **OR** /!\
 
 ### `--input_metadata`
 

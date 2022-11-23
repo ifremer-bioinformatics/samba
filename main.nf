@@ -21,8 +21,11 @@ def helpMessage() {
 	nextflow run main.nf -profile <docker,singularity,conda>,custom
 
 	Mandatory arguments:
+	--excel_sample_file [file]	Path to XLS input file containing two sheets named "manifest" and "metadata".
+	or
 	--input_metadata [file]		Path to input file with project samples metadata (csv format).
 	--input_manifest [file]		Path to input file with samples reads files paths (csv format).
+	
 	-profile [str]			Configuration profile to use. Can use multiple (comma separated).
 					Available: conda, docker, singularity, test, custom.
 	Generic:
@@ -165,6 +168,11 @@ if (workflow.profile.contains('longreadstest')) {
 if (workflow.profile.contains('custom')) {
    customparamsfile = file("$baseDir/conf/custom.config", checkIfExists: true)
    customparamsfile.copyTo("$params.outdir/conf/custom.config")
+}
+
+// If XLS is used as input file
+if (!params.excel_sample_file.isEmpty()) {
+   excel_sample_file_ch = Channel.fromPath(params.excel_sample_file, checkIfExists:true)
 }
 
 //If only running the stats processes of the pipeline
@@ -345,8 +353,12 @@ def summary = [:]
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
 summary['Project Name']     = params.projectName
+if (!params.excel_sample_file.isEmpty()) {
+summary['Sample File'] = params.excel_sample_file
+} else {
 summary['Manifest File']    = params.input_manifest
 summary['Metadata File']    = params.input_metadata
+}
 summary['Data Type']        = params.singleEnd ? 'Single-End' : 'Paired-End'
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine"
 summary['Output dir']       = params.outdir
@@ -406,7 +418,7 @@ if (workflow.profile.contains('test')) {
    process get_test_data {
       label 'internet_access'
       output :
-         file 'data_is_ready' into ready_integrity, ready_import, ready_lr
+         file 'data_is_ready' into ready_excel2tsv, ready_integrity, ready_import, ready_lr
          file 'manifest' into testmanifest
          file 'metadata' into testmetadata
        when :
@@ -429,9 +441,9 @@ if (workflow.profile.contains('test')) {
   
 } else {
    data_ready = Channel.value("none")
-   data_ready.into { ready_integrity ; ready_import ; ready_lr}
+   data_ready.into { ready_excel2tsv ; ready_integrity ; ready_import ; ready_lr}
 
-   if (!params.stats_only || !params.dada2merge) {
+   if (params.excel_sample_file.isEmpty() || !params.stats_only || !params.dada2merge) {
       // Check if input metadata file exits
       if (!params.input_metadata || params.input_metadata.isEmpty()) {
          log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
@@ -456,6 +468,39 @@ if (workflow.profile.contains('test')) {
  * STEP 1 - Checking data integrity
  */
 if (!params.longreads) {
+    if (!params.excel_sample_file.isEmpty()) {
+        /* Format Excel file to tsv */
+        process excel2tsv {
+
+            label 'biopython_env'
+
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'q2_manifest.sort.tsv'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'q2_metadata.sort.tsv'
+            publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'excel2tsv.log'
+
+                input :
+                        file xls from excel_sample_file_ch
+                        file ready from ready_excel2tsv
+
+                output :
+                        file "q2_metadata.sort.tsv" into metadata_xls
+                        file "q2_manifest.sort.tsv" into manifest_xls
+                        file "excel2tsv.log"
+
+                when :
+                        !params.stats_only && !params.dada2merge
+
+                script :
+                def datatype = params.singleEnd ? "single" : "paired"
+                """
+                excel2tsv.py -x ${xls} -s ${datatype} &> excel2tsv.log 2>&1
+                """
+        }
+    }
+
+    integrity_manifest = params.excel_sample_file.isEmpty() ? manifest4integrity : manifest_xls
+    integrity_metadata = params.excel_sample_file.isEmpty() ? metadata4integrity : metadata_xls
+
     if (params.data_integrity_enable) {
         /* Check data integrity */
         process data_integrity {
@@ -468,21 +513,21 @@ if (!params.longreads) {
         	publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '*.sort'
     
         	input :
-        		file manifest from manifest4integrity
-        		file metadata from metadata4integrity
+        		file manifest from integrity_manifest
+        		file metadata from integrity_metadata
                         file ready from ready_integrity
     
         	output :
         		file 'data_integrity.txt'
-        		file "${metadata}.sort" into metadata_sort
-        		file "${manifest}.sort" into manifest_sort
+        		file "q2_metadata.sort.tsv" into metadata_sort
+        		file "q2_manifest.sort.tsv" into manifest_sort
     
         	when :
         		params.data_integrity_enable && !params.stats_only && !params.dada2merge
         	script :
         	def datatype = params.singleEnd ? "single" : "paired"
         	"""
-                data_integrity.py -e ${metadata} -a ${manifest} -p ${params.primer_filter} -r ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
+                data_integrity.py -e ${metadata} -a ${manifest} -p ${params.primer_filter} -s ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
                 """
         }
         metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }

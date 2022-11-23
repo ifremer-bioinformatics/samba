@@ -1,7 +1,14 @@
 # samba: Quickstart guide
 
 ## Input file requirements
-### 1 - Manifest file
+
+Input data for SAMBA can be provided in two different formats: either a **single XLS file** (EXCEL 97-2004) with two sheets named "manifest" and "metadata" or **2 tsv files**.
+
+### 1 - The XLS sample file
+
+The XLS file must contains two sheets named "manifest" and "metadata". The two sheets must be formatted as describe below for the two TSV files.
+ 
+### 2 - Manifest file
 
 The manifest file give the full path to input file(s) (FASTQ) for each sample (tsv format -> field separator = tabulation). It's consists of 2 (single-end) or 3 columns (paired-end).  The first line (header) of manifest file must follow the Qiime2 requirements.
 
@@ -40,7 +47,7 @@ Intrument name    Run id  Flowcell id   Lane   Tile  Coordinate (x:y)
                                                       Pair   Filter   Index seq.
 ```
 
-### 2 - Metadata file
+### 3 - Metadata file
 The metadata file give information about your sequencing parameters (barcode and primers) and biological/environment/etc conditions. The number of descriptive fields is unlimited. As for manifest file, metadata is in tsv format and the header must follow the Qiime2 requirements.
 
 Here, an example for paired-end data:

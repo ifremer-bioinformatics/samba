@@ -90,7 +90,8 @@ For further information or help, don't hesitate to get in touch with the samba d
 <!-- If you use  samba for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 ### References 
+- Current singularity images are available on Ifremer FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/tools/SAMBA/v4](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/tools/SAMBA/v4)
 
 <!-- References databases (SILVA v132, PR2, UNITE) are available on IFREMER FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10).  -->
 
-Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils), [associated publication](https://msystems.asm.org/content/2/3/e00195-16).
+- Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils), [associated publication](https://msystems.asm.org/content/2/3/e00195-16).

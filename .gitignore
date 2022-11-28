@@ -1,8 +1,9 @@
 *.pbs
 *.log
 .nextflow*
-tax.databases.test
+tax.databases.test/
 training_dataset/
-runSAMBA_test.o*
+runSAMBA*.o*
 results
 work
+containers/*.img

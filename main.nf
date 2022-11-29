@@ -442,25 +442,27 @@ if (workflow.profile.contains('test')) {
 } else {
    data_ready = Channel.value("none")
    data_ready.into { ready_excel2tsv ; ready_integrity ; ready_import ; ready_lr}
-
-   if (params.excel_sample_file.isEmpty() || !params.stats_only || !params.dada2merge) {
-      // Check if input metadata file exits
-      if (!params.input_metadata || params.input_metadata.isEmpty()) {
-         log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
-         exit 1
+   
+   if (params.excel_sample_file.isEmpty()) { 
+      if (!params.stats_only || !params.dada2merge) {
+         // Check if input metadata file exits
+         if (!params.input_metadata || params.input_metadata.isEmpty()) {
+            log.error "Parameter --input_metadata cannot be null or empty. Set the path to the Metadata file."
+            exit 1
+         } else {
+            Channel.fromPath(params.input_metadata, checkIfExists:true)
+                   .into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+         }
+         if (!params.input_manifest || params.input_manifest.isEmpty()) {
+            log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
+            exit 1
+         } else {
+            Channel.fromPath(params.input_manifest, checkIfExists:true)
+                   .into { manifest ; manifest4integrity }
+         }
       } else {
-         Channel.fromPath(params.input_metadata, checkIfExists:true)
-                .into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4integrity ; metadata4picrust2 ; metadata4ancom }
+         Channel.empty().into { manifest ; manifest4integrity }
       }
-      if (!params.input_manifest || params.input_manifest.isEmpty()) {
-         log.error "Parameter --input_manifest cannot be null or empty. Set the path to the Manifest file."
-         exit 1
-      } else {
-         Channel.fromPath(params.input_manifest, checkIfExists:true)
-                .into { manifest ; manifest4integrity }
-      }
-   } else {
-      Channel.empty().into { manifest ; manifest4integrity }
    }
 }
 

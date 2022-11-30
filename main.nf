@@ -532,7 +532,7 @@ if (!params.longreads) {
                 data_integrity.py -e ${metadata} -a ${manifest} -p ${params.primer_filter} -s ${datatype} -t ${task.cpus} -c ${params.control_list} &> data_integrity.log 2>&1
                 """
         }
-        metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
+        metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
         manifest_sort.set { manifest }
     }
     

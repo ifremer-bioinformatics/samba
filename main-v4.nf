@@ -25,6 +25,8 @@ def helpMessage() {
 
 	Mandatory:
 	--excel_sample_file	[path]	Path to the XLS input file (EXCEL 97-2004) containing the manifest and metadata sheets.
+	--longreads		[bool]	Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
+	--singleEnd		[bool]	Set to true to specify that the inputs are single-end reads (default = false).
 
 	Other options:
 	--outdir [path]			The output directory where the results will be saved.
@@ -53,18 +55,18 @@ if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
 
 //Copy config files to output directory for each run
 base_params_file = file("${baseDir}/conf/base.config", checkIfExists: true)
-base_params_file.copyTo("${params.outdir}/00_pipeline_conf/base.config")
+base_params_file.copyTo("${params.outdir}/00_pipeline_config/base.config")
 if (workflow.profile.contains('custom')) {
     custom_params_file = file("${baseDir}/conf/custom.config", checkIfExists: true)
-    custom_params_file.copyTo("${params.outdir}/00_pipeline_conf/custom.config")
+    custom_params_file.copyTo("${params.outdir}/00_pipeline_config/custom.config")
 }
 if (workflow.profile.contains('shortreadstest')) {
     shortreadstest_params_file = file("${baseDir}/conf/shortreadstest.config", checkIfExists: true)
-    shortreadstest_params_file.copyTo("${params.outdir}/00_pipeline_conf/shortreadstest.config")
+    shortreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/shortreadstest.config")
 }
 if (workflow.profile.contains('longreadstest')) {
    longreadstest_params_file = file("${baseDir}/conf/longreadstest.config", checkIfExists: true)
-   longreadstest_params_file.copyTo("${params.outdir}/00_pipeline_conf/longreadstest.config")
+   longreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/longreadstest.config")
 }
 
 /*
@@ -82,12 +84,12 @@ summary['Launch dir'] = workflow.launchDir
 summary['Working dir'] = workflow.workDir
 summary['Output dir'] = params.outdir
 summary['Profile'] = workflow.profile
-if (workflow.profile.contains('custom')) {
-    summary['Data type'] = params.longreads ? 'Long reads' : 'Illumina short reads'
-}
+if (workflow.profile.contains('custom')) summary['Data type'] = params.longreads ? 'Long reads' : 'Illumina short reads'
+if (workflow.profile.contains('test')) summary['Data type'] = params.longreads ? 'Long reads test workflow' : 'Illumina short reads test workflow'
 summary['Sample Input Excel File'] = params.excel_sample_file
+if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
 
-log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
+log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
 
 // Check the hostnames against configured profiles
@@ -102,18 +104,34 @@ checkHostname()
  *  SET UP WORKFLOW CHANNELS
  */
 
+if (!workflow.profile.contains('test')) {
+    channel
+        .fromPath( params.excel_sample_file )
+        .ifEmpty { error "Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the custom.config file" }
+        .set { sample_file }
+}
 
 /*
  * IMPORTING MODULES
  */
 
 include { get_test_data } from './modules/get_test_data.nf'
+include { excel2tsv } from './modules/excel2tsv.nf'
+include { addpath_testdata } from './modules/excel2tsv.nf'
+include { data_integrity } from './modules/data_integrity.nf'
+include { import } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
  */
 
 workflow {
+
+    /*---------------------------------------*/
+    /*                                       */
+    /* General processes                     */
+    /*                                       */
+    /*---------------------------------------*/
 
     /* IF TEST WORKFLOW : Download raw data */
         if (workflow.profile.contains('test')) {
@@ -122,13 +140,34 @@ workflow {
             sample_file = get_test_data.out.xls
         } else {
             ready = channel.value('custom_workflow')
-            channel
-                .fromPath( params.excel_sample_file )
-                .ifEmpty { error "Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the custom.config file" }
-                .set { sample_file }
         }
 
     /* Convert Excel file */
+        excel2tsv(sample_file, ready)
+        if (workflow.profile.contains('test')) {
+            addpath_testdata(excel2tsv.out.manifest_xls)
+        }
+        manifest = workflow.profile.contains('test') ? addpath_testdata.out.manifest : excel2tsv.out.manifest_xls
+
+    /*---------------------------------------*/
+    /*                                       */
+    /* Illumina short reads analysis         */
+    /*                                       */
+    /*---------------------------------------*/
+
+    if (!params.longreads) {
+    
+        /* Verify data integrity */
+            if (params.data_integrity_enable && !params.stats_only && !params.dada2merge) {
+                data_integrity(manifest,excel2tsv.out.metadata_xls)
+            }
+
+        /* Import data in QIIME2 format */
+            if (!params.stats_only && !params.dada2merge) {
+                import(data_integrity.out.final_manifest)
+            }
+
+    }
 
 }
 
@@ -170,7 +209,7 @@ def SeBiMERHeader() {
     ${c_red}   \\   |_  |__) | |\\/| |_  |__)  ${c_reset}
     ${c_red}  __\\  |__ |__) | |  | |__ |  \\  ${c_reset}
                                             ${c_reset}
-    ${c_yellow}  SAMBA workflow (version ${workflow.manifest.version})${c_reset}
+    ${c_yellow}  SAMBA workflow (${workflow.manifest.version})${c_reset}
                                             ${c_reset}
     ${c_purple}  Homepage: ${workflow.manifest.homePage}${c_reset}
     ${c_blue}-------------------------------------------------------------------${c_reset}

@@ -6,4 +6,4 @@ training_dataset/
 runSAMBA*.o*
 results
 work
-containers/*.img
+containers/*.sif

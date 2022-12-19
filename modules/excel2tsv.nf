@@ -25,7 +25,7 @@ process excel2tsv {
 
 process addpath_testdata {
 
-    publishDir "${params.outdir}/${params.excel2tsv_dirname}", mode: 'copy', pattern: 'manifest.tsv'
+    publishDir "${params.outdir}/${params.excel2tsv_results}", mode: 'copy', pattern: 'manifest.tsv'
 
     input:
         path(manifest)

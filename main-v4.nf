@@ -119,7 +119,7 @@ include { get_test_data } from './modules/get_test_data.nf'
 include { excel2tsv } from './modules/excel2tsv.nf'
 include { addpath_testdata } from './modules/excel2tsv.nf'
 include { data_integrity } from './modules/data_integrity.nf'
-include { import } from './modules/qiime2.nf'
+include { import_data } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -164,7 +164,7 @@ workflow {
 
         /* Import data in QIIME2 format */
             if (!params.stats_only && !params.dada2merge) {
-                import(data_integrity.out.final_manifest)
+                import_data(data_integrity.out.final_manifest)
             }
 
     }

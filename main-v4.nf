@@ -40,10 +40,15 @@ def helpMessage() {
 	--primer_filter		[str]	Percentage of primers supposed to be found in raw reads (default = 70).
 
 	Cutadapt - primer removal:
-	--cutadapt_enable	[bool]	Primer removal process. Set to false to deactivate this step. (default = true)
+	--cutadapt_enable	[bool]	Primer removal process. Set to false to deactivate this step (default = true).
 	--primerF		[str]	Forward primer (to be used in Cutadapt cleaning step).
 	--primerR		[str]	Reverse primer (to be used in Cutadapt cleaning step).
 	--errorRate		[str]	Cutadapt error rate allowed to match primers (default = 0.1).
+
+	FIGARO - optimizing trimming parameters for DADA2:
+	--figaro_enable		[bool]	Process to identify optimal trimming parameters for DADA2. Set to false to deactivate this step (default = true).
+	--raw_data_dir		[path]	Path to raw data directory.
+	--amplicon_length	[str]	Length of expected amplicons.
 
 	""".stripIndent()
 }
@@ -100,6 +105,8 @@ if (workflow.profile.contains('custom')) summary['Data type'] = params.longreads
 if (workflow.profile.contains('test')) summary['Data type'] = params.longreads ? 'Long reads test workflow' : 'Illumina short reads test workflow'
 summary['Sample Input Excel File'] = params.excel_sample_file
 if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
+if (params.cutadapt_enable) summary['Cutadapt'] = "Primer removal process enabled"
+if (params.figaro_enable) summary['FIGARO'] = "Optimizing microbiome rRNA gene trimming parameters for DADA2 enabled"
 
 log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
@@ -121,6 +128,17 @@ if (!workflow.profile.contains('custom')) {
         }
     }
 
+    /* Verify FIGARO parameters */
+    if (params.figaro_enable) {
+        if(params.raw_data_dir.isEmpty()) {
+            log.error "ERROR: raw data directory has not been configured. Please check and configure the '--raw_data_dir' parameter in the custom.config file"
+            exit 1
+        }
+        if(params.amplicon_length.isEmpty()) {
+            log.error "ERROR: no expected amplicon size has been provided. Please check and configure the '--amplicon_length' parameter in the custom.config file"
+            exit 1
+        }
+    }
 }
 
 /*
@@ -130,7 +148,7 @@ if (!workflow.profile.contains('custom')) {
 if (!workflow.profile.contains('test')) {
     channel
         .fromPath( params.excel_sample_file )
-        .ifEmpty { error "Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the custom.config file" }
+        .ifEmpty { error "ERROR: Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the custom.config file" }
         .set { sample_file }
 }
 
@@ -144,6 +162,7 @@ include { addpath_testdata } from './modules/excel2tsv.nf'
 include { data_integrity } from './modules/data_integrity.nf'
 include { q2_import_data } from './modules/qiime2.nf'
 include { q2_cutadapt } from './modules/qiime2.nf'
+include { figaro } from './modules/figaro.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -196,6 +215,11 @@ workflow {
                 q2_cutadapt(q2_import_data.out.imported_data)
             }
     
+        /* OPTIONAL: Optimizing rRNA gene trimming parameters for DADA2 using FIGARO */
+            if (!params.stats_only && !params.dada2merge) {
+                figaro(ready)
+            }
+
     }
 
 }

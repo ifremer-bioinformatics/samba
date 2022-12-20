@@ -29,9 +29,21 @@ def helpMessage() {
 	--singleEnd		[bool]	Set to true to specify that the inputs are single-end reads (default = false).
 
 	Other options:
-	--outdir [path]			The output directory where the results will be saved.
-	-name [str]			Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
-	--projectName [str]		Name of the project.
+	--outdir		[path]	The output directory where the results will be saved.
+	-name 			[str]	Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+	--projectName		[str]	Name of the project.
+
+	@@ PROCESS OPTIONS @@
+
+	Data integrity:
+	--data_integrity_enable	[bool]	Data integrity checking step. Set to false to deactivate this step (default = true).
+	--primer_filter		[str]	Percentage of primers supposed to be found in raw reads (default = 70).
+
+	Cutadapt - primer removal:
+	--cutadapt_enable	[bool]	Primer removal process. Set to false to deactivate this step. (default = true)
+	--primerF		[str]	Forward primer (to be used in Cutadapt cleaning step).
+	--primerR		[str]	Reverse primer (to be used in Cutadapt cleaning step).
+	--errorRate		[str]	Cutadapt error rate allowed to match primers (default = 0.1).
 
 	""".stripIndent()
 }
@@ -99,6 +111,17 @@ checkHostname()
  * VERIFY WORKFLOW VARIABLES
  */
 
+if (!workflow.profile.contains('custom')) {
+
+    /* Verify Cutadapt parameters */
+    if (params.cutadapt_enable) {
+        if(params.primerF.isEmpty() || params.primerR.isEmpty()) {
+            log.error "ERROR: no primer sequences have been provided. Please check and configure the '--primerF' and '--primerR' parameters in the custom.config file"
+            exit 1
+        }
+    }
+
+}
 
 /*
  *  SET UP WORKFLOW CHANNELS
@@ -119,7 +142,8 @@ include { get_test_data } from './modules/get_test_data.nf'
 include { excel2tsv } from './modules/excel2tsv.nf'
 include { addpath_testdata } from './modules/excel2tsv.nf'
 include { data_integrity } from './modules/data_integrity.nf'
-include { import_data } from './modules/qiime2.nf'
+include { q2_import_data } from './modules/qiime2.nf'
+include { q2_cutadapt } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -164,9 +188,14 @@ workflow {
 
         /* Import data in QIIME2 format */
             if (!params.stats_only && !params.dada2merge) {
-                import_data(data_integrity.out.final_manifest)
+                q2_import_data(data_integrity.out.final_manifest)
             }
-
+        
+        /* OPTIONAL: Primer removal using Cutadapt */
+            if (!params.stats_only && !params.dada2merge) {
+                q2_cutadapt(q2_import_data.out.imported_data)
+            }
+    
     }
 
 }

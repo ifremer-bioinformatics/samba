@@ -31,7 +31,7 @@ if [ ! -d "${DATADIR}" ] || ([ -d "${DATADIR}" ] && [ ! "$(ls -A ${DATADIR})" ])
 then 
      mkdir -p ${DATADIR}
      wget -r -nc -l2 -nH --cut-dirs=9 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/excel_sample_file.xls -P ${DATADIR}
-     wget -r -nc -l2 -nH --cut-dirs=9 -A '_subsampled.fastq.gz' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/dna-sequence-raw -P ${DATADIR}
+     wget -r -nc -l2 -nH --cut-dirs=9 -A '_001.fastq.gz' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/dna-sequence-raw -P ${DATADIR}
 fi
 if [ ! -f "${BASEDIR}/tax.databases.test/${DATATYPE}/${DB}" ]
 then

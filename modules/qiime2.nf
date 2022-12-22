@@ -49,3 +49,32 @@ process q2_cutadapt {
     """
 
 }
+
+process q2_dada2 {
+
+    label 'qiime2_env'
+    label 'multithreads'
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '06_DADA2_output'
+    publishDir "${params.outdir}/${params.dada2_step}", mode: 'copy', pattern: 'DADA2_*'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
+
+    input:
+        path(dada2_input_data)
+        path(metadata)
+
+    output:
+        path('DADA2_rep_seqs.qza'), emit: dada2_rep_seqs
+        path('DADA2_rep_seqs.qzv')
+        path('DADA2_table.qza'), emit: dada2_table
+        path('DADA2_table.qzv')
+        path('DADA2_process_stats.qz*')
+        path('06_DADA2_output')
+        path('completecmd')
+
+    script:
+    """
+    06_q2_dada2.sh ${params.singleEnd} ${dada2_input_data} ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.truncQ} ${params.FmaxEE} ${params.RmaxEE} ${params.pooling_method} ${params.chimeras_method} ${task.cpus} DADA2_rep_seqs.qza DADA2_table.qza DADA2_process_stats.qza DADA2_process_stats.qzv DADA2_table.qzv ${metadata} DADA2_rep_seqs.qzv 06_DADA2_output completecmd &> q2_dada2.log 2>&1
+"""
+
+}

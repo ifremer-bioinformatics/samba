@@ -50,6 +50,17 @@ def helpMessage() {
 	--raw_data_dir		[path]	Path to raw data directory.
 	--amplicon_length	[str]	Length of expected amplicons.
 
+	DADA2 - ASV inference:
+	--FtrimLeft		[str]	The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
+	--RtrimLeft		[str]	The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
+	--FtruncLen		[str]	Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--RtruncLen		[str]	Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--FmaxEE		[str]	Forward reads with higher than max "expected errors" will be discarded (default = 2).
+	--RmaxEE		[str]	Reverse with higher than max "expected errors" will be discarded (default = 2).
+	--truncQ		[str]	Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
+	--pooling_method	[str]	Method used to pool samples for denoising. Default = "independant". Set to "pseudo" if you want to approximate pooling of samples (see DADA2 documentation).
+	--chimeras_method	[str]	Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification (see DADA2 documentation).
+
 	""".stripIndent()
 }
 
@@ -139,6 +150,12 @@ if (!workflow.profile.contains('custom')) {
             exit 1
         }
     }
+
+    /* Verify DADA2 parameters */
+    if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
+        log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all paramters in the 'DADA2 process parameters' section of the custom.config file"
+        exit 1
+    }
 }
 
 /*
@@ -163,6 +180,7 @@ include { data_integrity } from './modules/data_integrity.nf'
 include { q2_import_data } from './modules/qiime2.nf'
 include { q2_cutadapt } from './modules/qiime2.nf'
 include { figaro } from './modules/figaro.nf'
+include { q2_dada2 } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -220,6 +238,11 @@ workflow {
                 figaro(ready)
             }
 
+        /* ASV inference using DADA2 */
+            dada2_input = params.cutadapt_enable ? q2_cutadapt.out.trimmed_data : q2_import_data.out.imported_data
+            if (!params.stats_only && !params.dada2merge) {
+                q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
+            }
     }
 
 }

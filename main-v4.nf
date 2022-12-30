@@ -19,9 +19,9 @@ def helpMessage() {
 
     Usage:
 
-    The typical command for running the pipeline after filling the conf/custom.config file is as follows:
+    The typical command for running the pipeline after filling the config file corresponding to your analysis as follows:
 
-	nextflow run main.nf -profile <shortreadstest/longreadstest/custom>,singularity [-c <institute_config_file>]
+	nextflow run main.nf -profile <illumina_test/illumina/longreadstest>,singularity [-c <institute_config_file>]
 
 	Mandatory:
 	--excel_sample_file	[path]	Path to the XLS input file (EXCEL 97-2004) containing the manifest and metadata sheets.
@@ -61,6 +61,13 @@ def helpMessage() {
 	--pooling_method	[str]	Method used to pool samples for denoising. Default = "independant". Set to "pseudo" if you want to approximate pooling of samples (see DADA2 documentation).
 	--chimeras_method	[str]	Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification (see DADA2 documentation).
 
+	Distribution based-clustering:
+	--dbotu3_enable		[bool]	Distribution based-clustering step. Set to false to deactivate
+ this step (default = true).
+	--gen_crit		[str]	dbOTU3 Genetic criterion (default = 0.1).
+	--abund_crit		[str]	dbOTU3 Abundance criterion (default = 10).
+	--pval_crit		[str]	dbOTU3 P-value criterion (default = 0.0005).
+
 	""".stripIndent()
 }
 
@@ -84,13 +91,13 @@ if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
 //Copy config files to output directory for each run
 base_params_file = file("${baseDir}/conf/base.config", checkIfExists: true)
 base_params_file.copyTo("${params.outdir}/00_pipeline_config/base.config")
-if (workflow.profile.contains('custom')) {
-    custom_params_file = file("${baseDir}/conf/custom.config", checkIfExists: true)
-    custom_params_file.copyTo("${params.outdir}/00_pipeline_config/custom.config")
+if (workflow.profile.contains('illumina')) {
+    custom_params_file = file("${baseDir}/conf/illumina.config", checkIfExists: true)
+    custom_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina.config")
 }
-if (workflow.profile.contains('shortreadstest')) {
-    shortreadstest_params_file = file("${baseDir}/conf/shortreadstest.config", checkIfExists: true)
-    shortreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/shortreadstest.config")
+if (workflow.profile.contains('illumina_test')) {
+    shortreadstest_params_file = file("${baseDir}/conf/illumina_test.config", checkIfExists: true)
+    shortreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina_test.config")
 }
 if (workflow.profile.contains('longreadstest')) {
    longreadstest_params_file = file("${baseDir}/conf/longreadstest.config", checkIfExists: true)
@@ -112,12 +119,14 @@ summary['Launch dir'] = workflow.launchDir
 summary['Working dir'] = workflow.workDir
 summary['Output dir'] = params.outdir
 summary['Profile'] = workflow.profile
-if (workflow.profile.contains('custom')) summary['Data type'] = params.longreads ? 'Long reads' : 'Illumina short reads'
-if (workflow.profile.contains('test')) summary['Data type'] = params.longreads ? 'Long reads test workflow' : 'Illumina short reads test workflow'
+if (workflow.profile == 'illumina') summary['Data type'] = 'Illumina short reads'
+if (workflow.profile == 'illumina_test') summary['Data type'] = 'Illumina short reads test workflow'
+if (workflow.profile == 'longreadstest') summary['Data type'] = 'Long reads analysis'
 summary['Sample Input Excel File'] = params.excel_sample_file
 if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
 if (params.cutadapt_enable) summary['Cutadapt'] = "Primer removal process enabled"
 if (params.figaro_enable) summary['FIGARO'] = "Optimizing microbiome rRNA gene trimming parameters for DADA2 enabled"
+if (params.dbotu3_enable) summary['dbOTU3'] = "ASV clustering based on phylogeny, distribution and abundance enabled"
 
 log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
@@ -129,12 +138,12 @@ checkHostname()
  * VERIFY WORKFLOW VARIABLES
  */
 
-if (!workflow.profile.contains('custom')) {
+if (!workflow.profile.contains('illumina')) {
 
     /* Verify Cutadapt parameters */
     if (params.cutadapt_enable) {
         if(params.primerF.isEmpty() || params.primerR.isEmpty()) {
-            log.error "ERROR: no primer sequences have been provided. Please check and configure the '--primerF' and '--primerR' parameters in the custom.config file"
+            log.error "ERROR: no primer sequences have been provided. Please check and configure the '--primerF' and '--primerR' parameters in the illumina.config file"
             exit 1
         }
     }
@@ -142,18 +151,18 @@ if (!workflow.profile.contains('custom')) {
     /* Verify FIGARO parameters */
     if (params.figaro_enable) {
         if(params.raw_data_dir.isEmpty()) {
-            log.error "ERROR: raw data directory has not been configured. Please check and configure the '--raw_data_dir' parameter in the custom.config file"
+            log.error "ERROR: raw data directory has not been configured. Please check and configure the '--raw_data_dir' parameter in the illumina.config file"
             exit 1
         }
         if(params.amplicon_length.isEmpty()) {
-            log.error "ERROR: no expected amplicon size has been provided. Please check and configure the '--amplicon_length' parameter in the custom.config file"
+            log.error "ERROR: no expected amplicon size has been provided. Please check and configure the '--amplicon_length' parameter in the illumina.config file"
             exit 1
         }
     }
 
     /* Verify DADA2 parameters */
     if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
-        log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all paramters in the 'DADA2 process parameters' section of the custom.config file"
+        log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all paramters in the 'DADA2 process parameters' section of the illumina.config file"
         exit 1
     }
 }
@@ -165,7 +174,7 @@ if (!workflow.profile.contains('custom')) {
 if (!workflow.profile.contains('test')) {
     channel
         .fromPath( params.excel_sample_file )
-        .ifEmpty { error "ERROR: Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the custom.config file" }
+        .ifEmpty { error "ERROR: Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the your analysis config file" }
         .set { sample_file }
 }
 
@@ -181,6 +190,7 @@ include { q2_import_data } from './modules/qiime2.nf'
 include { q2_cutadapt } from './modules/qiime2.nf'
 include { figaro } from './modules/figaro.nf'
 include { q2_dada2 } from './modules/qiime2.nf'
+include { q2_dbOTU3 } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -242,6 +252,11 @@ workflow {
             dada2_input = params.cutadapt_enable ? q2_cutadapt.out.trimmed_data : q2_import_data.out.imported_data
             if (!params.stats_only && !params.dada2merge) {
                 q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
+            }
+
+        /* ASV clustering using dbOTU3 */
+            if (params.dbotu3_enable && !params.stats_only && !params.dada2merge) {
+                q2_dbOTU3(q2_dada2.out.dada2_table,q2_dada2.out.dada2_rep_seqs,excel2tsv.out.metadata_xls)
             }
     }
 

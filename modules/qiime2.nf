@@ -78,3 +78,32 @@ process q2_dada2 {
 """
 
 }
+
+process q2_dbOTU3 {
+
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '07_dbOTU3_output'
+    publishDir "${params.outdir}/${params.dbotu3_step}", mode: 'copy', pattern: 'dbOTU3*'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
+
+    input:
+        path(asv_table)
+        path(asv_seqs)
+        path(metadata)
+
+    output:
+        path('dbOTU3_details.txt')
+        path('dbOTU3_seqs.qza'), emit: dbotu3_seqs
+        path('dbOTU3_seqs.qzv')
+        path('dbOTU3_table.qza'), emit: dbotu3_table
+        path('dbOTU3_table.qzv')
+        path('dbOTU3_output')
+        path('completecmd')
+
+    script:
+    """
+    07_q2_dbotu3.sh ${asv_table} ${asv_seqs} ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} dbOTU3_seqs.qza dbOTU3_table.qza dbOTU3_details.txt dbOTU3_table.qzv ${metadata} dbOTU3_seqs.qzv dbOTU3_output completecmd &> q2_dbotu3.log 2>&1
+    """
+
+}

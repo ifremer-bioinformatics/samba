@@ -534,8 +534,11 @@ if (!params.longreads) {
         }
         metadata_sort.into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
         manifest_sort.set { manifest }
-    }
-    
+    } else {
+        metadata_xls.into { metadata4dada2 ; metadata4dbotu3 ; metadata_filtering_tax ; metadata4stats ; metadata4picrust2 ; metadata4ancom }
+        manifest_xls.set { manifest }
+}
+ 
     /*
      * STEP 2 - Import metabarcoding data into QIIME2 object
      */

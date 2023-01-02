@@ -21,7 +21,7 @@ elif [ "${DATATYPE}" == "shortreads" ]
 then
   # short reads dataset
   DATADIR="${BASEDIR}/training_dataset/${DATATYPE}"
-  DB="silva_v138.1_16S_99_V4_515F-806RB.qza"
+  DB="SILVA_v138.1_ref_V3-V4_515f-806r_Caporaso.qza"
 else 
   echo "DATATYPE is incorrect"
   exit 1 

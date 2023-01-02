@@ -69,7 +69,7 @@ process q2_dada2 {
         path('DADA2_table.qza'), emit: dada2_table
         path('DADA2_table.qzv')
         path('DADA2_process_stats.qz*')
-        path('06_DADA2_output')
+        path('06_DADA2_output'), emit: dada2_outdir
         path('completecmd')
 
     script:
@@ -98,12 +98,42 @@ process q2_dbOTU3 {
         path('dbOTU3_seqs.qzv')
         path('dbOTU3_table.qza'), emit: dbotu3_table
         path('dbOTU3_table.qzv')
-        path('dbOTU3_output')
+        path('dbOTU3_output'), emit: dbotu3_outdir
         path('completecmd')
 
     script:
     """
     07_q2_dbotu3.sh ${asv_table} ${asv_seqs} ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} dbOTU3_seqs.qza dbOTU3_table.qza dbOTU3_details.txt dbOTU3_table.qzv ${metadata} dbOTU3_seqs.qzv dbOTU3_output completecmd &> q2_dbotu3.log 2>&1
+    """
+
+}
+
+process q2_assign_taxo {
+
+    label 'qiime2_env'
+    label 'highRAM'
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '08_taxonomic_assignation_output'
+    publishDir "${params.outdir}/${params.assign_taxo_step}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.assign_taxo_step}", mode: 'copy', pattern: 'ASV_tax_table.biom'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_assign_taxo -> "cmd/${task.process}_complete.sh" }
+
+    input:
+        path(asv_seqs)
+        path(asv_outdir)
+
+    output:
+        path('taxonomy.qza'), emit: taxonomy_assigned
+        path('taxonomy.qzv')
+        path('taxonomy_assigned.tsv'), emit: taxonomy_tsv
+        path('08_taxonomic_assignation_output')
+        path('ASV_tax_table.biom'), emit: asv_tax_table_biom
+        path('ASV_tax_table.tsv'), emit: asv_tax_table_tsv
+        path('completecmd')
+
+    script:
+    """
+    08_q2_assign_taxo.sh qiime2_tmpdir ${task.cpus} ${params.confidence} ${params.database} ${asv_seqs} taxonomy.qza taxonomy.qzv 08_taxonomic_assignation_output taxonomy_assigned.tsv ${asv_outdir} ASV_tax_table.biom ASV_tax_table.tsv completecmd &> q2_assign_taxo.log 2>&1
     """
 
 }

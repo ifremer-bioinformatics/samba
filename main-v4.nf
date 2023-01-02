@@ -68,7 +68,11 @@ def helpMessage() {
 	--abund_crit		[str]	dbOTU3 Abundance criterion (default = 10).
 	--pval_crit		[str]	dbOTU3 P-value criterion (default = 0.0005).
 
-	""".stripIndent()
+	Taxonomic assignation:
+	--database		[file]	Path to a trained Naive Bayes QIIME 2 classifier.
+	--confidence		[str]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
+        
+    """.stripIndent()
 }
 
 // Show help message
@@ -127,6 +131,7 @@ if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity ch
 if (params.cutadapt_enable) summary['Cutadapt'] = "Primer removal process enabled"
 if (params.figaro_enable) summary['FIGARO'] = "Optimizing microbiome rRNA gene trimming parameters for DADA2 enabled"
 if (params.dbotu3_enable) summary['dbOTU3'] = "ASV clustering based on phylogeny, distribution and abundance enabled"
+summary['Taxonomic database used'] = params.database
 
 log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
@@ -162,9 +167,16 @@ if (!workflow.profile.contains('illumina')) {
 
     /* Verify DADA2 parameters */
     if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
-        log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all paramters in the 'DADA2 process parameters' section of the illumina.config file"
+        log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all parameters in the 'DADA2 process parameters' section of the illumina.config file"
         exit 1
     }
+
+    /* Verify the taxonomic database */
+    if(params.database.isEmpty()) {
+        log.error "ERROR: No taxonomic database has been provided. Please check and configure the '--database' parameter in the illumina.config file"
+        exit 1
+    }
+
 }
 
 /*
@@ -191,6 +203,7 @@ include { q2_cutadapt } from './modules/qiime2.nf'
 include { figaro } from './modules/figaro.nf'
 include { q2_dada2 } from './modules/qiime2.nf'
 include { q2_dbOTU3 } from './modules/qiime2.nf'
+include { q2_assign_taxo } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -226,38 +239,40 @@ workflow {
     /*                                       */
     /*---------------------------------------*/
 
-    if (!params.longreads) {
+    if (!params.longreads && !params.stats_only && !params.dada2merge) {
     
         /* Verify data integrity */
-            if (params.data_integrity_enable && !params.stats_only && !params.dada2merge) {
+            if (params.data_integrity_enable) {
                 data_integrity(manifest,excel2tsv.out.metadata_xls)
             }
 
         /* Import data in QIIME2 format */
-            if (!params.stats_only && !params.dada2merge) {
-                q2_import_data(data_integrity.out.final_manifest)
-            }
+            q2_import_data(data_integrity.out.final_manifest)
         
         /* OPTIONAL: Primer removal using Cutadapt */
-            if (!params.stats_only && !params.dada2merge) {
+            if (params.cutadapt_enable) {
                 q2_cutadapt(q2_import_data.out.imported_data)
             }
     
         /* OPTIONAL: Optimizing rRNA gene trimming parameters for DADA2 using FIGARO */
-            if (!params.stats_only && !params.dada2merge) {
+            if (params.figaro_enable) {
                 figaro(ready)
             }
 
         /* ASV inference using DADA2 */
             dada2_input = params.cutadapt_enable ? q2_cutadapt.out.trimmed_data : q2_import_data.out.imported_data
-            if (!params.stats_only && !params.dada2merge) {
-                q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
-            }
+            q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
 
         /* ASV clustering using dbOTU3 */
-            if (params.dbotu3_enable && !params.stats_only && !params.dada2merge) {
+            if (params.dbotu3_enable) {
                 q2_dbOTU3(q2_dada2.out.dada2_table,q2_dada2.out.dada2_rep_seqs,excel2tsv.out.metadata_xls)
             }
+
+        /* Taxonomic assignation of ASVs */
+            asv_sequences = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
+            asv_outdir = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
+            q2_assign_taxo(asv_sequences,asv_outdir)
+
     }
 
 }

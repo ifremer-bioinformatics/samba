@@ -24,54 +24,58 @@ def helpMessage() {
 	nextflow run main.nf -profile <illumina_test/illumina/longreadstest>,singularity [-c <institute_config_file>]
 
 	Mandatory:
-	--excel_sample_file	[path]	Path to the XLS input file (EXCEL 97-2004) containing the manifest and metadata sheets.
-	--longreads		[bool]	Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
-	--singleEnd		[bool]	Set to true to specify that the inputs are single-end reads (default = false).
+	--excel_sample_file		[path]	Path to the XLS input file (EXCEL 97-2004) containing the manifest and metadata sheets.
+	--longreads			[bool]	Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
+	--singleEnd			[bool]	Set to true to specify that the inputs are single-end reads (default = false).
 
 	Other options:
-	--outdir		[path]	The output directory where the results will be saved.
-	-name 			[str]	Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
-	--projectName		[str]	Name of the project.
+	--outdir			[path]	The output directory where the results will be saved.
+	-name 				[str]	Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+	--projectName			[str]	Name of the project.
 
-	@@ PROCESS OPTIONS @@
+	@@ PROCESS OPTIONS FOR ILLUMINA ANALYSIS @@
 
 	Data integrity:
-	--data_integrity_enable	[bool]	Data integrity checking step. Set to false to deactivate this step (default = true).
-	--primer_filter		[str]	Percentage of primers supposed to be found in raw reads (default = 70).
+	--data_integrity_enable		[bool]	Data integrity checking step. Set to false to deactivate this step (default = true).
+	--primer_filter			[str]	Percentage of primers supposed to be found in raw reads (default = 70).
 
 	Cutadapt - primer removal:
-	--cutadapt_enable	[bool]	Primer removal process. Set to false to deactivate this step (default = true).
-	--primerF		[str]	Forward primer (to be used in Cutadapt cleaning step).
-	--primerR		[str]	Reverse primer (to be used in Cutadapt cleaning step).
-	--errorRate		[str]	Cutadapt error rate allowed to match primers (default = 0.1).
+	--cutadapt_enable		[bool]	Primer removal process. Set to false to deactivate this step (default = true).
+	--primerF			[str]	Forward primer (to be used in Cutadapt cleaning step).
+	--primerR			[str]	Reverse primer (to be used in Cutadapt cleaning step).
+	--errorRate			[str]	Cutadapt error rate allowed to match primers (default = 0.1).
 
 	FIGARO - optimizing trimming parameters for DADA2:
-	--figaro_enable		[bool]	Process to identify optimal trimming parameters for DADA2. Set to false to deactivate this step (default = true).
-	--raw_data_dir		[path]	Path to raw data directory.
-	--amplicon_length	[str]	Length of expected amplicons.
+	--figaro_enable			[bool]	Process to identify optimal trimming parameters for DADA2. Set to false to deactivate this step (default = true).
+	--raw_data_dir			[path]	Path to raw data directory.
+	--amplicon_length		[str]	Length of expected amplicons.
 
 	DADA2 - ASV inference:
-	--FtrimLeft		[str]	The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
-	--RtrimLeft		[str]	The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
-	--FtruncLen		[str]	Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--RtruncLen		[str]	Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--FmaxEE		[str]	Forward reads with higher than max "expected errors" will be discarded (default = 2).
-	--RmaxEE		[str]	Reverse with higher than max "expected errors" will be discarded (default = 2).
-	--truncQ		[str]	Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
-	--pooling_method	[str]	Method used to pool samples for denoising. Default = "independant". Set to "pseudo" if you want to approximate pooling of samples (see DADA2 documentation).
-	--chimeras_method	[str]	Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification (see DADA2 documentation).
+	--FtrimLeft			[str]	The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
+	--RtrimLeft			[str]	The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
+	--FtruncLen			[str]	Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--RtruncLen			[str]	Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--FmaxEE			[str]	Forward reads with higher than max "expected errors" will be discarded (default = 2).
+	--RmaxEE			[str]	Reverse with higher than max "expected errors" will be discarded (default = 2).
+	--truncQ			[str]	Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
+	--pooling_method		[str]	Method used to pool samples for denoising. Default = "independant". Set to "pseudo" if you want to approximate pooling of samples (see DADA2 documentation).
+	--chimeras_method		[str]	Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification (see DADA2 documentation).
 
-	Distribution based-clustering:
-	--dbotu3_enable		[bool]	Distribution based-clustering step. Set to false to deactivate
+	dbOTU3 - Distribution based-clustering:
+	--dbotu3_enable			[bool]	Distribution based-clustering step. Set to false to deactivate
  this step (default = true).
-	--gen_crit		[str]	dbOTU3 Genetic criterion (default = 0.1).
-	--abund_crit		[str]	dbOTU3 Abundance criterion (default = 10).
-	--pval_crit		[str]	dbOTU3 P-value criterion (default = 0.0005).
+	--gen_crit			[str]	dbOTU3 Genetic criterion (default = 0.1).
+	--abund_crit			[str]	dbOTU3 Abundance criterion (default = 10).
+	--pval_crit			[str]	dbOTU3 P-value criterion (default = 0.0005).
 
 	Taxonomic assignation:
-	--database		[file]	Path to a trained Naive Bayes QIIME 2 classifier.
-	--confidence		[str]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
-        
+	--database			[file]	Path to a trained Naive Bayes QIIME 2 classifier.
+	--confidence			[str]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
+
+	Filter ASV table and ASV sequences based on taxonomy:
+	--filter_table_by_tax_enable		[bool]	Set to true to filter ASV table and ASV sequences based on taxonomic assignation (default = false).
+	--tax_to_exclude		[str]	List of taxa you want to exclude (comma-separated list).
+
     """.stripIndent()
 }
 
@@ -132,6 +136,7 @@ if (params.cutadapt_enable) summary['Cutadapt'] = "Primer removal process enable
 if (params.figaro_enable) summary['FIGARO'] = "Optimizing microbiome rRNA gene trimming parameters for DADA2 enabled"
 if (params.dbotu3_enable) summary['dbOTU3'] = "ASV clustering based on phylogeny, distribution and abundance enabled"
 summary['Taxonomic database used'] = params.database
+if (params.filter_table_by_tax_enable) summary['Filter ASV table and ASV sequences'] = "Based on taxonomy enabled"
 
 log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
@@ -143,7 +148,8 @@ checkHostname()
  * VERIFY WORKFLOW VARIABLES
  */
 
-if (!workflow.profile.contains('illumina')) {
+/* Illumina workflow */
+if (workflow.profile.contains('illumina')) {
 
     /* Verify Cutadapt parameters */
     if (params.cutadapt_enable) {
@@ -177,6 +183,14 @@ if (!workflow.profile.contains('illumina')) {
         exit 1
     }
 
+    /* Verify the list of taxa to exclude if params.filter_table_by_tax_enable process is activated */
+    if (params.filter_table_by_tax_enable) {
+        if (params.tax_to_exclude.isEmpty()) {
+            log.error "ERROR: The list of taxa to exclude is empty. Please check and configure the '--tax_to_exclude' parameter in the illumina.config file"
+            exit 1
+        }
+    }
+
 }
 
 /*
@@ -204,6 +218,7 @@ include { figaro } from './modules/figaro.nf'
 include { q2_dada2 } from './modules/qiime2.nf'
 include { q2_dbOTU3 } from './modules/qiime2.nf'
 include { q2_assign_taxo } from './modules/qiime2.nf'
+include { q2_filter_table_by_tax } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -269,9 +284,15 @@ workflow {
             }
 
         /* Taxonomic assignation of ASVs */
+            asv_table = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_table : q2_dada2.out.dada2_table
             asv_sequences = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
             asv_outdir = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
             q2_assign_taxo(asv_sequences,asv_outdir)
+
+        /* OPTIONAL: Filter ASV table and ASV sequences based on taxonomy */
+            if (params.filter_table_by_tax_enable) {
+                q2_filter_table_by_tax(asv_table,asv_sequences,q2_assign_taxo.out.taxonomy_assigned,q2_assign_taxo.out.taxonomy_tsv,excel2tsv.out.metadata_xls)
+            }
 
     }
 

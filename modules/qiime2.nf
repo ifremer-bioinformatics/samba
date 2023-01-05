@@ -137,3 +137,36 @@ process q2_assign_taxo {
     """
 
 }
+
+process q2_filter_table_by_tax {
+
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '09_filter_table_by_tax_output'
+    publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: 'biom'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/${task.process}_complete.sh" }
+
+    input:
+        path(asv_table)
+        path(asv_seqs)
+        path(tax_qza)
+        path(tax_tsv)
+        path(metadata)
+
+    output:
+        path('asv_table_tax_filtered.qza'), emit: asv_table_tax_filtered_qza
+        path('asv_table_tax_filtered.qzv')
+        path('asv_seqs_tax_filtered.qza'), emit: asv_seqs_tax_filtered_qza
+        path('asv_seqs_tax_filtered.qzv')
+        path('09_filter_table_by_tax_output'), emit: filter_table_by_tax_output
+        path('asv_table_tax_filtered.biom'), emit: asv_table_tax_filtered_biom
+        path('asv_table_tax_filtered.tsv'), emit: asv_table_tax_filtered_tsv
+        path('completecmd')
+
+    script:
+    """
+    09_q2_filter_table_by_tax.sh ${asv_table} ${tax_qza} ${params.tax_to_exclude} asv_table_tax_filtered.qza ${asv_seqs} asv_seqs_tax_filtered.qza asv_table_tax_filtered.qzv ${metadata} asv_seqs_tax_filtered.qzv 09_filter_table_by_tax_output ${tax_tsv} asv_table_tax_filtered.biom asv_table_tax_filtered.tsv completecmd &> q2_filter_table_by_tax.log 2>&1
+    """
+
+}

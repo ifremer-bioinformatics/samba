@@ -144,7 +144,7 @@ process q2_filter_table_by_tax {
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '09_filter_table_by_tax_output'
     publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: 'biom'
+    publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: 'asv_table_tax_filtered.biom'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/${task.process}_complete.sh" }
 
     input:
@@ -167,6 +167,38 @@ process q2_filter_table_by_tax {
     script:
     """
     09_q2_filter_table_by_tax.sh ${asv_table} ${tax_qza} ${params.tax_to_exclude} asv_table_tax_filtered.qza ${asv_seqs} asv_seqs_tax_filtered.qza asv_table_tax_filtered.qzv ${metadata} asv_seqs_tax_filtered.qzv 09_filter_table_by_tax_output ${tax_tsv} asv_table_tax_filtered.biom asv_table_tax_filtered.tsv completecmd &> q2_filter_table_by_tax.log 2>&1
+    """
+
+}
+
+process q2_filter_table_by_data {
+
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '10_filter_table_by_data_output'
+    publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: 'biom'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_data -> "cmd/${task.process}_complete.sh" }
+
+    input:
+        path(asv_table)
+        path(asv_seqs)
+        path(metadata)
+        path(tax_tsv)
+
+    output:
+        path('final_asv_table_filtered.qza'), emit: final_asv_table_filtered_qza
+        path('final_asv_table_filtered.qzv')
+        path('final_asv_seqs_filtered.qza'), emit: final_asv_seqs_filtered_qza
+        path('final_asv_seqs_filtered.qzv')
+        path('10_filter_table_by_data_output'), emit: filter_table_by_data_output
+        path('asv_table_filtered.biom'), emit: final_asv_table_filtered_biom
+        path('asv_table_filtered.tsv'), emit: final_asv_table_filtered_tsv
+        path('completecmd')
+
+    script:
+    """
+    10_q2_filter_table_by_data.sh ${params.filter_by_id} ${params.list_sample_to_remove} ${asv_table} asv_table_samples_filtered.qza ${asv_seqs} asv_seqs_samples_filtered.qza ${params.filter_by_frequency} ${params.min_frequency_sample} ${params.min_frequency_asv} ${params.contingency_asv} asv_table_frequency_filtered.qza asv_seqs_frequency_filtered.qza final_asv_table_filtered.qzv ${metadata} final_asv_seqs_filtered.qzv 10_filter_table_by_data_output ${tax_tsv} asv_table_filtered.biom asv_table_filtered.tsv completecmd &> q2_filter_table_by_data.log 2>&1
     """
 
 }

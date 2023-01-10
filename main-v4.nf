@@ -73,8 +73,18 @@ def helpMessage() {
 	--confidence			[str]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
 
 	Filter ASV table and ASV sequences based on taxonomy:
-	--filter_table_by_tax_enable		[bool]	Set to true to filter ASV table and ASV sequences based on taxonomic assignation (default = false).
+	--filter_table_by_tax_enable	[bool]	Set to true to filter ASV table and ASV sequences based on taxonomic assignation (default = false).
 	--tax_to_exclude		[str]	List of taxa you want to exclude (comma-separated list).
+
+	Filter ASV table and ASV sequences based on data:
+	--filter_table_by_data_enable	[bool]	Set to true to filter ASV table and ASV sequences based on data (sample ID and/or frequency/contingency) (default = false).
+	--filter_by_id			[bool]	Set to true if you want to filter data based on a list of sample IDs (default = false ; only if filter_table_by_data is enable).
+	--list_sample_to_remove		[str]	List of sample IDs to remove (comma-separated list).
+	--filter_by_frequency		[bool]	Set to true if you want to filter data based on frequency and contingency (default = false ; only if filter_table_by_data is enable).
+	--min_frequency_sample		[int]	Minimum desired total sequence count within each sample (default = 1).
+	--min_frequency_asv		[int]	Minimum desired abundance for each ASV (default = 1).
+	--contingency_asv		[int]	Minimum number of samples in which an ASV must be found to be kept (default = 1).
+
 
     """.stripIndent()
 }
@@ -136,8 +146,16 @@ if (params.cutadapt_enable) summary['Cutadapt'] = "Primer removal process enable
 if (params.figaro_enable) summary['FIGARO'] = "Optimizing microbiome rRNA gene trimming parameters for DADA2 enabled"
 if (params.dbotu3_enable) summary['dbOTU3'] = "ASV clustering based on phylogeny, distribution and abundance enabled"
 summary['Taxonomic database used'] = params.database
-if (params.filter_table_by_tax_enable) summary['Filter ASV table and ASV sequences'] = "Based on taxonomy enabled"
-
+if (params.filter_table_by_tax_enable) summary['Filtering process'] = "Based on taxonomy enabled"
+if (params.filter_table_by_data_enable) {
+    if (params.filter_by_id && params.filter_by_frequency) {
+        summary['Filtering processes'] = "Based on sample ID and frequency enabled"
+    } else if (params.filter_by_id) {
+        summary['Filtering process'] = "Based on sample ID enabled"
+    } else {
+        summary['Filtering process'] = "Based on frequency enabled"
+    }
+}
 log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
 
@@ -190,6 +208,28 @@ if (workflow.profile.contains('illumina')) {
             exit 1
         }
     }
+    
+    /* Verify parameters for filter_table_by_data process process if it is activated */
+    if (params.filter_table_by_data_enable) {
+        if (params.filter_by_id) {
+            if (params.list_sample_to_remove.isEmpty()) {
+                log.error "ERROR: The list of sample to remove is empty. Please check and configure the '--list_sample_to_remove' parameter in the illumina.config file"
+                exit 1
+            }
+        } else {
+            params.list_sample_to_remove = "none"
+        }
+        if (params.filter_by_frequency) {
+            if (params.min_frequency_sample.isEmpty() || params.min_frequency_asv.isEmpty() || params.contingency_asv.isEmpty()) {
+                log.error "ERROR: At least one of the frequency-based filter parameters is empty. Please check and configure the '--min_frequency_sample', '--min_frequency_asv' and/or '--contingency_asv' parameters in the illumina.config file"
+                exit 1
+            }
+        } else {
+            params.min_frequency_sample = "1"
+            params.min_frequency_asv = "1"
+            params.contingency_asv = "1"
+        }
+    }
 
 }
 
@@ -219,6 +259,7 @@ include { q2_dada2 } from './modules/qiime2.nf'
 include { q2_dbOTU3 } from './modules/qiime2.nf'
 include { q2_assign_taxo } from './modules/qiime2.nf'
 include { q2_filter_table_by_tax } from './modules/qiime2.nf'
+include { q2_filter_table_by_data } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -292,6 +333,13 @@ workflow {
         /* OPTIONAL: Filter ASV table and ASV sequences based on taxonomy */
             if (params.filter_table_by_tax_enable) {
                 q2_filter_table_by_tax(asv_table,asv_sequences,q2_assign_taxo.out.taxonomy_assigned,q2_assign_taxo.out.taxonomy_tsv,excel2tsv.out.metadata_xls)
+            }
+
+        /* OPTIONAL: Filter ASV table and ASV sequences based on data */
+            asv_table = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_qza : asv_table
+            asv_sequences = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_seqs_tax_filtered_qza : asv_sequences
+            if (params.filter_table_by_data_enable) {
+                q2_filter_table_by_data(asv_table,asv_sequences,excel2tsv.out.metadata_xls,q2_assign_taxo.out.taxonomy_tsv)
             }
 
     }

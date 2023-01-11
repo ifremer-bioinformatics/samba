@@ -85,6 +85,9 @@ def helpMessage() {
 	--min_frequency_asv		[int]	Minimum desired abundance for each ASV (default = 1).
 	--contingency_asv		[int]	Minimum number of samples in which an ASV must be found to be kept (default = 1).
 
+	Filter contaminant ASVs:
+	--filter_contaminants_enable	[bool]	Sample decontamination step. Set to true to activate this step (default = false)
+	--list_control_samples		[str]	List of control sample IDs (comma-separated list).
 
     """.stripIndent()
 }
@@ -156,6 +159,8 @@ if (params.filter_table_by_data_enable) {
         summary['Filtering process'] = "Based on frequency enabled"
     }
 }
+if (params.filter_contaminants_enable) summary['microDecon'] = "Sample decontamination process enabled"
+
 log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
 
@@ -231,6 +236,13 @@ if (workflow.profile.contains('illumina')) {
         }
     }
 
+    /* Verify parameters for filter_contaminants process process if it is activated */
+    if (params.filter_contaminants_enable) {
+        if (params.list_control_samples.isEmpty()) {
+                log.error "ERROR: The list of control samples is empty. Please check and configure the '--control_samples' parameter in the illumina.config file"
+                exit 1
+        }
+    }
 }
 
 /*
@@ -260,6 +272,7 @@ include { q2_dbOTU3 } from './modules/qiime2.nf'
 include { q2_assign_taxo } from './modules/qiime2.nf'
 include { q2_filter_table_by_tax } from './modules/qiime2.nf'
 include { q2_filter_table_by_data } from './modules/qiime2.nf'
+include { filter_contaminants } from './modules/filter_contaminants.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -328,6 +341,7 @@ workflow {
             asv_table = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_table : q2_dada2.out.dada2_table
             asv_sequences = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
             asv_outdir = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
+            asv_seqs_fasta = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_asv_seqs_fasta : q2_dada2.out.dada2_asv_seqs_fasta
             q2_assign_taxo(asv_sequences,asv_outdir)
 
         /* OPTIONAL: Filter ASV table and ASV sequences based on taxonomy */
@@ -340,6 +354,13 @@ workflow {
             asv_sequences = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_seqs_tax_filtered_qza : asv_sequences
             if (params.filter_table_by_data_enable) {
                 q2_filter_table_by_data(asv_table,asv_sequences,excel2tsv.out.metadata_xls,q2_assign_taxo.out.taxonomy_tsv)
+            }
+
+        /* OPTIONAL: Filter contaminant ASVs using control samples */
+            asv_table_tsv_contaminated = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_table_filtered_tsv : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_tsv : q2_assign_taxo.out.asv_tax_table_tsv 
+            asv_sequences_fasta_contaminated = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.filter_table_by_data_seqs_fasta : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.filter_table_by_tax_seqs_fasta : asv_seqs_fasta
+            if (params.filter_contaminants_enable) {
+                filter_contaminants(asv_table_tsv_contaminated,asv_sequences_fasta_contaminated,excel2tsv.out.metadata_xls)
             }
 
     }

@@ -13,5 +13,8 @@ COPY q2-dbotu /opt/q2-dbotu
 WORKDIR /opt/q2-dbotu
 USER root
 RUN micromamba install -c cduvallet -c conda-forge procps-ng biopython dbotu && python setup.py install
+RUN R --vanilla -e 'install.packages("devtools", repos="https://mirror.ibcp.fr/pub/CRAN/")'
+RUN R --vanilla -e 'devtools::install_github("donaldtmcknight/microDecon")'
+RUN micromamba install -c bioconda seqtk
 RUN micromamba clean -a
 ENV PATH /opt/conda/envs/qiime2-2022.11/bin:$PATH

@@ -1,7 +1,0 @@
-name: microdecon-1.0.2
-channels:
-  - bioconda
-  - sebimer
-dependencies:
-  - r-dplyr
-  - r-microdecon

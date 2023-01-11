@@ -32,6 +32,7 @@ process q2_cutadapt {
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '04_cutadapt_output'
     publishDir "${params.outdir}/${params.cutadapt_step}", mode: 'copy', pattern: 'trimmed_data.qz*'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern : 'v_cutadapt.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
 
     input:
@@ -41,11 +42,13 @@ process q2_cutadapt {
         path('trimmed_data.qza'), emit: trimmed_data
         path('trimmed_data.qzv')
         path('04_cutadapt_output')
+        path('v_cutadapt.txt')
         path('completecmd')
 
     script:
     """
     04_q2_cutadapt.sh ${params.singleEnd} ${task.cpus} ${imported_data} ${params.primerF} ${params.primerR} ${params.errorRate} trimmed_data.qza trimmed_data.qzv 04_cutadapt_output completecmd &> q2_cutadapt.log 2>&1
+    cutadapt --version > v_cutadapt.txt
     """
 
 }
@@ -57,6 +60,7 @@ process q2_dada2 {
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '06_DADA2_output'
     publishDir "${params.outdir}/${params.dada2_step}", mode: 'copy', pattern: 'DADA2_*'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern : 'v_dada2.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
 
     input:
@@ -70,12 +74,15 @@ process q2_dada2 {
         path('DADA2_table.qzv')
         path('DADA2_process_stats.qz*')
         path('06_DADA2_output'), emit: dada2_outdir
+        path('06_DADA2_output/sequences.fasta'), emit: dada2_asv_seqs_fasta
+        path('v_dada2.txt')
         path('completecmd')
 
     script:
     """
     06_q2_dada2.sh ${params.singleEnd} ${dada2_input_data} ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.truncQ} ${params.FmaxEE} ${params.RmaxEE} ${params.pooling_method} ${params.chimeras_method} ${task.cpus} DADA2_rep_seqs.qza DADA2_table.qza DADA2_process_stats.qza DADA2_process_stats.qzv DADA2_table.qzv ${metadata} DADA2_rep_seqs.qzv 06_DADA2_output completecmd &> q2_dada2.log 2>&1
-"""
+    echo '1.26.0' > v_dada2.txt
+    """
 
 }
 
@@ -85,6 +92,7 @@ process q2_dbOTU3 {
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '07_dbOTU3_output'
     publishDir "${params.outdir}/${params.dbotu3_step}", mode: 'copy', pattern: 'dbOTU3*'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_dbotu3.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
 
     input:
@@ -98,12 +106,15 @@ process q2_dbOTU3 {
         path('dbOTU3_seqs.qzv')
         path('dbOTU3_table.qza'), emit: dbotu3_table
         path('dbOTU3_table.qzv')
-        path('dbOTU3_output'), emit: dbotu3_outdir
+        path('07_dbOTU3_output'), emit: dbotu3_outdir
+        path('07_dbOTU3_output/sequences.fasta'), emit: dbotu3_asv_seqs_fasta
+        path('v_dbotu3.txt')
         path('completecmd')
 
     script:
     """
-    07_q2_dbotu3.sh ${asv_table} ${asv_seqs} ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} dbOTU3_seqs.qza dbOTU3_table.qza dbOTU3_details.txt dbOTU3_table.qzv ${metadata} dbOTU3_seqs.qzv dbOTU3_output completecmd &> q2_dbotu3.log 2>&1
+    07_q2_dbotu3.sh ${asv_table} ${asv_seqs} ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} dbOTU3_seqs.qza dbOTU3_table.qza dbOTU3_details.txt dbOTU3_table.qzv ${metadata} dbOTU3_seqs.qzv 07_dbOTU3_output completecmd &> q2_dbotu3.log 2>&1
+    echo "1.5.3" > v_dbotu3.txt
     """
 
 }
@@ -160,6 +171,7 @@ process q2_filter_table_by_tax {
         path('asv_seqs_tax_filtered.qza'), emit: asv_seqs_tax_filtered_qza
         path('asv_seqs_tax_filtered.qzv')
         path('09_filter_table_by_tax_output'), emit: filter_table_by_tax_output
+        path('09_filter_table_by_tax_output/sequences.fasta'), emit: filter_table_by_tax_seqs_fasta
         path('asv_table_tax_filtered.biom'), emit: asv_table_tax_filtered_biom
         path('asv_table_tax_filtered.tsv'), emit: asv_table_tax_filtered_tsv
         path('completecmd')
@@ -177,7 +189,7 @@ process q2_filter_table_by_data {
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '10_filter_table_by_data_output'
     publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: '*.qz*'
-    publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: 'biom'
+    publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: 'asv_table_filtered.biom'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_data -> "cmd/${task.process}_complete.sh" }
 
     input:
@@ -192,6 +204,7 @@ process q2_filter_table_by_data {
         path('final_asv_seqs_filtered.qza'), emit: final_asv_seqs_filtered_qza
         path('final_asv_seqs_filtered.qzv')
         path('10_filter_table_by_data_output'), emit: filter_table_by_data_output
+        path('10_filter_table_by_data_output/sequences.fasta'), emit: filter_table_by_data_seqs_fasta
         path('asv_table_filtered.biom'), emit: final_asv_table_filtered_biom
         path('asv_table_filtered.tsv'), emit: final_asv_table_filtered_tsv
         path('completecmd')

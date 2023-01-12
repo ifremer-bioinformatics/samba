@@ -4,7 +4,7 @@ process figaro {
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '05_figaro_output'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_figaro.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_figaro -> "${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_figaro -> "05_${task.process}_complete.sh" }
 
     input:
         val(ready)

@@ -273,6 +273,8 @@ include { q2_assign_taxo } from './modules/qiime2.nf'
 include { q2_filter_table_by_tax } from './modules/qiime2.nf'
 include { q2_filter_table_by_data } from './modules/qiime2.nf'
 include { filter_contaminants } from './modules/filter_contaminants.nf'
+include { q2_asv_phylogeny } from './modules/qiime2.nf'
+include { format_final_outputs } from './modules/format_final_outputs.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -362,6 +364,15 @@ workflow {
             if (params.filter_contaminants_enable) {
                 filter_contaminants(asv_table_tsv_contaminated,asv_sequences_fasta_contaminated,excel2tsv.out.metadata_xls)
             }
+
+        /* Construct a phylogeny of ASVs */
+        asv_seqs_phylo = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_qza : params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_seqs_filtered_qza : asv_sequences
+        q2_asv_phylogeny(asv_seqs_phylo) 
+
+        /* Format final outputs */
+        final_asv_table_tsv = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_tsv : asv_table_tsv_contaminated
+        final_asv_sequences_fasta = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_fasta : asv_sequences_fasta_contaminated
+        format_final_outputs(final_asv_table_tsv,final_asv_sequences_fasta)
 
     }
 

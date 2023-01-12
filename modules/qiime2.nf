@@ -5,7 +5,7 @@ process q2_import_data {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '03_import_output'
     publishDir "${params.outdir}/${params.import_step}", mode: 'copy', pattern: 'data.qz*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_import -> "03_${task.process}_complete.sh" }
 
     input:
         path(final_manifest)
@@ -33,7 +33,7 @@ process q2_cutadapt {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '04_cutadapt_output'
     publishDir "${params.outdir}/${params.cutadapt_step}", mode: 'copy', pattern: 'trimmed_data.qz*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern : 'v_cutadapt.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_cutadapt -> "cmd/04_${task.process}_complete.sh" }
 
     input:
         path(imported_data)
@@ -61,7 +61,7 @@ process q2_dada2 {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '06_DADA2_output'
     publishDir "${params.outdir}/${params.dada2_step}", mode: 'copy', pattern: 'DADA2_*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern : 'v_dada2.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dada2 -> "cmd/06_${task.process}_complete.sh" }
 
     input:
         path(dada2_input_data)
@@ -93,7 +93,7 @@ process q2_dbOTU3 {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '07_dbOTU3_output'
     publishDir "${params.outdir}/${params.dbotu3_step}", mode: 'copy', pattern: 'dbOTU3*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_dbotu3.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_dbotu3 -> "cmd/07_${task.process}_complete.sh" }
 
     input:
         path(asv_table)
@@ -127,7 +127,7 @@ process q2_assign_taxo {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '08_taxonomic_assignation_output'
     publishDir "${params.outdir}/${params.assign_taxo_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.assign_taxo_step}", mode: 'copy', pattern: 'ASV_tax_table.biom'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_assign_taxo -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_assign_taxo -> "cmd/08_${task.process}_complete.sh" }
 
     input:
         path(asv_seqs)
@@ -156,7 +156,7 @@ process q2_filter_table_by_tax {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '09_filter_table_by_tax_output'
     publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: 'asv_table_tax_filtered.biom'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/09_${task.process}_complete.sh" }
 
     input:
         path(asv_table)
@@ -190,7 +190,7 @@ process q2_filter_table_by_data {
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '10_filter_table_by_data_output'
     publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: 'asv_table_filtered.biom'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_data -> "cmd/${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_data -> "cmd/10_${task.process}_complete.sh" }
 
     input:
         path(asv_table)
@@ -212,6 +212,29 @@ process q2_filter_table_by_data {
     script:
     """
     10_q2_filter_table_by_data.sh ${params.filter_by_id} ${params.list_sample_to_remove} ${asv_table} asv_table_samples_filtered.qza ${asv_seqs} asv_seqs_samples_filtered.qza ${params.filter_by_frequency} ${params.min_frequency_sample} ${params.min_frequency_asv} ${params.contingency_asv} asv_table_frequency_filtered.qza asv_seqs_frequency_filtered.qza final_asv_table_filtered.qzv ${metadata} final_asv_seqs_filtered.qzv 10_filter_table_by_data_output ${tax_tsv} asv_table_filtered.biom asv_table_filtered.tsv completecmd &> q2_filter_table_by_data.log 2>&1
+    """
+
+}
+
+process q2_asv_phylogeny {
+
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.asv_phylogeny_results}", mode: 'copy', pattern: 'asv_phylogeny.nwk'
+    publishDir "${params.outdir}/${params.steps_data_dirname}", mode: 'copy', pattern: 'asv_phylogeny'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/12_${task.process}_complete.sh" }
+
+    input:
+        path(asv_seqs)
+
+    output:
+        path('asv_phylogeny')
+        path('asv_phylogeny.nwk'), emit: asv_phylogeny_nwk
+        path('completecmd')
+
+    script:
+    """
+    12_q2_phylogeny.sh ${task.cpus} ${asv_seqs} asv_phylogeny asv_phylogeny.nwk completecmd >& q2_phylogeny.log 2>&1
     """
 
 }

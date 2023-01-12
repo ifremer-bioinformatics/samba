@@ -18,7 +18,7 @@ process filter_contaminants {
         path(metadata)
 
     output :
-        path('decontaminated_ASV_table.tsv')
+        path('decontaminated_ASV_table.tsv'), emit: decontam_ASV_table_tsv
         path('abundance_removed.txt')
         path('ASV_removed.txt')
         path('decontaminated_ASV_table.biom'), emit: decontam_ASV_table_biom

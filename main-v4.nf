@@ -37,13 +37,13 @@ def helpMessage() {
 
 	Data integrity:
 	--data_integrity_enable		[bool]	Data integrity checking step. Set to false to deactivate this step (default = true).
-	--primer_filter			[str]	Percentage of primers supposed to be found in raw reads (default = 70).
+	--primer_filter			[int]	Percentage of primers supposed to be found in raw reads (default = 70).
 
 	Cutadapt - primer removal:
 	--cutadapt_enable		[bool]	Primer removal process. Set to false to deactivate this step (default = true).
 	--primerF			[str]	Forward primer (to be used in Cutadapt cleaning step).
 	--primerR			[str]	Reverse primer (to be used in Cutadapt cleaning step).
-	--errorRate			[str]	Cutadapt error rate allowed to match primers (default = 0.1).
+	--errorRate			[float]	Cutadapt error rate allowed to match primers (default = 0.1).
 
 	FIGARO - optimizing trimming parameters for DADA2:
 	--figaro_enable			[bool]	Process to identify optimal trimming parameters for DADA2. Set to false to deactivate this step (default = true).
@@ -51,26 +51,30 @@ def helpMessage() {
 	--amplicon_length		[str]	Length of expected amplicons.
 
 	DADA2 - ASV inference:
-	--FtrimLeft			[str]	The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
-	--RtrimLeft			[str]	The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
-	--FtruncLen			[str]	Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--RtruncLen			[str]	Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
-	--FmaxEE			[str]	Forward reads with higher than max "expected errors" will be discarded (default = 2).
-	--RmaxEE			[str]	Reverse with higher than max "expected errors" will be discarded (default = 2).
-	--truncQ			[str]	Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
+	--FtrimLeft			[int]	The number of nucleotides to remove from the start of each forward read (default : 0 = no trimming).
+	--RtrimLeft			[int]	The number of nucleotides to remove from the start of each reverse read (default : 0 = no trimming).
+	--FtruncLen			[int]	Truncate forward reads after FtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--RtruncLen			[int]	Truncate reverse reads after RtruncLen bases. Reads shorter than this are discarded (default : 0 = no trimming).
+	--FmaxEE			[float]	Forward reads with higher than max "expected errors" will be discarded (default = 2).
+	--RmaxEE			[float]	Reverse with higher than max "expected errors" will be discarded (default = 2).
+	--truncQ			[int]	Truncate reads at the first instance of a quality score less than or equal to minQ (default = 2).
+	--n_read_learn			[int]	number of reads to use when training the error model (default = "1000000").
 	--pooling_method		[str]	Method used to pool samples for denoising. Default = "independant". Set to "pseudo" if you want to approximate pooling of samples (see DADA2 documentation).
 	--chimeras_method		[str]	Chimera detection method : default = "consensus". Set to "pooled" if the samples in the sequence table are all pooled together for bimera identification (see DADA2 documentation).
+
+	swarm clustering of ASVs:
+	--swarm_clustering_enable	[bool]	Set to true to activate the swarm ASV clustering process (default = false).
 
 	dbOTU3 - Distribution based-clustering:
 	--dbotu3_enable			[bool]	Distribution based-clustering step. Set to false to deactivate
  this step (default = true).
-	--gen_crit			[str]	dbOTU3 Genetic criterion (default = 0.1).
-	--abund_crit			[str]	dbOTU3 Abundance criterion (default = 10).
-	--pval_crit			[str]	dbOTU3 P-value criterion (default = 0.0005).
+	--gen_crit			[float]	dbOTU3 Genetic criterion (default = 0.1).
+	--abund_crit			[int]	dbOTU3 Abundance criterion (default = 10).
+	--pval_crit			[float]	dbOTU3 P-value criterion (default = 0.0005).
 
 	Taxonomic assignation:
 	--database			[file]	Path to a trained Naive Bayes QIIME 2 classifier.
-	--confidence			[str]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
+	--confidence			[float]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
 
 	Filter ASV table and ASV sequences based on taxonomy:
 	--filter_table_by_tax_enable	[bool]	Set to true to filter ASV table and ASV sequences based on taxonomic assignation (default = false).
@@ -88,6 +92,15 @@ def helpMessage() {
 	Filter contaminant ASVs:
 	--filter_contaminants_enable	[bool]	Sample decontamination step. Set to true to activate this step (default = false)
 	--list_control_samples		[str]	List of control sample IDs (comma-separated list).
+
+	Differential abundance testing using ANCOM-BC:
+	--ancombc_enable		[bool]	Set to true to run differential abundance analysis on your data (default = false).
+	--use_reference			[bool]	Set to true if you have a reference group for the differential abundance analysis (default = false).
+	--reference_level		[str]	Group of samples to use as reference. Syntax: "column_name::column_value"
+	--ancombc_formula		[str]	Variable to analyse for differential abundance. Can be: "column_name" (test only for difference between values in this column) ; "column_name_1,column_name2,..." (as previously but for multiple variable) or "column_name_1+column_name2" (test difference using interacting variables).
+	--p_adj_method			[str]	Pvalue adjusting method. Can be: 'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none' (default = "holm").
+	--max_iter			[int]	Maximum number of iterations for the E-M algorithm (default = "100").
+	--alpha				[float]	Level of significance (default = "0.05").
 
     """.stripIndent()
 }
@@ -125,6 +138,9 @@ if (workflow.profile.contains('longreadstest')) {
    longreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/longreadstest.config")
 }
 
+file_excel_sample_file = new File(params.excel_sample_file)
+file_database = new File(params.database)
+
 /*
  * PIPELINE INFO
  */
@@ -143,25 +159,29 @@ summary['Profile'] = workflow.profile
 if (workflow.profile == 'illumina') summary['Data type'] = 'Illumina short reads'
 if (workflow.profile == 'illumina_test') summary['Data type'] = 'Illumina short reads test workflow'
 if (workflow.profile == 'longreadstest') summary['Data type'] = 'Long reads analysis'
-summary['Sample Input Excel File'] = params.excel_sample_file
-if (params.data_integrity_enable) summary['Data integrity'] = "Data integrity checking process enabled"
-if (params.cutadapt_enable) summary['Cutadapt'] = "Primer removal process enabled"
-if (params.figaro_enable) summary['FIGARO'] = "Optimizing microbiome rRNA gene trimming parameters for DADA2 enabled"
-if (params.dbotu3_enable) summary['dbOTU3'] = "ASV clustering based on phylogeny, distribution and abundance enabled"
-summary['Taxonomic database used'] = params.database
-if (params.filter_table_by_tax_enable) summary['Filtering process'] = "Based on taxonomy enabled"
+summary['Sample Input Excel File'] = file_excel_sample_file.name
+
+summary['Data integrity'] = params.data_integrity_enable ? "Enabled" : "Disabled"
+summary['Primer removal using Cutadapt'] = params.cutadapt_enable ? "Enabled" : "Disabled"
+summary['Optimizing DADA2 parameters using FIGARO'] = params.figaro_enable ? "Enabled" : "Disabled"
+summary['ASV clustering using swarm'] = params.swarm_clustering_enable ? "Enabled" : "Disabled"
+summary['ASV clustering using dbOTU3'] = params.dbotu3_enable ? "Enabled" : "Disabled"
+summary['Taxonomic database used'] = file_database.name
+summary['Taxonomy filtering'] = params.filter_table_by_tax_enable ? "Enabled" : "Disabled"
+summary['Data filtering'] = params.filter_table_by_data_enable ? "Enabled" : "Disabled"
 if (params.filter_table_by_data_enable) {
     if (params.filter_by_id && params.filter_by_frequency) {
-        summary['Filtering processes'] = "Based on sample ID and frequency enabled"
+        summary['    |_ based on sample ID and frequency'] = "Enabled"
     } else if (params.filter_by_id) {
-        summary['Filtering process'] = "Based on sample ID enabled"
+        summary['    |_ based on sample ID'] = "Enabled"
     } else {
-        summary['Filtering process'] = "Based on frequency enabled"
+        summary['    |_ based on frequency'] = "Enabled"
     }
 }
-if (params.filter_contaminants_enable) summary['microDecon'] = "Sample decontamination process enabled"
+summary['Sample decontamination (microDecon)'] = params.filter_contaminants_enable ? "Enabled" : "Disabled"
+summary['Differential abundance testing (ANCOM-BC)'] = params.ancombc_enable ? "Enabled" : "Disabled"
 
-log.info summary.collect { k,v -> "${k.padRight(24)}: $v" }.join("\n")
+log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
 
 // Check the hostnames against configured profiles
@@ -172,7 +192,6 @@ checkHostname()
  */
 
 /* Illumina workflow */
-if (workflow.profile.contains('illumina')) {
 
     /* Verify Cutadapt parameters */
     if (params.cutadapt_enable) {
@@ -195,9 +214,14 @@ if (workflow.profile.contains('illumina')) {
     }
 
     /* Verify DADA2 parameters */
-    if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
+    if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.n_read_learn.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
         log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all parameters in the 'DADA2 process parameters' section of the illumina.config file"
         exit 1
+    }
+
+    /* Set dbOTU3 to false if swarm clustering is activated */
+    if (params.swarm_clustering_enable) {
+        params.dbotu3_enable = false
     }
 
     /* Verify the taxonomic database */
@@ -236,14 +260,27 @@ if (workflow.profile.contains('illumina')) {
         }
     }
 
-    /* Verify parameters for filter_contaminants process process if it is activated */
+    /* Verify parameters for filter_contaminants process if it is activated */
     if (params.filter_contaminants_enable) {
         if (params.list_control_samples.isEmpty()) {
                 log.error "ERROR: The list of control samples is empty. Please check and configure the '--control_samples' parameter in the illumina.config file"
                 exit 1
         }
     }
-}
+
+    /* Verify parameters for ANCOM-BC if it is activated */
+    if (params.ancombc_enable) {
+        if (params.ancombc_formula.isEmpty() || params.p_adj_method.isEmpty() || params.max_iter.isEmpty() || params.alpha.isEmpty()) {
+            log.error "ERROR: At least one of the ANCOM-BC parameters is empty. Please check and configure the '--ancombc_formula', '--p_adj_method', '--max_iter' and/or '--alpha' parameters in the illumina.config file"
+            exit 1
+        }
+        if (params.use_reference) {
+            if (params.reference_level.isEmpty()) {
+                log.error "ERROR: At least one of the ANCOM-BC parameters is empty. Please check and configure the '--ancombc_formula', '--p_adj_method', '--max_iter' and/or '--alpha' parameters in the illumina.config file"
+                exit 1
+            }
+        }
+    }
 
 /*
  *  SET UP WORKFLOW CHANNELS
@@ -254,6 +291,14 @@ if (!workflow.profile.contains('test')) {
         .fromPath( params.excel_sample_file )
         .ifEmpty { error "ERROR: Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the your analysis config file" }
         .set { sample_file }
+}
+
+if (params.ancombc_enable) {
+    channel
+        .from(params.ancombc_formula)
+        .splitCsv(sep : ',', strip : true)
+        .flatten()
+        .set { ancombc_formula_ch }
 }
 
 /*
@@ -268,6 +313,8 @@ include { q2_import_data } from './modules/qiime2.nf'
 include { q2_cutadapt } from './modules/qiime2.nf'
 include { figaro } from './modules/figaro.nf'
 include { q2_dada2 } from './modules/qiime2.nf'
+include { swarm_clustering_processing } from './modules/swarm_clustering.nf'
+include { swarm_clustering_format_output } from './modules/swarm_clustering.nf'
 include { q2_dbOTU3 } from './modules/qiime2.nf'
 include { q2_assign_taxo } from './modules/qiime2.nf'
 include { q2_filter_table_by_tax } from './modules/qiime2.nf'
@@ -275,6 +322,7 @@ include { q2_filter_table_by_data } from './modules/qiime2.nf'
 include { filter_contaminants } from './modules/filter_contaminants.nf'
 include { q2_asv_phylogeny } from './modules/qiime2.nf'
 include { format_final_outputs } from './modules/format_final_outputs.nf'
+include { q2_ancombc } from './modules/qiime2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -316,7 +364,7 @@ workflow {
             if (params.data_integrity_enable) {
                 data_integrity(manifest,excel2tsv.out.metadata_xls)
             }
-
+params.swarm_clustering_enable
         /* Import data in QIIME2 format */
             q2_import_data(data_integrity.out.final_manifest)
         
@@ -334,16 +382,26 @@ workflow {
             dada2_input = params.cutadapt_enable ? q2_cutadapt.out.trimmed_data : q2_import_data.out.imported_data
             q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
 
+        /* OPTIONAL: swarm clustering */
+            if (params.swarm_clustering_enable) {
+                swarm_clustering_processing(q2_dada2.out.dada2_asv_seqs_fasta_abundance)
+                swarm_clustering_format_output(q2_dada2.out.dada2_table_tsv,swarm_clustering_processing.out.asv_swarm_cluster_list_tsv,swarm_clustering_processing.out.asv_swarm_seqs_clusters_fasta,excel2tsv.out.metadata_xls)
+                swarm_asv_table = swarm_clustering_format_output.out.swarm_asv_table
+                swarm_asv_seqs = swarm_clustering_format_output.out.swarm_asv_seqs
+                swarm_asv_outdir = swarm_clustering_format_output.out.swarm_asv_outdir
+                swarm_asv_seqs_fasta = swarm_clustering_processing.out.asv_swarm_seqs_clusters_fasta 
+            }
+
         /* ASV clustering using dbOTU3 */
-            if (params.dbotu3_enable) {
+            if (params.dbotu3_enable && !params.swarm_clustering_enable) {
                 q2_dbOTU3(q2_dada2.out.dada2_table,q2_dada2.out.dada2_rep_seqs,excel2tsv.out.metadata_xls)
             }
 
         /* Taxonomic assignation of ASVs */
-            asv_table = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_table : q2_dada2.out.dada2_table
-            asv_sequences = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
-            asv_outdir = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
-            asv_seqs_fasta = params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_asv_seqs_fasta : q2_dada2.out.dada2_asv_seqs_fasta
+            asv_table = params.swarm_clustering_enable ? swarm_asv_table : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_table : q2_dada2.out.dada2_table
+            asv_sequences = params.swarm_clustering_enable ? swarm_asv_seqs : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
+            asv_outdir = params.swarm_clustering_enable ? swarm_asv_outdir : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
+            asv_seqs_fasta = params.swarm_clustering_enable ? swarm_asv_seqs_fasta : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_asv_seqs_fasta : q2_dada2.out.dada2_asv_seqs_fasta
             q2_assign_taxo(asv_sequences,asv_outdir)
 
         /* OPTIONAL: Filter ASV table and ASV sequences based on taxonomy */
@@ -373,6 +431,12 @@ workflow {
         final_asv_table_tsv = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_tsv : asv_table_tsv_contaminated
         final_asv_sequences_fasta = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_fasta : asv_sequences_fasta_contaminated
         format_final_outputs(final_asv_table_tsv,final_asv_sequences_fasta)
+
+        /* OPTIONAL: Differential abundance testing using ANCOM-BC */
+        final_asv_table_qza = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_qza : asv_table 
+        if (params.ancombc_enable) {
+            q2_ancombc(final_asv_table_qza,excel2tsv.out.metadata_xls,q2_assign_taxo.out.taxonomy_assigned,ancombc_formula_ch)
+        }
 
     }
 

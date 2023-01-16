@@ -20,12 +20,12 @@ DECONTAM_ASV_SEQS_QZV=${args[9]}
 LOGCMD=${args[10]}
 
 # Convert TSV decontaminated table to BIOM format
-CMD='biom convert -i ${DECONTAM_TABLE_TSV} -o decontaminated_ASV_table.biom --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy'
+CMD='biom convert -i ${DECONTAM_TABLE_TSV} -o ${DECONTAM_TABLE_BIOM} --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy'
 echo ${CMD} >> ${LOGCMD}
 eval ${CMD}
 
 # Convert decontaminated table to QIIME 2 format
-CMD="qiime tools import --input-path decontaminated_ASV_table.biom --type 'FeatureTable[Frequency]' --input-format BIOMV210Format --output-path ${DECONTAM_TABLE_QZA}"
+CMD="qiime tools import --input-path ${DECONTAM_TABLE_BIOM} --type 'FeatureTable[Frequency]' --input-format BIOMV210Format --output-path ${DECONTAM_TABLE_QZA}"
 echo ${CMD} >> ${LOGCMD}
 eval ${CMD}
 

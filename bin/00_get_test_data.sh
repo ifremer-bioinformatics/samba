@@ -21,7 +21,7 @@ elif [ "${DATATYPE}" == "shortreads" ]
 then
   # short reads dataset
   DATADIR="${BASEDIR}/training_dataset/${DATATYPE}"
-  DB="SILVA_v138.1_ref_V4_515f-806r_Caporaso.qza"
+  DB="SILVA_v138.1_ref_V3-V4_PCR1F460-PCR1R460_GenoToul.qza"
 else 
   echo "DATATYPE is incorrect"
   exit 1 
@@ -30,8 +30,8 @@ fi
 if [ ! -d "${DATADIR}" ] || ([ -d "${DATADIR}" ] && [ ! "$(ls -A ${DATADIR})" ])
 then 
      mkdir -p ${DATADIR}
-     wget -r -nc -l2 -nH --cut-dirs=9 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/excel_sample_file.xls -P ${DATADIR}
-     wget -r -nc -l2 -nH --cut-dirs=9 -A '_001.fastq.gz' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/dna-sequence-raw -P ${DATADIR}
+     wget -r -nc -l2 -nH --cut-dirs=9 ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/bactrac_sample_file.xls -P ${DATADIR}
+     wget -r -nc -l2 -nH --cut-dirs=9 -A '.fastq.gz' ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/v4/training_dataset/${DATATYPE}/dna-sequence-raw -P ${DATADIR}
 fi
 if [ ! -f "${BASEDIR}/tax.databases.test/${DATATYPE}/${DB}" ]
 then
@@ -43,8 +43,8 @@ then
     fi
 fi
 
-if ([ -f "${BASEDIR}/tax.databases.test/${DATATYPE}/${DB}" ] && [ -f "${BASEDIR}/training_dataset/${DATATYPE}/excel_sample_file.xls" ])
+if ([ -f "${BASEDIR}/tax.databases.test/${DATATYPE}/${DB}" ] && [ -f "${BASEDIR}/training_dataset/${DATATYPE}/bactrac_sample_file.xls" ])
 then
    touch ${READY}
-   ln -s "${BASEDIR}/training_dataset/${DATATYPE}/excel_sample_file.xls" "${XLS}"
+   ln -s "${BASEDIR}/training_dataset/${DATATYPE}/bactrac_sample_file.xls" "${XLS}"
 fi

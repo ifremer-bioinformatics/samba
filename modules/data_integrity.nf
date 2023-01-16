@@ -16,7 +16,8 @@ process data_integrity {
 
     script:
     def datatype = params.singleEnd ? "single" : "paired"
+    def control = params.list_control_samples ? params.list_control_samples : "none"
     """
-    02_data_integrity.py -e ${metadata} -a ${manifest} -p ${params.primer_filter} -s ${datatype} -t ${task.cpus} -c ${params.list_control_samples} &> data_integrity.log 2>&1
+    02_data_integrity.py -e ${metadata} -a ${manifest} -p ${params.primer_filter} -s ${datatype} -t ${task.cpus} -c ${control} &> data_integrity.log 2>&1
     """
 }

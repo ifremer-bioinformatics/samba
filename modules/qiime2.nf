@@ -74,13 +74,15 @@ process q2_dada2 {
         path('DADA2_table.qzv')
         path('DADA2_process_stats.qz*')
         path('06_DADA2_output'), emit: dada2_outdir
+        path('06_DADA2_output/dada2_asv_table.tsv'), emit: dada2_table_tsv
         path('06_DADA2_output/sequences.fasta'), emit: dada2_asv_seqs_fasta
+        path('sequences_with_abundance.fasta'), emit: dada2_asv_seqs_fasta_abundance
         path('v_dada2.txt')
         path('completecmd')
 
     script:
     """
-    06_q2_dada2.sh ${params.singleEnd} ${dada2_input_data} ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.truncQ} ${params.FmaxEE} ${params.RmaxEE} ${params.pooling_method} ${params.chimeras_method} ${task.cpus} DADA2_rep_seqs.qza DADA2_table.qza DADA2_process_stats.qza DADA2_process_stats.qzv DADA2_table.qzv ${metadata} DADA2_rep_seqs.qzv 06_DADA2_output completecmd &> q2_dada2.log 2>&1
+    06_q2_dada2.sh ${params.singleEnd} ${dada2_input_data} ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.truncQ} ${params.FmaxEE} ${params.RmaxEE} ${params.n_read_learn} ${params.pooling_method} ${params.chimeras_method} ${task.cpus} DADA2_rep_seqs.qza DADA2_table.qza DADA2_process_stats.qza DADA2_process_stats.qzv DADA2_table.qzv ${metadata} DADA2_rep_seqs.qzv 06_DADA2_output completecmd &> q2_dada2.log 2>&1
     echo '1.26.0' > v_dada2.txt
     """
 
@@ -113,7 +115,7 @@ process q2_dbOTU3 {
 
     script:
     """
-    07_q2_dbotu3.sh ${asv_table} ${asv_seqs} ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} dbOTU3_seqs.qza dbOTU3_table.qza dbOTU3_details.txt dbOTU3_table.qzv ${metadata} dbOTU3_seqs.qzv 07_dbOTU3_output completecmd &> q2_dbotu3.log 2>&1
+    07a_q2_dbotu3.sh ${asv_table} ${asv_seqs} ${params.gen_crit} ${params.abund_crit} ${params.pval_crit} dbOTU3_seqs.qza dbOTU3_table.qza dbOTU3_details.txt dbOTU3_table.qzv ${metadata} dbOTU3_seqs.qzv 07_dbOTU3_output completecmd &> q2_dbotu3.log 2>&1
     echo "1.5.3" > v_dbotu3.txt
     """
 
@@ -219,9 +221,12 @@ process q2_filter_table_by_data {
 process q2_asv_phylogeny {
 
     label 'qiime2_env'
+    label 'multithreads'
 
     publishDir "${params.outdir}/${params.asv_phylogeny_results}", mode: 'copy', pattern: 'asv_phylogeny.nwk'
     publishDir "${params.outdir}/${params.steps_data_dirname}", mode: 'copy', pattern: 'asv_phylogeny'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern : 'v_mafft.txt'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern : 'v_fasttree.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phylo -> "cmd/12_${task.process}_complete.sh" }
 
     input:
@@ -230,11 +235,47 @@ process q2_asv_phylogeny {
     output:
         path('asv_phylogeny')
         path('asv_phylogeny.nwk'), emit: asv_phylogeny_nwk
+        path('v_mafft.txt')
+        path('v_fasttree.txt')
         path('completecmd')
 
     script:
     """
     12_q2_phylogeny.sh ${task.cpus} ${asv_seqs} asv_phylogeny asv_phylogeny.nwk completecmd >& q2_phylogeny.log 2>&1
+    mafft --version > v_mafft.txt
+    echo '2.1.11' > v_fasttree.txt
+    """
+
+}
+
+process q2_ancombc {
+
+    tag "${ancombc_formula}"
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.ancombc_results}", mode: 'copy', pattern: '*_level_ancombc_*'
+    publishDir "${params.outdir}/${params.ancombc_step}", mode: 'copy', pattern: '*.qz*'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { completecmd_ancombc -> "cmd/13_${task.process}_complete.sh" }
+
+    input:
+        path(asv_table)
+        path(metadata)
+        path(taxonomy)
+        each(ancombc_formula)
+
+    output:
+        path('ancombc_output_*.qza')
+        path('*_level_ancombc_*')
+        path('ancombc_family_output_*.qza')
+        path('ancombc_genus_output_*.qza')
+        path('completecmd')
+
+    script:
+    """
+    13a_q2_ancombc.sh ${asv_table} ${metadata} ${params.use_reference} ${params.reference_level} ${params.p_adj_method} ${params.max_iter} ${params.alpha} ${ancombc_formula} ancombc_output_${ancombc_formula}.qza asv_level_ancombc_${ancombc_formula} ${taxonomy} ancombc_table_family_${ancombc_formula}.qza ancombc_family_output_${ancombc_formula}.qza family_level_ancombc_${ancombc_formula} ancombc_table_genus_${ancombc_formula}.qza ancombc_genus_output_${ancombc_formula}.qza genus_level_ancombc_${ancombc_formula} completecmd &> q2_ancom.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} asv_level_ancombc_${ancombc_formula}/lfc_slice.csv asv_level_ancombc_${ancombc_formula}/q_val_slice.csv asv_level_ancombc_${ancombc_formula}_summary.tsv
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} family_level_ancombc_${ancombc_formula}/lfc_slice.csv family_level_ancombc_${ancombc_formula}/q_val_slice.csv family_level_ancombc_${ancombc_formula}_summary.tsv
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} genus_level_ancombc_${ancombc_formula}/lfc_slice.csv genus_level_ancombc_${ancombc_formula}/q_val_slice.csv genus_level_ancombc_${ancombc_formula}_summary.tsv
     """
 
 }

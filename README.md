@@ -11,7 +11,7 @@ SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-
 - verifying integrity of raw reads and metadata
 - processing data using commonly used procedure with [QIIME 2](https://qiime2.org/) (version 2022.11 ; Bolyen *et al.*, 2019) and [DADA2](https://docs.qiime2.org/2022.11/plugins/available/dada2/?highlight=dada2) (Callahan *et al.*, 2016)
 - adding new steps to build high quality ASV count tables by:
-    - ASV clustering relying on either [dbOTU3](https://github.com/swo/dbotu3) (Olesen *et al.*, 2017) and [swarm](https://github.com/torognes/swarm) (Mahé *et al.*, 2014]
+    - ASV clustering relying on either [dbOTU3](https://github.com/swo/dbotu3) (Olesen *et al.*, 2017) and [swarm](https://github.com/torognes/swarm) (Mahé *et al.*, 2022)
     - [microDecon](https://github.com/donaldtmcknight/microDecon) (McKnight *et al.*, 2019)
 - conducting extended statistical and ecological analyses using homemade Rscript
 - producing a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures

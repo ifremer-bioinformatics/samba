@@ -1,6 +1,6 @@
 # **SAMBA: Standardized and Automated MetaBarcoding Analyses workflow**.
 
-[![SAMBA version](https://img.shields.io/badge/samba%20version-v4.0.0-red?labelColor=000000)](https://www.nextflow.io/)
+[![SAMBA version](https://img.shields.io/badge/samba%20version-v4.0.0-red?labelColor=000000)](https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A522.10.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
 [![Run with with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Developers](https://img.shields.io/badge/Developers-SeBiMER-yellow?labelColor=000000)](https://ifremer-bioinformatics.github.io/)
@@ -9,8 +9,10 @@
 
 SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-art bioinformatics and statistical methods to conduct reproducible eDNA analyses using [Nextflow](https://www.nextflow.io) (Di Tommaso *et al.*, 2017). SAMBA performs complete metabarcoding analysis by :
 - verifying integrity of raw reads and metadata
-- processing data using commonly used procedure with [QIIME 2](https://qiime2.org/) (version 2022.08 ; Bolyen *et al.*, 2019) and [DADA2](https://docs.qiime2.org/2022.8/plugins/available/dada2/?highlight=dada2) (Callahan *et al.*, 2016)
-- adding new steps to build high quality ASV count tables relying on [dbOTU3](https://github.com/swo/dbotu3) (Olesen *et al.*, 2017) and [microDecon](https://github.com/donaldtmcknight/microDecon) (McKnight *et al.*, 2019)
+- processing data using commonly used procedure with [QIIME 2](https://qiime2.org/) (version 2022.11 ; Bolyen *et al.*, 2019) and [DADA2](https://docs.qiime2.org/2022.11/plugins/available/dada2/?highlight=dada2) (Callahan *et al.*, 2016)
+- adding new steps to build high quality ASV count tables by:
+    - ASV clustering relying on either [dbOTU3](https://github.com/swo/dbotu3) (Olesen *et al.*, 2017) and [swarm](https://github.com/torognes/swarm) (Mahé *et al.*, 2014]
+    - [microDecon](https://github.com/donaldtmcknight/microDecon) (McKnight *et al.*, 2019)
 - conducting extended statistical and ecological analyses using homemade Rscript
 - producing a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures
 

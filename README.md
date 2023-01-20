@@ -20,17 +20,21 @@ Optional processes can also be performed through SAMBA such as analysis of compo
 
 The SAMBA pipeline can run tasks across multiple compute infrastructures in a very portable manner. It comes with singularity containers making installation trivial and results highly reproducible.
 
+![SAMBA Workflow](./docs/images/samba-v3.0.png)
+
 ## Quick Start
 
 i. Install [`nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
-ii. Install [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility
+ii. Install [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility. 
+
+*NOTE:* If your HPC nodes don't have any internet access. Please download before any workflow run the singularity images available on Ifremer FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/tools/SAMBA/v4](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/tools/SAMBA/v4). Then set the `$NXF_SINGULARITY_CACHEDIR` environment variable to the path where you just downloaded the images.  
 
 iii. Download the pipeline and test it on a minimal dataset with a single command
 
-* for short reads test :
+* for Illumina short reads test :
 ```bash
-nextflow run main.nf -profile shortreadstest,singularity
+nextflow run main.nf -profile illumina_test,singularity
 ```
 
 * for long reads test :
@@ -46,33 +50,11 @@ iv. Start running your own analysis!
 nextflow run main.nf -profile singularity,custom [-c <institute_config_file>]
 ```
 
-See [usage docs](docs/usage.md) for a complete description of all of the options available when running the pipeline.
-
-## Documentation
-
-The samba workflow comes with documentation about the pipeline, found in the `docs/` directory:
-
-1. [Introduction](docs/usage.md#introduction)
-2. [Pipeline installation](docs/usage.md#install-the-pipeline)
-    * [Local installation](docs/usage.md#local-installation)
-    * [Adding your own system config](docs/usage.md#your-own-config)
-3. [Running the pipeline](docs/usage.md#running-the-pipeline)
-4. [Output and how to interpret the results](docs/output.md)
-5. [Troubleshooting](docs/troubleshooting.md)
-
-Here is an overview of the many steps available in samba pipeline:
-
-![SAMBA Workflow](./docs/images/samba-v3.0.png)
-
-At the end of samba pipeline execution, you get an interactive HTML report that's look like this one:
-
-![SAMBA report](docs/images/samba-report.gif)
-
-Full report description is available in [samba pipeline documentation](docs/output.md).
+See the [SAMBA wiki](https://gitlab.ifremer.fr/bioinfo/SAMBA-nextflow/-/wikis/home) for a complete description of the workflow.
 
 ## Credits
 
-samba is written by [SeBiMER](https://ifremer-bioinformatics.github.io/), the Bioinformatics Core Facility of [IFREMER](https://wwz.ifremer.fr/en/).
+SAMBA is written by [SeBiMER](https://ifremer-bioinformatics.github.io/), the Bioinformatics Core Facility of [IFREMER](https://wwz.ifremer.fr/en/).
 
 ## Contributions
 
@@ -90,10 +72,3 @@ For further information or help, don't hesitate to get in touch with the samba d
 ## Citation
 
 <!-- If you use  samba for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-### References 
-- Current singularity images are available on Ifremer FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/tools/SAMBA/v4](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/tools/SAMBA/v4)
-
-<!-- References databases (SILVA v132, PR2, UNITE) are available on IFREMER FTP at [ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10](ftp://ftp.ifremer.fr/ifremer/dataref/bioinfo/sebimer/sequence-set/SAMBA/2019.10).  -->
-
-- Training dataset used from [Qiime2 Tutorial] (https://docs.qiime2.org/2019.7/tutorials/atacama-soils), [associated publication](https://msystems.asm.org/content/2/3/e00195-16).

@@ -95,12 +95,21 @@ def helpMessage() {
 
 	Differential abundance testing using ANCOM-BC:
 	--ancombc_enable		[bool]	Set to true to run differential abundance analysis on your data (default = false).
-	--use_reference			[bool]	Set to true if you have a reference group for the differential abundance analysis (default = false).
+	--use_custom_reference		[bool]	Set to true if you have a reference group for the differential abundance analysis (default = false).
 	--reference_level		[str]	Group of samples to use as reference. Syntax: "column_name::column_value"
 	--ancombc_formula		[str]	Variable to analyse for differential abundance. Can be: "column_name" (test only for difference between values in this column) ; "column_name_1,column_name2,..." (as previously but for multiple variable) or "column_name_1+column_name2" (test difference using interacting variables).
 	--p_adj_method			[str]	Pvalue adjusting method. Can be: 'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none' (default = "holm").
 	--max_iter			[int]	Maximum number of iterations for the E-M algorithm (default = "100").
 	--alpha				[float]	Level of significance (default = "0.05").
+
+	Functional predictions using PICRUSt2:
+	--picrust2_enable		[bool]  Set to true to run functional predictions (only efficient for the 16S marker gene) (default = false).
+	--traits_db			[str]	Gene families to predict. Can be: COG, EC, KO, PFAM, TIGRFAM (default = "EC,KO").
+	--nsti				[float]	Max nsti value accepted. NSTI cut-off of 2 should eliminate junk sequences (default = "0.2").
+	--hsp_method			[str]	HSP method of your choice. 'mp' the most accurate prediction method, faster method: 'pic' (default = "mp").
+	--min_reads			[int]	Minimum number of reads across all samples for each input ASV (default = "1").
+	--min_samples			[int]	Minimum number of samples that an ASV needs to be identfied within (default = "1").
+	--picrust2_tested_variable	[str]	Variable(s) of interest for functional predictions (comma-separated list).
 
     """.stripIndent()
 }
@@ -180,6 +189,10 @@ if (params.filter_table_by_data_enable) {
 }
 summary['Sample decontamination (microDecon)'] = params.filter_contaminants_enable ? "Enabled" : "Disabled"
 summary['Differential abundance testing (ANCOM-BC)'] = params.ancombc_enable ? "Enabled" : "Disabled"
+summary['Functional predictions (PICRUSt2)'] = params.picrust2_enable ? "Enabled" : "Disabled"
+if (params.picrust2_enable) {
+    summary['    |_ Predicted Gene Families'] = params.traits_db
+}
 
 log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
@@ -274,11 +287,19 @@ checkHostname()
             log.error "ERROR: At least one of the ANCOM-BC parameters is empty. Please check and configure the '--ancombc_formula', '--p_adj_method', '--max_iter' and/or '--alpha' parameters in the illumina.config file"
             exit 1
         }
-        if (params.use_reference) {
+        if (params.use_custom_reference) {
             if (params.reference_level.isEmpty()) {
-                log.error "ERROR: At least one of the ANCOM-BC parameters is empty. Please check and configure the '--ancombc_formula', '--p_adj_method', '--max_iter' and/or '--alpha' parameters in the illumina.config file"
+                log.error "ERROR: No condition is provided to used as reference for the differential abundance analysis (ANCOM-BC). Please check and configure the '--reference_level' parameter in the illumina.config file"
                 exit 1
             }
+        }
+    }
+
+    /* Verify parameters for functional predictions if it is activated */
+    if (params.picrust2_enable) {
+        if (params.nsti.isEmpty() || params.hsp_method.isEmpty() || params.min_reads.isEmpty() || params.min_samples.isEmpty() || params.picrust2_tested_variable.isEmpty()) {
+            log.error "ERROR: At least one of the parameters for the functional predictions process is empty. Please check and configure the '--nsti', '--hsp_method', '--min_reads', '--min_samples' and/or '--picrust2_tested_variable' parameters in the illumina.config file"
+            exit 1
         }
     }
 
@@ -299,6 +320,14 @@ if (params.ancombc_enable) {
         .splitCsv(sep : ',', strip : true)
         .flatten()
         .set { ancombc_formula_ch }
+}
+
+if (params.picrust2_enable) {
+    channel
+        .from(params.picrust2_tested_variable)
+        .splitCsv(sep : ',', strip : true)
+        .flatten()
+        .set { picrust2_tested_variable_ch }
 }
 
 /*
@@ -323,6 +352,7 @@ include { filter_contaminants } from './modules/filter_contaminants.nf'
 include { q2_asv_phylogeny } from './modules/qiime2.nf'
 include { format_final_outputs } from './modules/format_final_outputs.nf'
 include { q2_ancombc } from './modules/qiime2.nf'
+include { picrust2 } from './modules/picrust2.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -379,17 +409,15 @@ params.swarm_clustering_enable
             }
 
         /* ASV inference using DADA2 */
+            /* ~~~ input management ~~~ */
             dada2_input = params.cutadapt_enable ? q2_cutadapt.out.trimmed_data : q2_import_data.out.imported_data
+            /* ~~~ process ~~~ */
             q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
 
         /* OPTIONAL: swarm clustering */
             if (params.swarm_clustering_enable) {
                 swarm_clustering_processing(q2_dada2.out.dada2_asv_seqs_fasta_abundance)
                 swarm_clustering_format_output(q2_dada2.out.dada2_table_tsv,swarm_clustering_processing.out.asv_swarm_cluster_list_tsv,swarm_clustering_processing.out.asv_swarm_seqs_clusters_fasta,excel2tsv.out.metadata_xls)
-                swarm_asv_table = swarm_clustering_format_output.out.swarm_asv_table
-                swarm_asv_seqs = swarm_clustering_format_output.out.swarm_asv_seqs
-                swarm_asv_outdir = swarm_clustering_format_output.out.swarm_asv_outdir
-                swarm_asv_seqs_fasta = swarm_clustering_processing.out.asv_swarm_seqs_clusters_fasta 
             }
 
         /* ASV clustering using dbOTU3 */
@@ -398,46 +426,62 @@ params.swarm_clustering_enable
             }
 
         /* Taxonomic assignation of ASVs */
-            asv_table = params.swarm_clustering_enable ? swarm_asv_table : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_table : q2_dada2.out.dada2_table
-            asv_sequences = params.swarm_clustering_enable ? swarm_asv_seqs : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
-            asv_outdir = params.swarm_clustering_enable ? swarm_asv_outdir : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
-            asv_seqs_fasta = params.swarm_clustering_enable ? swarm_asv_seqs_fasta : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_asv_seqs_fasta : q2_dada2.out.dada2_asv_seqs_fasta
+            /* ~~~ input management ~~~ */
+            asv_table = params.swarm_clustering_enable ? swarm_clustering_format_output.out.swarm_asv_table : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_table : q2_dada2.out.dada2_table
+            asv_sequences = params.swarm_clustering_enable ? swarm_clustering_format_output.out.swarm_asv_seqs : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_seqs : q2_dada2.out.dada2_rep_seqs
+            asv_outdir = params.swarm_clustering_enable ? swarm_clustering_format_output.out.swarm_asv_outdir : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_outdir : q2_dada2.out.dada2_outdir
+            asv_sequences_fasta = params.swarm_clustering_enable ? swarm_clustering_processing.out.asv_swarm_seqs_clusters_fasta : params.dbotu3_enable ? q2_dbOTU3.out.dbotu3_asv_seqs_fasta : q2_dada2.out.dada2_asv_seqs_fasta
+            /* ~~~ process ~~~ */
             q2_assign_taxo(asv_sequences,asv_outdir)
+
+        /* OPTIONAL: Filter contaminant ASVs using control samples */
+            if (params.filter_contaminants_enable) {
+                filter_contaminants(q2_assign_taxo.out.asv_tax_table_tsv,asv_sequences_fasta,excel2tsv.out.metadata_xls)
+            }
 
         /* OPTIONAL: Filter ASV table and ASV sequences based on taxonomy */
             if (params.filter_table_by_tax_enable) {
+                /* ~~~ input management ~~~ */
+                asv_table = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_qza : asv_table
+                asv_sequences = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_qza : asv_sequences
+                /* ~~~ process ~~~ */
                 q2_filter_table_by_tax(asv_table,asv_sequences,q2_assign_taxo.out.taxonomy_assigned,q2_assign_taxo.out.taxonomy_tsv,excel2tsv.out.metadata_xls)
             }
 
         /* OPTIONAL: Filter ASV table and ASV sequences based on data */
-            asv_table = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_qza : asv_table
-            asv_sequences = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_seqs_tax_filtered_qza : asv_sequences
             if (params.filter_table_by_data_enable) {
+                /* ~~~ input management ~~~ */
+                asv_table = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_qza : asv_table
+                asv_sequences = params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_seqs_tax_filtered_qza : asv_sequences
+                /* ~~~ process ~~~ */
                 q2_filter_table_by_data(asv_table,asv_sequences,excel2tsv.out.metadata_xls,q2_assign_taxo.out.taxonomy_tsv)
             }
 
-        /* OPTIONAL: Filter contaminant ASVs using control samples */
-            asv_table_tsv_contaminated = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_table_filtered_tsv : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_tsv : q2_assign_taxo.out.asv_tax_table_tsv 
-            asv_sequences_fasta_contaminated = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.filter_table_by_data_seqs_fasta : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.filter_table_by_tax_seqs_fasta : asv_seqs_fasta
-            if (params.filter_contaminants_enable) {
-                filter_contaminants(asv_table_tsv_contaminated,asv_sequences_fasta_contaminated,excel2tsv.out.metadata_xls)
-            }
-
         /* Construct a phylogeny of ASVs */
-        asv_seqs_phylo = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_qza : params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_seqs_filtered_qza : asv_sequences
-        q2_asv_phylogeny(asv_seqs_phylo) 
+            /* ~~~ input management ~~~ */
+            asv_seqs_phylo = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_seqs_filtered_qza : asv_sequences
+            /* ~~~ process ~~~ */
+            q2_asv_phylogeny(asv_seqs_phylo) 
 
         /* Format final outputs */
-        final_asv_table_tsv = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_tsv : asv_table_tsv_contaminated
-        final_asv_sequences_fasta = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_fasta : asv_sequences_fasta_contaminated
-        format_final_outputs(final_asv_table_tsv,final_asv_sequences_fasta)
+            /* ~~~ input management ~~~ */
+            final_asv_table_tsv = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_table_filtered_tsv : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_tsv : params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_tsv : q2_assign_taxo.out.asv_tax_table_tsv
+            final_asv_sequences_fasta = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.filter_table_by_data_seqs_fasta : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.filter_table_by_tax_seqs_fasta : params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_fasta : asv_sequences_fasta
+            final_asv_table_biom = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_table_filtered_biom : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_biom : params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_biom : q2_assign_taxo.out.asv_tax_table_biom
+            final_asv_table_qza = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_table_filtered_qza : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_table_tax_filtered_qza : params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_qza : asv_table
+            final_asv_seqs_qza = params.filter_table_by_data_enable ? q2_filter_table_by_data.out.final_asv_seqs_filtered_qza : params.filter_table_by_tax_enable ? q2_filter_table_by_tax.out.asv_seqs_tax_filtered_qza : params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_seqs_qza : asv_sequences
+            /* ~~~ process ~~~ */
+            format_final_outputs(final_asv_table_tsv,final_asv_sequences_fasta,final_asv_table_biom,final_asv_table_qza,final_asv_seqs_qza)
 
         /* OPTIONAL: Differential abundance testing using ANCOM-BC */
-        final_asv_table_qza = params.filter_contaminants_enable ? filter_contaminants.out.decontam_ASV_table_qza : asv_table 
-        if (params.ancombc_enable) {
-            q2_ancombc(final_asv_table_qza,excel2tsv.out.metadata_xls,q2_assign_taxo.out.taxonomy_assigned,ancombc_formula_ch)
-        }
+            if (params.ancombc_enable) {
+                q2_ancombc(final_asv_table_qza,excel2tsv.out.metadata_xls,q2_assign_taxo.out.taxonomy_assigned,ancombc_formula_ch)
+            }
 
+        /* OPTIONAL: Functional predictions using PICRUSt2 */
+        if (params.picrust2_enable) {
+            picrust2(final_asv_table_biom,final_asv_sequences_fasta)
+        }
     }
 
 }

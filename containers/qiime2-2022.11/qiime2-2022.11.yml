@@ -131,6 +131,7 @@ dependencies:
   - gettext=0.21.1
   - gfortran_impl_linux-64=12.2.0
   - giflib=5.2.1
+  - git
   - glib=2.74.1
   - glib-tools=2.74.1
   - glpk=5.0

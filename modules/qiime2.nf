@@ -254,6 +254,7 @@ process q2_ancombc {
     label 'qiime2_env'
 
     publishDir "${params.outdir}/${params.ancombc_results}", mode: 'copy', pattern: '*_level_ancombc_*'
+    publishDir "${params.outdir}/${params.ancombc_results}", mode: 'copy', pattern: 'heatmap_ancombc_*'
     publishDir "${params.outdir}/${params.ancombc_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern : 'completecmd', saveAs : { completecmd_ancombc -> "cmd/13_${task.process}_complete.sh" }
 
@@ -268,14 +269,16 @@ process q2_ancombc {
         path('*_level_ancombc_*')
         path('ancombc_family_output_*.qza')
         path('ancombc_genus_output_*.qza')
+        path('heatmap_ancombc_*')
         path('completecmd')
 
     script:
+    def ref_level = params.use_custom_reference ? params.reference_level : "none"
     """
-    13a_q2_ancombc.sh ${asv_table} ${metadata} ${params.use_reference} ${params.reference_level} ${params.p_adj_method} ${params.max_iter} ${params.alpha} ${ancombc_formula} ancombc_output_${ancombc_formula}.qza asv_level_ancombc_${ancombc_formula} ${taxonomy} ancombc_table_family_${ancombc_formula}.qza ancombc_family_output_${ancombc_formula}.qza family_level_ancombc_${ancombc_formula} ancombc_table_genus_${ancombc_formula}.qza ancombc_genus_output_${ancombc_formula}.qza genus_level_ancombc_${ancombc_formula} completecmd &> q2_ancom.log 2>&1
-    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} asv_level_ancombc_${ancombc_formula}/lfc_slice.csv asv_level_ancombc_${ancombc_formula}/q_val_slice.csv asv_level_ancombc_${ancombc_formula}_summary.tsv
-    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} family_level_ancombc_${ancombc_formula}/lfc_slice.csv family_level_ancombc_${ancombc_formula}/q_val_slice.csv family_level_ancombc_${ancombc_formula}_summary.tsv
-    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} genus_level_ancombc_${ancombc_formula}/lfc_slice.csv genus_level_ancombc_${ancombc_formula}/q_val_slice.csv genus_level_ancombc_${ancombc_formula}_summary.tsv
+    13a_q2_ancombc.sh ${asv_table} ${metadata} ${params.use_custom_reference} ${ref_level} ${params.p_adj_method} ${params.max_iter} ${params.alpha} ${ancombc_formula} ancombc_output_${ancombc_formula}.qza asv_level_ancombc_${ancombc_formula} ${taxonomy} ancombc_table_family_${ancombc_formula}.qza ancombc_family_output_${ancombc_formula}.qza family_level_ancombc_${ancombc_formula} ancombc_table_genus_${ancombc_formula}.qza ancombc_genus_output_${ancombc_formula}.qza genus_level_ancombc_${ancombc_formula} completecmd &> q2_ancom.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} asv_level_ancombc_${ancombc_formula}/lfc_slice.csv asv_level_ancombc_${ancombc_formula}/q_val_slice.csv asv_level_ancombc_${ancombc_formula}_summary.tsv ${metadata} heatmap_ancombc_asv_level_${ancombc_formula}
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} family_level_ancombc_${ancombc_formula}/lfc_slice.csv family_level_ancombc_${ancombc_formula}/q_val_slice.csv family_level_ancombc_${ancombc_formula}_summary.tsv ${metadata} heatmap_ancombc_family_level_${ancombc_formula}
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} genus_level_ancombc_${ancombc_formula}/lfc_slice.csv genus_level_ancombc_${ancombc_formula}/q_val_slice.csv genus_level_ancombc_${ancombc_formula}_summary.tsv ${metadata} heatmap_ancombc_genus_level_${ancombc_formula}
     """
 
 }

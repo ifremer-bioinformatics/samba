@@ -6,31 +6,44 @@
 ###############################################################################
 
 args=("$@")
+FILTERING_TYPE=${args[0]}
+ASV_TABLE=${args[1]}
+TAX_QZA=${args[2]}
+TAX_TO_FILTER=${args[3]}
+FILTERED_TAX_TABLE_QZA=${args[4]}
+ASV_SEQS=${args[5]}
+FILTERED_TAX_SEQS_QZA=${args[6]}
+FILTERED_TAX_TABLE_QZV=${args[7]}
+METADATA=${args[8]}
+FILTERED_TAX_SEQS_QZV=${args[9]}
+FILTERED_TAX_OUTPUT=${args[10]}
+TAX_TSV=${args[11]}
+FILTERED_TAX_TABLE_BIOM=${args[12]}
+FILTERED_TAX_TABLE_TSV=${args[13]}
+LOGCMD=${args[14]}
 
-ASV_TABLE=${args[0]}
-TAX_QZA=${args[1]}
-TAX_TO_EXCLUDE=${args[2]}
-FILTERED_TAX_TABLE_QZA=${args[3]}
-ASV_SEQS=${args[4]}
-FILTERED_TAX_SEQS_QZA=${args[5]}
-FILTERED_TAX_TABLE_QZV=${args[6]}
-METADATA=${args[7]}
-FILTERED_TAX_SEQS_QZV=${args[8]}
-FILTERED_TAX_OUTPUT=${args[9]}
-TAX_TSV=${args[10]}
-FILTERED_TAX_TABLE_BIOM=${args[11]}
-FILTERED_TAX_TABLE_TSV=${args[12]}
-LOGCMD=${args[13]}
-
-# Filtering ASV table based on taxonomy
-CMD="qiime taxa filter-table --i-table ${ASV_TABLE} --i-taxonomy ${TAX_QZA} --p-exclude ${TAX_TO_EXCLUDE} --o-filtered-table ${FILTERED_TAX_TABLE_QZA}"
-echo ${CMD} > ${LOGCMD}
-eval ${CMD}
+if [ "${FILTERING_TYPE}" = "exclude" ]
+then
+    # Exclude ASV from the ASV table based on taxonomy
+    CMD="qiime taxa filter-table --i-table ${ASV_TABLE} --i-taxonomy ${TAX_QZA} --p-exclude ${TAX_TO_FILTER} --o-filtered-table ${FILTERED_TAX_TABLE_QZA}"
+    echo ${CMD} > ${LOGCMD}
+    eval ${CMD}
     
-# Filtering ASV sequences based on taxonomy
-CMD="qiime taxa filter-seqs --i-sequences ${ASV_SEQS} --i-taxonomy ${TAX_QZA} --p-exclude ${TAX_TO_EXCLUDE} --o-filtered-sequences ${FILTERED_TAX_SEQS_QZA}"
-echo ${CMD} >> ${LOGCMD}
-eval ${CMD}
+    # Exclude ASV sequences based on taxonomy
+    CMD="qiime taxa filter-seqs --i-sequences ${ASV_SEQS} --i-taxonomy ${TAX_QZA} --p-exclude ${TAX_TO_FILTER} --o-filtered-sequences ${FILTERED_TAX_SEQS_QZA}"
+    echo ${CMD} >> ${LOGCMD}
+    eval ${CMD}
+elif [ "${FILTERING_TYPE}" = "include" ]
+    # Only include ASV from the ASV table based on taxonomy
+    CMD="qiime taxa filter-table --i-table ${ASV_TABLE} --i-taxonomy ${TAX_QZA} --p-include ${TAX_TO_FILTER} --o-filtered-table ${FILTERED_TAX_TABLE_QZA}"
+    echo ${CMD} > ${LOGCMD}
+    eval ${CMD}
+
+    # Only include ASV sequences based on taxonomy
+    CMD="qiime taxa filter-seqs --i-sequences ${ASV_SEQS} --i-taxonomy ${TAX_QZA} --p-include ${TAX_TO_FILTER} --o-filtered-sequences ${FILTERED_TAX_SEQS_QZA}"
+    echo ${CMD} >> ${LOGCMD}
+    eval ${CMD}
+fi
 
 # Export all data to an QIIME 2 html report
 CMD="qiime feature-table summarize --i-table ${FILTERED_TAX_TABLE_QZA} --o-visualization ${FILTERED_TAX_TABLE_QZV} --m-sample-metadata-file ${METADATA} ;

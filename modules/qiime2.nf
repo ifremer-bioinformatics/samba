@@ -180,7 +180,7 @@ process q2_filter_table_by_tax {
 
     script:
     """
-    09_q2_filter_table_by_tax.sh ${asv_table} ${tax_qza} ${params.tax_to_exclude} asv_table_tax_filtered.qza ${asv_seqs} asv_seqs_tax_filtered.qza asv_table_tax_filtered.qzv ${metadata} asv_seqs_tax_filtered.qzv 09_filter_table_by_tax_output ${tax_tsv} asv_table_tax_filtered.biom asv_table_tax_filtered.tsv completecmd &> q2_filter_table_by_tax.log 2>&1
+    09_q2_filter_table_by_tax.sh ${params.filtering_type} ${asv_table} ${tax_qza} ${params.tax_to_filter} asv_table_tax_filtered.qza ${asv_seqs} asv_seqs_tax_filtered.qza asv_table_tax_filtered.qzv ${metadata} asv_seqs_tax_filtered.qzv 09_filter_table_by_tax_output ${tax_tsv} asv_table_tax_filtered.biom asv_table_tax_filtered.tsv completecmd &> q2_filter_table_by_tax.log 2>&1
     """
 
 }

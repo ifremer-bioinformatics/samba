@@ -78,7 +78,8 @@ def helpMessage() {
 
 	Filter ASV table and ASV sequences based on taxonomy:
 	--filter_table_by_tax_enable	[bool]	Set to true to filter ASV table and ASV sequences based on taxonomic assignation (default = false).
-	--tax_to_exclude		[str]	List of taxa you want to exclude (comma-separated list).
+	--filtering_type		[str]	Type of filtering: 'exclude' if you want to exclude some taxa or 'include' if you want to keep only some taxa
+	--tax_to_filter			[str]	List of taxa you want to filter (comma-separated list).
 
 	Filter ASV table and ASV sequences based on data:
 	--filter_table_by_data_enable	[bool]	Set to true to filter ASV table and ASV sequences based on data (sample ID and/or frequency/contingency) (default = false).
@@ -177,6 +178,10 @@ summary['ASV clustering using swarm'] = params.swarm_clustering_enable ? "Enable
 summary['ASV clustering using dbOTU3'] = params.dbotu3_enable ? "Enabled" : "Disabled"
 summary['Taxonomic database used'] = file_database.name
 summary['Taxonomy filtering'] = params.filter_table_by_tax_enable ? "Enabled" : "Disabled"
+if (params.filter_table_by_tax_enable) {
+    summary['    |_ Type of tax filtering'] = params.filtering_type
+    summary['    |_ Taxa to filter'] = params.tax_to_filter
+}
 summary['Data filtering'] = params.filter_table_by_data_enable ? "Enabled" : "Disabled"
 if (params.filter_table_by_data_enable) {
     if (params.filter_by_id && params.filter_by_frequency) {
@@ -243,10 +248,10 @@ checkHostname()
         exit 1
     }
 
-    /* Verify the list of taxa to exclude if params.filter_table_by_tax_enable process is activated */
+    /* Verify the list of taxa to filter if params.filter_table_by_tax_enable process is activated */
     if (params.filter_table_by_tax_enable) {
-        if (params.tax_to_exclude.isEmpty()) {
-            log.error "ERROR: The list of taxa to exclude is empty. Please check and configure the '--tax_to_exclude' parameter in the illumina.config file"
+        if (params.filtering_type.isEmpty() || params.tax_to_filter.isEmpty()) {
+            log.error "ERROR: Type of tax filtering and/or the list of taxa to filter is empty. Please check and configure the '--filtering_type' and '--tax_to_filter' parameters in the illumina.config file"
             exit 1
         }
     }

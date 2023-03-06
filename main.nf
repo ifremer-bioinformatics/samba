@@ -989,7 +989,7 @@ Channel.fromPath(params.input_metadata, checkIfExists:true)
    
      shell:
        """
-       lr_count_table_minimap2.py -p "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tsv &> lr_count_table.log 2>&1
+       lr_count_table_minimap2.py -b "." -t "${params.lr_taxo_flat}" -r ${params.lr_rank} -o samples.tsv &> lr_count_table.log 2>&1
        touch lr_count_table.ok
        """
    }

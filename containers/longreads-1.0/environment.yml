@@ -1,6 +1,0 @@
-name: longreads-1.0
-channels:
-  - bioconda
-dependencies:
-  - minimap2=2.17
-  - samtools=1.9

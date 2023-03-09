@@ -1,0 +1,12 @@
+name: nanopore-4.0.0
+channels:
+  - bioconda
+  - anaconda
+  - conda-forge
+dependencies:
+  - libgcc 
+  - minimap2
+  - samtools
+  - seqkit
+  - procps-ng
+  - pigz

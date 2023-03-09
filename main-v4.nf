@@ -112,6 +112,17 @@ def helpMessage() {
 	--min_samples			[int]	Minimum number of samples that an ASV needs to be identfied within (default = "1").
 	--picrust2_tested_variable	[str]	Variable(s) of interest for functional predictions (comma-separated list).
 
+	@@ PROCESS OPTIONS FOR NANOPORE ANALYSIS @@
+
+	Length filtering of raw reads:
+	--nanopore_read_minlength	[int]	Minimum length of raw nanopore reads.
+	--nanopore_read_maxlength	[int]	Maximum length of raw nanopore reads.
+
+	Read mapping using minimap2:
+	--batch_size			[int]	Minibatch size for mapping (default = "25M").
+	--minimap2_preset		[str]	minimap2 preset (default = "map-ont").
+	--minimap2_db			[path]	Path to a minimap2 index format of the taxonomic database.
+
     """.stripIndent()
 }
 
@@ -154,7 +165,7 @@ if (workflow.profile == 'nanopore,singularity') {
 
 file_excel_sample_file = new File(params.excel_sample_file)
 if (params.data_type == 'illumina') file_database = new File(params.database)
-if (params.data_type == 'nanopore') file_database = new File(params.lr_tax_fna)
+if (params.data_type == 'nanopore') file_nanopore_database = new File(params.minimap2_db)
 
 /*
  * PIPELINE INFO
@@ -204,6 +215,9 @@ if (params.data_type == 'illumina') {
     if (params.picrust2_enable) {
         summary['    |_ Predicted Gene Families'] = params.traits_db
     }
+}
+if (params.data_type == 'nanopore') {
+    summary['Taxonomic database used'] = file_nanopore_database.name
 }
 
 log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
@@ -318,7 +332,14 @@ if (params.data_type == 'illumina') {
 
 /* Nanopore workflow */
 if (params.data_type == 'illumina') {
-
+    if (params.nanopore_read_minlength.isEmpty() || params.nanopore_read_maxlength.isEmpty()) {
+        log.error "ERROR: No miminum and/or maximum length for raw nanopore reads has/have been provided. Please check and configure the '--nanopore_read_minlength' and/or 'nanopore_read_maxlength' parameters in the nanopore.config file"
+        exit 1
+    }
+    if (params.batch_size.isEmpty() || params.minimap2_preset.isEmpty() || params.minimap2_db.isEmpty()) {
+        log.error "ERROR: Please check and configure all the minimap2 parameters in the nanopore.config file: '--batch_size', 'minimap2_preset' and 'minimap2_db'"
+        exit 1
+    }
 }
 
 /*
@@ -354,6 +375,7 @@ if (params.data_type == 'illumina') {
  * IMPORTING MODULES
  */
 
+/* Illumina modules */
 include { get_test_data } from './modules/get_test_data.nf'
 include { excel2tsv } from './modules/excel2tsv.nf'
 include { addpath_testdata } from './modules/excel2tsv.nf'
@@ -373,6 +395,10 @@ include { q2_asv_phylogeny } from './modules/qiime2.nf'
 include { format_final_outputs } from './modules/format_final_outputs.nf'
 include { q2_ancombc } from './modules/qiime2.nf'
 include { picrust2 } from './modules/picrust2.nf'
+
+/* Nanopore modules */
+include { nanopore_read_length_filter } from './modules/nanopore.nf'
+include { nanopore_mapping } from './modules/nanopore.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -502,6 +528,26 @@ params.swarm_clustering_enable
         if (params.picrust2_enable) {
             picrust2(final_asv_table_biom,final_asv_sequences_fasta)
         }
+    }
+
+    /*---------------------------------------*/
+    /*                                       */
+    /* Nanopore long reads analysis          */
+    /*                                       */
+    /*---------------------------------------*/
+
+    if (params.data_type == 'nanopore') {
+
+        /* Raw reads length filter */
+            /* ~~~ input management ~~~ */
+            nanopore_manifest = manifest.splitCsv(header: true, sep:'\t').map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
+            nanopore_manifest_fastq = manifest.splitCsv(header: true, sep:'\t').map { row -> file(row."absolute-filepath") }
+            /* ~~~ process ~~~ */
+            nanopore_read_length_filter(nanopore_manifest)
+
+        /* Mapping of nanopore reads against tax database using minimap2 */
+            nanopore_mapping(nanopore_read_length_filter.out.filtered_nanopore_fastq)
+
     }
 
 }

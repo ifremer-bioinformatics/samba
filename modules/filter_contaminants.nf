@@ -9,15 +9,15 @@ process filter_contaminants {
     publishDir "${params.outdir}/${params.filter_contaminants_results}", mode: 'copy', pattern: 'filter_contaminants_export'
     publishDir "${params.outdir}/${params.filter_contaminants_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.filter_contaminants_step}", mode: 'copy', pattern: 'decontaminated_ASV_table.biom'
-    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_microdecon.txt'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filter_contaminants -> "cmd/11_${task.process}_complete.sh" }
  
-    input :
+    input:
         path(asv_table)
         path(asv_seqs)
         path(metadata)
 
-    output :
+    output:
         path('decontaminated_ASV_table.tsv'), emit: decontam_ASV_table_tsv
         path('abundance_removed.txt')
         path('ASV_removed.txt')
@@ -30,8 +30,9 @@ process filter_contaminants {
         path('filter_contaminants_export')
         path('completecmd')
         path('v_microdecon.txt')
+        path('v_seqtk.txt')
 
-    script :
+    script:
     """
     sed '1d' ${asv_table} > microdecon_table
     sed -i 's/#OTU ID/ASV_ID/g' microdecon_table
@@ -40,5 +41,6 @@ process filter_contaminants {
     cp ${baseDir}/bin/11a_filter_contaminants.R completecmd
     Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"
     11b_filter_contaminants_output.sh decontaminated_ASV_table.tsv decontaminated_ASV_table.biom decontaminated_ASV_table.qza ${asv_seqs} decontaminated_ASV.fasta decontaminated_ASV_seqs.qza decontaminated_ASV_table.qzv ${metadata} filter_contaminants_export decontaminated_ASV_seqs.qzv completecmd &> microdecon-to_qiime2.log 2>&1
+    echo '1.3-r106' > v_seqtk.txt
     """
 }

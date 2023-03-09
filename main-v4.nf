@@ -25,7 +25,7 @@ def helpMessage() {
 
 	Mandatory:
 	--excel_sample_file		[path]	Path to the XLS input file (EXCEL 97-2004) containing the manifest and metadata sheets.
-	--longreads			[bool]	Set to true to specify that the inputs are long reads (Nanopore/Pacbio) (default = false for illumina short reads).
+	--data_type			[str]	Set the type of your data. Can be: illumina, nanopore or pacbio.
 	--singleEnd			[bool]	Set to true to specify that the inputs are single-end reads (default = false).
 
 	Other options:
@@ -135,21 +135,26 @@ if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
 //Copy config files to output directory for each run
 base_params_file = file("${baseDir}/conf/base.config", checkIfExists: true)
 base_params_file.copyTo("${params.outdir}/00_pipeline_config/base.config")
-if (workflow.profile.contains('illumina')) {
-    custom_params_file = file("${baseDir}/conf/illumina.config", checkIfExists: true)
-    custom_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina.config")
+if (workflow.profile == 'illumina,singularity') {
+    illumina_params_file = file("${baseDir}/conf/illumina.config", checkIfExists: true)
+    illumina_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina.config")
 }
-if (workflow.profile.contains('illumina_test')) {
-    shortreadstest_params_file = file("${baseDir}/conf/illumina_test.config", checkIfExists: true)
-    shortreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina_test.config")
+if (workflow.profile == 'illumina_test,singularity') {
+    illumina_test_params_file = file("${baseDir}/conf/illumina_test.config", checkIfExists: true)
+    illumina_test_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina_test.config")
 }
-if (workflow.profile.contains('longreadstest')) {
-   longreadstest_params_file = file("${baseDir}/conf/longreadstest.config", checkIfExists: true)
-   longreadstest_params_file.copyTo("${params.outdir}/00_pipeline_config/longreadstest.config")
+if (workflow.profile == 'nanopore_test,singularity') {
+   nanopore_test_params_file = file("${baseDir}/conf/nanopore_test.config", checkIfExists: true)
+   nanopore_test_params_file.copyTo("${params.outdir}/00_pipeline_config/nanopore_test.config")
+}
+if (workflow.profile == 'nanopore,singularity') {
+   nanopore_params_file = file("${baseDir}/conf/nanopore.config", checkIfExists: true)
+   nanopore_params_file.copyTo("${params.outdir}/00_pipeline_config/nanopore.config")
 }
 
 file_excel_sample_file = new File(params.excel_sample_file)
-file_database = new File(params.database)
+if (params.data_type == 'illumina') file_database = new File(params.database)
+if (params.data_type == 'nanopore') file_database = new File(params.lr_tax_fna)
 
 /*
  * PIPELINE INFO
@@ -166,37 +171,39 @@ summary['Launch dir'] = workflow.launchDir
 summary['Working dir'] = workflow.workDir
 summary['Output dir'] = params.outdir
 summary['Profile'] = workflow.profile
-if (workflow.profile == 'illumina') summary['Data type'] = 'Illumina short reads'
-if (workflow.profile == 'illumina_test') summary['Data type'] = 'Illumina short reads test workflow'
-if (workflow.profile == 'longreadstest') summary['Data type'] = 'Long reads analysis'
+if (workflow.profile == 'illumina,singularity') summary['Data type'] = 'Illumina short reads'
+if (workflow.profile == 'illumina_test,singularity') summary['Data type'] = 'Illumina short reads test workflow'
+if (workflow.profile == 'nanopore,singularity') summary['Data type'] = 'Nanopore long reads'
+if (workflow.profile == 'nanopore_test,singularity') summary['Data type'] = 'Nanopore long reads test workflow'
 summary['Sample Input Excel File'] = file_excel_sample_file.name
-
-summary['Data integrity'] = params.data_integrity_enable ? "Enabled" : "Disabled"
-summary['Primer removal using Cutadapt'] = params.cutadapt_enable ? "Enabled" : "Disabled"
-summary['Optimizing DADA2 parameters using FIGARO'] = params.figaro_enable ? "Enabled" : "Disabled"
-summary['ASV clustering using swarm'] = params.swarm_clustering_enable ? "Enabled" : "Disabled"
-summary['ASV clustering using dbOTU3'] = params.dbotu3_enable ? "Enabled" : "Disabled"
-summary['Taxonomic database used'] = file_database.name
-summary['Taxonomy filtering'] = params.filter_table_by_tax_enable ? "Enabled" : "Disabled"
-if (params.filter_table_by_tax_enable) {
-    summary['    |_ Type of tax filtering'] = params.filtering_type
-    summary['    |_ Taxa to filter'] = params.tax_to_filter
-}
-summary['Data filtering'] = params.filter_table_by_data_enable ? "Enabled" : "Disabled"
-if (params.filter_table_by_data_enable) {
-    if (params.filter_by_id && params.filter_by_frequency) {
-        summary['    |_ based on sample ID and frequency'] = "Enabled"
-    } else if (params.filter_by_id) {
-        summary['    |_ based on sample ID'] = "Enabled"
-    } else {
-        summary['    |_ based on frequency'] = "Enabled"
+if (params.data_type == 'illumina') {
+    summary['Data integrity'] = params.data_integrity_enable ? "Enabled" : "Disabled"
+    summary['Primer removal using Cutadapt'] = params.cutadapt_enable ? "Enabled" : "Disabled"
+    summary['Optimizing DADA2 parameters using FIGARO'] = params.figaro_enable ? "Enabled" : "Disabled"
+    summary['ASV clustering using swarm'] = params.swarm_clustering_enable ? "Enabled" : "Disabled"
+    summary['ASV clustering using dbOTU3'] = params.dbotu3_enable ? "Enabled" : "Disabled"
+    summary['Taxonomic database used'] = file_database.name
+    summary['Taxonomy filtering'] = params.filter_table_by_tax_enable ? "Enabled" : "Disabled"
+    if (params.filter_table_by_tax_enable) {
+        summary['    |_ Type of tax filtering'] = params.filtering_type
+        summary['    |_ Taxa to filter'] = params.tax_to_filter
     }
-}
-summary['Sample decontamination (microDecon)'] = params.filter_contaminants_enable ? "Enabled" : "Disabled"
-summary['Differential abundance testing (ANCOM-BC)'] = params.ancombc_enable ? "Enabled" : "Disabled"
-summary['Functional predictions (PICRUSt2)'] = params.picrust2_enable ? "Enabled" : "Disabled"
-if (params.picrust2_enable) {
-    summary['    |_ Predicted Gene Families'] = params.traits_db
+    summary['Data filtering'] = params.filter_table_by_data_enable ? "Enabled" : "Disabled"
+    if (params.filter_table_by_data_enable) {
+        if (params.filter_by_id && params.filter_by_frequency) {
+            summary['    |_ based on sample ID and frequency'] = "Enabled"
+        } else if (params.filter_by_id) {
+            summary['    |_ based on sample ID'] = "Enabled"
+        } else {
+            summary['    |_ based on frequency'] = "Enabled"
+        }
+    }
+    summary['Sample decontamination (microDecon)'] = params.filter_contaminants_enable ? "Enabled" : "Disabled"
+    summary['Differential abundance testing (ANCOM-BC)'] = params.ancombc_enable ? "Enabled" : "Disabled"
+    summary['Functional predictions (PICRUSt2)'] = params.picrust2_enable ? "Enabled" : "Disabled"
+    if (params.picrust2_enable) {
+        summary['    |_ Predicted Gene Families'] = params.traits_db
+    }
 }
 
 log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
@@ -210,7 +217,7 @@ checkHostname()
  */
 
 /* Illumina workflow */
-
+if (params.data_type == 'illumina') {
     /* Verify Cutadapt parameters */
     if (params.cutadapt_enable) {
         if(params.primerF.isEmpty() || params.primerR.isEmpty()) {
@@ -307,6 +314,12 @@ checkHostname()
             exit 1
         }
     }
+}
+
+/* Nanopore workflow */
+if (params.data_type == 'illumina') {
+
+}
 
 /*
  *  SET UP WORKFLOW CHANNELS
@@ -319,20 +332,22 @@ if (!workflow.profile.contains('test')) {
         .set { sample_file }
 }
 
-if (params.ancombc_enable) {
-    channel
-        .from(params.ancombc_formula)
-        .splitCsv(sep : ',', strip : true)
-        .flatten()
-        .set { ancombc_formula_ch }
-}
-
-if (params.picrust2_enable) {
-    channel
-        .from(params.picrust2_tested_variable)
-        .splitCsv(sep : ',', strip : true)
-        .flatten()
-        .set { picrust2_tested_variable_ch }
+if (params.data_type == 'illumina') {
+    if (params.ancombc_enable) {
+        channel
+            .from(params.ancombc_formula)
+            .splitCsv(sep : ',', strip : true)
+            .flatten()
+            .set { ancombc_formula_ch }
+    }
+    
+    if (params.picrust2_enable) {
+        channel
+            .from(params.picrust2_tested_variable)
+            .splitCsv(sep : ',', strip : true)
+            .flatten()
+            .set { picrust2_tested_variable_ch }
+    }
 }
 
 /*
@@ -393,7 +408,7 @@ workflow {
     /*                                       */
     /*---------------------------------------*/
 
-    if (!params.longreads && !params.stats_only && !params.dada2merge) {
+    if (params.data_type == "illumina" && !params.stats_only && !params.dada2merge) {
     
         /* Verify data integrity */
             if (params.data_integrity_enable) {

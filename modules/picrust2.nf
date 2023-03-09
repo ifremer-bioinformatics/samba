@@ -1,7 +1,7 @@
 process picrust2 {
 
     label 'picrust2_env'
-    label 'midRAM'
+    label 'medRAM'
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '14_PICRUSt2_predictions_output'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_picrust2 -> "cmd/14a_${task.process}_complete.sh" }

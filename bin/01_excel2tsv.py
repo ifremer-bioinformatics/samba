@@ -170,8 +170,12 @@ def export_to_tsv_for_qiime(data, metadata_vars, seqtype):
         manifest.write(f"{tab.join(p_manifest)}\n")
         metadata.write(f"{tab.join(p_metadata)}\t{tab.join(metadata_vars)}\n")
     for sample, values in data.items():
-        manifest.write(f"{sample}\t{values['R1']}\t{values['R2']}\n")
-        metadata.write(f"{sample}\t{values['barcode']}\t{values['primerF']}\t{values['primerR']}\t{tab.join(map(str, values['vars']))}\n")
+        if seqtype == 'single':
+            manifest.write(f"{sample}\t{values['R1']}\n")
+            metadata.write(f"{sample}\t{values['barcode']}\t{values['primerF']}\t{tab.join(map(str, values['vars']))}\n")
+        else:
+            manifest.write(f"{sample}\t{values['R1']}\t{values['R2']}\n")
+            metadata.write(f"{sample}\t{values['barcode']}\t{values['primerF']}\t{values['primerR']}\t{tab.join(map(str, values['vars']))}\n")
     manifest.close()
     metadata.close()
     logger.success(f'Successfully written to TSV')

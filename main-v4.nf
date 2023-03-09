@@ -399,6 +399,7 @@ include { picrust2 } from './modules/picrust2.nf'
 /* Nanopore modules */
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
 include { nanopore_mapping } from './modules/nanopore.nf'
+include { nanopore_getfasta } from './modules/nanopore.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -541,12 +542,15 @@ params.swarm_clustering_enable
         /* Raw reads length filter */
             /* ~~~ input management ~~~ */
             nanopore_manifest = manifest.splitCsv(header: true, sep:'\t').map { row -> tuple( row."sample-id", file(row."absolute-filepath")) }
-            nanopore_manifest_fastq = manifest.splitCsv(header: true, sep:'\t').map { row -> file(row."absolute-filepath") }
             /* ~~~ process ~~~ */
             nanopore_read_length_filter(nanopore_manifest)
 
         /* Mapping of nanopore reads against tax database using minimap2 */
             nanopore_mapping(nanopore_read_length_filter.out.filtered_nanopore_fastq)
+
+        /* Collect all Nanopore reads to a FASTA file */
+            nanopore_getfasta(nanopore_manifest)
+            nanopore_fasta = nanopore_getfasta.out.nanopore_sequences_fasta.collectFile(name : 'nanopore_sequences.fasta', newLine : false, storeDir : "${params.outdir}/${params.report_dirname}").subscribe { println "All Nanopore sequences are saved to the FASTA file : $it" }
 
     }
 

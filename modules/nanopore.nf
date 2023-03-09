@@ -4,7 +4,7 @@ process nanopore_read_length_filter {
     label 'nanopore_env'
     label 'multithreads'
 
-    publishDir "${params.outdir}/${params.read_length_filtering_results}", mode: 'copy', pattern: '*.filtered.fastq.gz'
+    publishDir "${params.outdir}/${params.nanopore_read_length_filtering_results}", mode: 'copy', pattern: '*.filtered.fastq.gz'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_seqkit.txt'
 
     input:
@@ -42,3 +42,26 @@ process nanopore_mapping {
     minimap2 --version > v_minimap2.txt
     """
 }
+
+process nanopore_getfasta {
+
+    tag "$sample"
+    label 'qiime2_env'
+
+    publishDir "${params.outdir}/${params.nanopore_getfasta_results}", mode: 'copy', pattern: '*_sequences.fasta'
+    publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_seqtk.txt'
+
+    input:
+        tuple val(sample), path(fastq)
+         
+    output:
+        path('*_sequences.fasta'), emit: nanopore_sequences_fasta
+
+    script:
+    """
+    seqtk seq -a ${fastq} > ${sample}_sequences.fasta
+    echo '1.3-r106' > v_seqtk.txt
+    """
+
+}
+

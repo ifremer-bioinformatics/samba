@@ -123,6 +123,10 @@ def helpMessage() {
 	--minimap2_preset		[str]	minimap2 preset (default = "map-ont").
 	--minimap2_db			[path]	Path to a minimap2 index format of the taxonomic database.
 
+	Get count table:
+	--ref_tax			[path]	Path to the tabulated file containing the taxonomic reference ID and the associated taxonomy
+	--tax_rank			[int]	Taxonomic level to analyse data. Can be: "1"=Kingdom ; "2"=Phylum ; "3"=Class ; "4"=Order ; "5"=Genus ; "6"=Species (default = "5").
+
     """.stripIndent()
 }
 
@@ -166,6 +170,7 @@ if (workflow.profile == 'nanopore,singularity') {
 file_excel_sample_file = new File(params.excel_sample_file)
 if (params.data_type == 'illumina') file_database = new File(params.database)
 if (params.data_type == 'nanopore') file_nanopore_database = new File(params.minimap2_db)
+if (params.data_type == 'nanopore') file_nanopore_ref_tax = new File(params.ref_tax)
 
 /*
  * PIPELINE INFO
@@ -218,6 +223,8 @@ if (params.data_type == 'illumina') {
 }
 if (params.data_type == 'nanopore') {
     summary['Taxonomic database used'] = file_nanopore_database.name
+    summary['Reference taxonomy file'] = file_nanopore_ref_tax.name
+    summary['Taxonomic level inspected'] = params.tax_rank == "1" ? "Kingdom/Domain" : params.tax_rank == "2" ? "Phylum" : params.tax_rank == "3" ? "Class" : params.tax_rank == "4" ? "Order" : params.tax_rank == "5" ? "Genus" : "Species"
 }
 
 log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
@@ -333,11 +340,15 @@ if (params.data_type == 'illumina') {
 /* Nanopore workflow */
 if (params.data_type == 'illumina') {
     if (params.nanopore_read_minlength.isEmpty() || params.nanopore_read_maxlength.isEmpty()) {
-        log.error "ERROR: No miminum and/or maximum length for raw nanopore reads has/have been provided. Please check and configure the '--nanopore_read_minlength' and/or 'nanopore_read_maxlength' parameters in the nanopore.config file"
+        log.error "ERROR: No miminum and/or maximum length for raw nanopore reads has/have been provided. Please check and configure the '--nanopore_read_minlength' and/or '--nanopore_read_maxlength' parameters in the nanopore.config file"
         exit 1
     }
     if (params.batch_size.isEmpty() || params.minimap2_preset.isEmpty() || params.minimap2_db.isEmpty()) {
-        log.error "ERROR: Please check and configure all the minimap2 parameters in the nanopore.config file: '--batch_size', 'minimap2_preset' and 'minimap2_db'"
+        log.error "ERROR: Please check and configure all the minimap2 parameters in the nanopore.config file: '--batch_size', '--minimap2_preset' and '--minimap2_db'"
+        exit 1
+    }
+    if (params.ref_tax.isEmpty() || params.tax_rank.isEmpty()) {
+        log.error "ERROR: No reference taxonomy file and/or taxonomic level to analyse has/have been provided. Please check and configure the '--ref_tax' and/or '--tax_rank' parameters in the nanopore.config file"
         exit 1
     }
 }
@@ -400,6 +411,7 @@ include { picrust2 } from './modules/picrust2.nf'
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
 include { nanopore_mapping } from './modules/nanopore.nf'
 include { nanopore_getfasta } from './modules/nanopore.nf'
+include { nanopore_count_table } from './modules/nanopore.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -549,8 +561,11 @@ params.swarm_clustering_enable
             nanopore_mapping(nanopore_read_length_filter.out.filtered_nanopore_fastq)
 
         /* Collect all Nanopore reads to a FASTA file */
-            nanopore_getfasta(nanopore_manifest)
+            nanopore_getfasta(nanopore_read_length_filter.out.filtered_nanopore_fastq)
             nanopore_fasta = nanopore_getfasta.out.nanopore_sequences_fasta.collectFile(name : 'nanopore_sequences.fasta', newLine : false, storeDir : "${params.outdir}/${params.report_dirname}").subscribe { println "All Nanopore sequences are saved to the FASTA file : $it" }
+
+        /* Get the count table */
+            nanopore_count_table(nanopore_mapping.out.nanopore_mapped_reads.collect())
 
     }
 

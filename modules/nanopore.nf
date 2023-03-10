@@ -65,3 +65,20 @@ process nanopore_getfasta {
 
 }
 
+process nanopore_count_table {
+
+    label 'biopython'
+
+    publishDir "${params.outdir}/${params.nanopore_count_table_results}", mode: 'copy', pattern: '*.tsv'
+
+    input:
+        path(bam)
+
+    output:
+        path('samples.tsv')
+
+    script:
+    """
+    NANOPORE_03_count_table.py -b . -t ${params.ref_tax} -r ${params.tax_rank} -o samples.tsv &> nanopore_count_table.log 2>&1
+    """
+}

@@ -338,7 +338,7 @@ if (params.data_type == 'illumina') {
 }
 
 /* Nanopore workflow */
-if (params.data_type == 'illumina') {
+if (params.data_type == 'nanopore') {
     if (params.nanopore_read_minlength.isEmpty() || params.nanopore_read_maxlength.isEmpty()) {
         log.error "ERROR: No miminum and/or maximum length for raw nanopore reads has/have been provided. Please check and configure the '--nanopore_read_minlength' and/or '--nanopore_read_maxlength' parameters in the nanopore.config file"
         exit 1

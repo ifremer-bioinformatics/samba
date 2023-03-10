@@ -239,6 +239,15 @@ checkHostname()
 
 /* Illumina workflow */
 if (params.data_type == 'illumina') {
+
+    /* Verify Sample file */
+    if (!workflow.profile.contains('test')) {
+        if(params.excel_sample_file.isEmpty()) {
+            log.error "ERROR: Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the your analysis config file"
+            exit 1
+        }
+    }
+
     /* Verify Cutadapt parameters */
     if (params.cutadapt_enable) {
         if(params.primerF.isEmpty() || params.primerR.isEmpty()) {
@@ -360,7 +369,6 @@ if (params.data_type == 'nanopore') {
 if (!workflow.profile.contains('test')) {
     channel
         .fromPath( params.excel_sample_file )
-        .ifEmpty { error "ERROR: Cannot find the Sample Input Excel File at this path: ${params.excel_sample_file}. Please check and correct the parameter 'excel_sample_file' provided in the your analysis config file" }
         .set { sample_file }
 }
 
@@ -453,9 +461,9 @@ workflow {
             if (params.data_integrity_enable) {
                 data_integrity(manifest,excel2tsv.out.metadata_xls)
             }
-params.swarm_clustering_enable
+        
         /* Import data in QIIME2 format */
-            q2_import_data(data_integrity.out.final_manifest)
+            q2_import_data(manifest)
         
         /* OPTIONAL: Primer removal using Cutadapt */
             if (params.cutadapt_enable) {

@@ -56,7 +56,6 @@ process q2_cutadapt {
 process q2_dada2 {
 
     label 'qiime2_env'
-    label 'multithreads'
 
     publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '06_DADA2_output'
     publishDir "${params.outdir}/${params.dada2_step}", mode: 'copy', pattern: 'DADA2_*'

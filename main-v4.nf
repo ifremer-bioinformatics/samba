@@ -125,7 +125,7 @@ def helpMessage() {
 
 	Get count table:
 	--ref_tax			[path]	Path to the tabulated file containing the taxonomic reference ID and the associated taxonomy
-	--tax_rank			[int]	Taxonomic level to analyse data. Can be: "1"=Kingdom ; "2"=Phylum ; "3"=Class ; "4"=Order ; "5"=Genus ; "6"=Species (default = "5").
+	--tax_rank			[int]	Taxonomic level to analyse data. Can be: Kingdom;Phylum;Class;Order;Genus;Species.
 
     """.stripIndent()
 }
@@ -224,7 +224,7 @@ if (params.data_type == 'illumina') {
 if (params.data_type == 'nanopore') {
     summary['Taxonomic database used'] = file_nanopore_database.name
     summary['Reference taxonomy file'] = file_nanopore_ref_tax.name
-    summary['Taxonomic level inspected'] = params.tax_rank == "1" ? "Kingdom/Domain" : params.tax_rank == "2" ? "Phylum" : params.tax_rank == "3" ? "Class" : params.tax_rank == "4" ? "Order" : params.tax_rank == "5" ? "Genus" : "Species"
+    summary['Taxonomic level inspected'] = params.tax_rank
 }
 
 log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
@@ -562,7 +562,7 @@ params.swarm_clustering_enable
 
         /* Collect all Nanopore reads to a FASTA file */
             nanopore_getfasta(nanopore_read_length_filter.out.filtered_nanopore_fastq)
-            nanopore_fasta = nanopore_getfasta.out.nanopore_sequences_fasta.collectFile(name : 'nanopore_sequences.fasta', newLine : false, storeDir : "${params.outdir}/${params.report_dirname}").subscribe { println "All Nanopore sequences are saved to the FASTA file : $it" }
+            nanopore_fasta = nanopore_getfasta.out.nanopore_sequences_fasta.collectFile(name : 'nanopore_sequences_all_samples.fasta', newLine : false, storeDir : "${params.outdir}/${params.nanopore_getfasta_results}").subscribe { println "All Nanopore sequences contained in the sample set are saved to the FASTA file : $it" }
 
         /* Get the count table */
             nanopore_count_table(nanopore_mapping.out.nanopore_mapped_reads.collect())

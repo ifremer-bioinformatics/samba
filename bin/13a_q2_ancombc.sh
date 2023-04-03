@@ -26,7 +26,7 @@ ANCOMBC_GENUS_OUTPUT_QZA=${args[15]}
 ANCOMBC_GENUS_EXPORT=${args[16]}
 LOGCMD=${args[17]}
 
-if "${REFERENCE}"
+if "${REFERENCE_ENABLED}"
 then
     options="--p-reference-levels ${REFERENCE_LEVEL} --p-p-adj-method ${ADJ_METHOD} --p-max-iter ${MAX_ITER} --p-alpha ${ALPHA}"
 fi

@@ -15,7 +15,22 @@ create_phyloseq_obj <- function(phyloseq_rds, nanopore_count_table, metadata, ra
     #Input data
     rawtable = read.table(nanopore_count_table, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
     rawtable = rawtable %>% select (c(-Assignation))
-    rawtable$Taxonomy = str_split_fixed(rawtable$Taxonomy, ";",7)[,as.numeric(rank)]
+    if (rank == "Kingdom" ) {
+        rank_value = 1
+    } else if (rank == "Phylum") {
+        rank_value = 2
+    } else if (rank == "Class") {
+        rank_value = 3
+    } else if (rank == "Order") {
+        rank_value = 4
+    } else if (rank == "Family") {
+        rank_value = 5
+    } else if (rank == "Genus") {
+        rank_value = 6
+    } else {
+        rank_value = 7
+    }
+    rawtable$Taxonomy = str_split_fixed(rawtable$Taxonomy, ";",7)[,rank_value]
     rawtable_rank = rawtable %>% select (-Read_id) %>% group_by(Taxonomy) %>% summarise_each(funs(sum))
     rawtable_rank[1,1] = "Unclassified"
     rawtable_rank = data.frame(rawtable_rank, check.names=F)
@@ -27,26 +42,12 @@ create_phyloseq_obj <- function(phyloseq_rds, nanopore_count_table, metadata, ra
     row.names(nanopore_abund) = nanopore_abund$Taxonomy
     nanopore_abund = nanopore_abund %>% select (-Taxonomy)
     nanopore_tax = data.frame(Kingdom=rep(kingdom,length(rawtable_rank$Taxonomy)),rawtable_rank$Taxonomy)
-    if (as.numeric(rank) == 1) {
-        rank_name = "Kingdom"
-    } else if (as.numeric(rank) == 2) {
-        rank_name = "Phylum"
-    } else if (as.numeric(rank) == 3) {
-        rank_name = "Class"
-    } else if (as.numeric(rank) == 4) {
-        rank_name = "Order"
-    } else if (as.numeric(rank) == 5) {
-        rank_name = "Family"
-    } else if (as.numeric(rank) == 6) {
-        rank_name = "Genus"
-    } else {
-        rank_name = "Species"
-    }
-    colnames(nanopore_tax) = c("Kingdom",rank_name)
-    row.names(nanopore_tax) = nanopore_tax[[rank_name]]
+    colnames(nanopore_tax) = c("Kingdom",rank)
+    row.names(nanopore_tax) = nanopore_tax[[rank]]
     nanopore_tax = as.matrix(nanopore_tax)
 
     ## Construction of the phyloseq object ####
+    nanopore_abund = nanopore_abund %>% select(-Identity,-Coverage)
     nanopore_abund = nanopore_abund[,colSums(nanopore_abund) > 0]
     NANOPORE_ABUND = otu_table(nanopore_abund,taxa_are_rows=TRUE)
     NANOPORE_TAX = tax_table(nanopore_tax)
@@ -63,7 +64,7 @@ main <- function() {
     phyloseq_rds = args[1]
     nanopore_count_table = args[2]
     metadata = args[3]
-    rank = noquote(args[4])
+    rank = args[4]
     kingdom = args[5]
     final_table = args[6]
     create_phyloseq_obj(phyloseq_rds, nanopore_count_table, metadata, rank, kingdom, final_table)

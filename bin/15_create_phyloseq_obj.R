@@ -11,9 +11,10 @@ for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-create_phyloseq_obj <- function(raw_asv_table, raw_metadata, metadata_phyloseq, tree, phyloseq_rds) {
+create_phyloseq_obj <- function(raw_asv_table, asv_table_phyloseq, raw_metadata, metadata_phyloseq, tree, phyloseq_rds) {
     #Input data
     raw_asv_table = read.table(raw_asv_table, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
+    write.table(raw_asv_table, asv_table_phyloseq, sep="\t", dec=",", col.names=T, row.names=F, quote=F)
     raw_metadata = read.table(raw_metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
     final_metadata = data.frame(raw_metadata[rownames(raw_metadata) %in% colnames(raw_asv_table[,-length(raw_asv_table)]), ])
     write.table(final_metadata, metadata_phyloseq, col.names=NA, row.names=TRUE, sep="\t",quote=FALSE)
@@ -115,11 +116,12 @@ main <- function() {
     # Get arguments from RScript command line
     args = commandArgs(trailingOnly=TRUE)
     raw_asv_table = args[1]
-    raw_metadata = args[2]
-    metadata_phyloseq = args[3]
-    tree = args[4]
-    phyloseq_rds = args[5]
-    create_phyloseq_obj(raw_asv_table, raw_metadata, metadata_phyloseq, tree, phyloseq_rds)
+    asv_table_phyloseq = args[2]
+    raw_metadata = args[3]
+    metadata_phyloseq = args[4]
+    tree = args[5]
+    phyloseq_rds = args[6]
+    create_phyloseq_obj(raw_asv_table, asv_table_phyloseq, raw_metadata, metadata_phyloseq, tree, phyloseq_rds)
 }
 
 if (!interactive()) {

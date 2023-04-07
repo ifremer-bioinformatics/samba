@@ -36,6 +36,7 @@ create_phyloseq_obj <- function(raw_asv_table, asv_table_phyloseq, raw_metadata,
     METADATA_phyloseq = sample_data(final_metadata)
     TREE = read_tree(tree)
     PHYLOSEQ = phyloseq(ABUND,TAX,METADATA_phyloseq, TREE)
+    PHYLOSEQ = subset_taxa(PHYLOSEQ, Kingdom != "Unassigned")
 
     ## Reformat taxonomy
     not_formated_tax_table = data.frame(tax_table(PHYLOSEQ))

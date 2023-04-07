@@ -85,6 +85,8 @@ eval ${CMD}
 
 # Convert biom table to tabular
 CMD="biom convert -i ${FILTERED_DATA_TABLE_BIOM} -o ${FILTERED_DATA_TABLE_TSV} --to-tsv --header-key taxonomy ;
+sed -i '1d' ${FILTERED_DATA_TABLE_TSV} ;
+sed -i 's/\#OTU ID/ASV_ID/g' ${FILTERED_DATA_TABLE_TSV} ;
 cp ${FILTERED_DATA_TABLE_TSV} ${FILTERED_DATA_OUTPUT}/"
 echo ${CMD} >> ${LOGCMD}
 eval ${CMD}

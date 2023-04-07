@@ -34,6 +34,7 @@ then
     echo ${CMD} >> ${LOGCMD}
     eval ${CMD}
 elif [ "${FILTERING_TYPE}" = "include" ]
+then
     # Only include ASV from the ASV table based on taxonomy
     CMD="qiime taxa filter-table --i-table ${ASV_TABLE} --i-taxonomy ${TAX_QZA} --p-include ${TAX_TO_FILTER} --o-filtered-table ${FILTERED_TAX_TABLE_QZA}"
     echo ${CMD} > ${LOGCMD}

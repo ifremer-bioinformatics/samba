@@ -126,6 +126,7 @@ def helpMessage() {
 	Get count table:
 	--ref_tax			[path]	Path to the tabulated file containing the taxonomic reference ID and the associated taxonomy
 	--tax_rank			[int]	Taxonomic level to analyse data. Can be: Kingdom;Phylum;Class;Order;Genus;Species.
+	--kingdom			[str]	Kingdom studied 
 
     """.stripIndent()
 }
@@ -360,6 +361,10 @@ if (params.data_type == 'nanopore') {
         log.error "ERROR: No reference taxonomy file and/or taxonomic level to analyse has/have been provided. Please check and configure the '--ref_tax' and/or '--tax_rank' parameters in the nanopore.config file"
         exit 1
     }
+    if (params.kingdom.isEmpty()) {
+        log.error "ERROR: No Kingdom studied has been provided. Please check and configure the '--kingdom' parameter in the nanopore.config file"
+        exit 1
+    }
 }
 
 /*
@@ -414,12 +419,14 @@ include { q2_asv_phylogeny } from './modules/qiime2.nf'
 include { format_final_outputs } from './modules/format_final_outputs.nf'
 include { q2_ancombc } from './modules/qiime2.nf'
 include { picrust2 } from './modules/picrust2.nf'
+include { create_phyloseq } from './modules/R.nf'
 
 /* Nanopore modules */
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
 include { nanopore_mapping } from './modules/nanopore.nf'
 include { nanopore_getfasta } from './modules/nanopore.nf'
 include { nanopore_count_table } from './modules/nanopore.nf'
+include { nanopore_phyloseq_obj } from './modules/R.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -549,6 +556,10 @@ workflow {
         if (params.picrust2_enable) {
             picrust2(final_asv_table_biom,final_asv_sequences_fasta)
         }
+
+        /* Create the phyloseq object for statistical analyses */
+            create_phyloseq(final_asv_table_tsv,excel2tsv.out.metadata_xls,q2_asv_phylogeny.out.asv_phylogeny_nwk)
+
     }
 
     /*---------------------------------------*/
@@ -574,6 +585,9 @@ workflow {
 
         /* Get the count table */
             nanopore_count_table(nanopore_mapping.out.nanopore_mapped_reads.collect())
+
+        /* Create the phyloseq object for statistical analyses */
+           nanopore_phyloseq_obj(nanopore_count_table.out.nanopore_count_table,excel2tsv.out.metadata_xls)
 
     }
 

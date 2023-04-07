@@ -75,7 +75,7 @@ process nanopore_count_table {
         path(bam)
 
     output:
-        path('samples.tsv')
+        path('samples.tsv'), emit: nanopore_count_table
 
     script:
     """

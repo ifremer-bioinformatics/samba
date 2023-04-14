@@ -38,7 +38,7 @@ process nanopore_phyloseq_obj {
     label 'R_env'
 
     publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.tsv'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: 'phyloseq.rds'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: 'phyloseq_*.rds'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phyloseq -> "06_${task.process}_complete.sh" }
 
     input:
@@ -46,14 +46,14 @@ process nanopore_phyloseq_obj {
         path(metadata)
 
     output:
-        path('count_table_for_stats.tsv')
-        path('metadata_for_stats.tsv')
-        path('phyloseq.rds'), emit: phyloseq
+        path('count_table_for_stats*.tsv')
+        path('phyloseq_all_assignation.rds'), emit: phyloseq_all_assignation
+        path('phyloseq_only_assigned.rds'), emit: phyloseq_only_assigned
         path('completecmd')
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq.rds ${asv_table_tsv} ${metadata} ${params.tax_rank} ${params.kingdom} count_table_for_stats.tsv metadata_for_stats.tsv &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq_all_assignation.rds phyloseq_only_assigned.rds ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv &> stats_prepare_data.log 2&>1
     cp ${baseDir}/bin/NANOPORE_04_phyloseq.R completecmd
     """
 

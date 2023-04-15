@@ -28,6 +28,9 @@ def helpMessage() {
 	--data_type			[str]	Set the type of your data. Can be: illumina, nanopore or pacbio.
 	--singleEnd			[bool]	Set to true to specify that the inputs are single-end reads (default = false).
 
+	General parameters:
+	--stat_var			[str]	Variable(s) of interest for statistical analyses (comma-separated list).
+
 	Other options:
 	--outdir			[path]	The output directory where the results will be saved.
 	-name 				[str]	Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
@@ -395,6 +398,12 @@ if (params.data_type == 'illumina') {
     }
 }
 
+channel
+    .from(params.stat_var)
+    .splitCsv(sep : ',', strip : true)
+    .flatten()
+    .set { stat_var_ch }
+
 /*
  * IMPORTING MODULES
  */
@@ -427,6 +436,7 @@ include { nanopore_mapping } from './modules/nanopore.nf'
 include { nanopore_getfasta } from './modules/nanopore.nf'
 include { nanopore_count_table } from './modules/nanopore.nf'
 include { nanopore_phyloseq_obj } from './modules/R.nf'
+include { nanopore_alpha_diversity } from './modules/R.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -588,6 +598,9 @@ workflow {
 
         /* Create the phyloseq object for statistical analyses */
            nanopore_phyloseq_obj(nanopore_count_table.out.nanopore_count_table,excel2tsv.out.metadata_xls)
+
+        /* Run alpha diversity analyses */
+           nanopore_alpha_diversity(nanopore_phyloseq_obj.out.phy_obj.collect(),stat_var_ch)
 
     }
 

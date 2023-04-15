@@ -19,16 +19,14 @@ color_set = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category =
 # Alpha diversity #
 # ~~~~~~~~~~~~~~~ #
 
-## Phyloseq object import ####
-PHYLOSEQ = readRDS(args[1])
-
-## Aggregate sequence at each taxa level ####
-PHYLOSEQ_PHYLUM = tax_glom(PHYLOSEQ, "Phylum")
-PHYLOSEQ_CLASS = tax_glom(PHYLOSEQ, "Class")
-PHYLOSEQ_ORDER = tax_glom(PHYLOSEQ, "Order")
-PHYLOSEQ_FAMILY = tax_glom(PHYLOSEQ, "Family")
-PHYLOSEQ_GENUS = tax_glom(PHYLOSEQ, "Genus")
-PHYLOSEQ_SPECIES = tax_glom(PHYLOSEQ, "Species")
+## Phyloseq objects import ####
+PHYLOSEQ = readRDS(paste(args[1],".rds", sep=""))
+PHYLOSEQ_PHYLUM = readRDS(paste(args[1],"_phylum.rds", sep=""))
+PHYLOSEQ_CLASS = readRDS(paste(args[1],"_class.rds", sep=""))
+PHYLOSEQ_ORDER = readRDS(paste(args[1],"_order.rds", sep=""))
+PHYLOSEQ_FAMILY = readRDS(paste(args[1],"_family.rds", sep=""))
+PHYLOSEQ_GENUS = readRDS(paste(args[1],"_genus.rds", sep=""))
+PHYLOSEQ_SPECIES = readRDS(paste(args[1],"_species.rds", sep=""))
 
 ## Calcul of diversity indexes (Chao1, Shannon, InvSimpson) ####
 alpha_rich = estimate_richness(PHYLOSEQ_SPECIES, measures=c("Observed", "Chao1", "ACE", "Shannon", "InvSimpson"))
@@ -45,7 +43,7 @@ df_alpha_div_sdf$Measure = factor(df_alpha_div_sdf$Measure, levels=c("Observed",
 test_formula = paste("Value", args[3], sep="~")
 var_value = length(unique(df_alpha_div_sdf[, args[3]]))
 stats_var = df_alpha_div_sdf %>% group_by(Measure) %>% t_test(as.formula(test_formula)) %>% adjust_pvalue(method="bonferroni") %>% add_significance() %>% add_xy_position(x = "supp")
-var_color = adjustcolor(color_set[2:var_value+1)], alpha.f=0.8)
+var_color = adjustcolor(color_set[2:(var_value+1)], alpha.f=0.8)
 
 alpha_bxp_var = ggboxplot(df_alpha_div_sdf, x=args[3], y="Value", fill=args[3], facet.by="Measure", add="jitter", scales="free_y", add.params=list(size=1)) +
   stat_pvalue_manual(stats_var, hide.ns=TRUE, label="{signif(p.adj,1)}{p.adj.signif}", label.size=4) +

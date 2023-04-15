@@ -38,7 +38,7 @@ process nanopore_phyloseq_obj {
     label 'R_env'
 
     publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.tsv'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: 'phyloseq_*.rds'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.rds'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phyloseq -> "06_${task.process}_complete.sh" }
 
@@ -54,7 +54,7 @@ process nanopore_phyloseq_obj {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq_all_assignation.rds phyloseq_only_assigned.rds ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv &> stats_prepare_data.log 2&>1
     cp ${baseDir}/bin/NANOPORE_04_phyloseq.R completecmd
 
     ## get statistics libraries version for report
@@ -91,8 +91,8 @@ process nanopore_alpha_diversity {
 
     script :
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R ${phyloseq[1]} alpha_div_index_values_all_assignation.txt ${var} alpha_div_bxp_all_assignation rarefaction_curve_all_assignation > alpha_diversity_all_assignation.log 2&>1
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R ${phyloseq[2]} alpha_div_index_values_only_assigned.txt ${var} alpha_div_bxp_only_assigned rarefaction_curve_only_assigned > alpha_diversity_only_assigned.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R phyloseq_all_assignation alpha_div_index_values_all_assignation.txt ${var} alpha_div_bxp_all_assignation rarefaction_curve_all_assignation > alpha_diversity_all_assignation.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R phyloseq_only_assigned alpha_div_index_values_only_assigned.txt ${var} alpha_div_bxp_only_assigned rarefaction_curve_only_assigned > alpha_diversity_only_assigned.log 2&>1
     cp ${baseDir}/bin/NANOPORE_05_alpha_diversity.R completecmd
     touch report_ok
 

@@ -11,7 +11,7 @@ for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-create_phyloseq <- function(phyloseq_rds_all_assignation, phyloseq_rds_only_assigned, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned) {
+create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned) {
   
   # Input data
   nanopore_metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
@@ -142,23 +142,49 @@ create_phyloseq <- function(phyloseq_rds_all_assignation, phyloseq_rds_only_assi
   NANOPORE_METADATA = sample_data(nanopore_metadata)
   
   NANOPORE_PHYLOSEQ_ALL_ASSIGNATION = phyloseq(NANOPORE_ABUND_ALL_ASSIGNATION, NANOPORE_TAX_ALL_ASSIGNATION, NANOPORE_METADATA)
-  saveRDS(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, file=phyloseq_rds_all_assignation)
+  saveRDS(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation.rds", sep=""))
   
   NANOPORE_PHYLOSEQ_ONLY_ASSIGNED = phyloseq(NANOPORE_ABUND_ONLY_ASSIGNED, NANOPORE_TAX_ONLY_ASSIGNED, NANOPORE_METADATA)
-  saveRDS(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, file=phyloseq_rds_only_assigned)
-  
+  saveRDS(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned.rds", sep=""))
+
+  ## Aggregate sequence at each taxa level ####
+  PHYLOSEQ_PHYLUM_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Phylum")
+  saveRDS(PHYLOSEQ_PHYLUM_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_phylum.rds", sep=""))
+  PHYLOSEQ_CLASS_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Class")
+  saveRDS(PHYLOSEQ_CLASS_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_class.rds", sep=""))
+  PHYLOSEQ_ORDER_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Order")
+  saveRDS(PHYLOSEQ_ORDER_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_order.rds", sep=""))
+  PHYLOSEQ_FAMILY_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Family")
+  saveRDS(PHYLOSEQ_FAMILY_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_family.rds", sep=""))
+  PHYLOSEQ_GENUS_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Genus")
+  saveRDS(PHYLOSEQ_GENUS_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_genus.rds", sep=""))
+  PHYLOSEQ_SPECIES_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Species")
+  saveRDS(PHYLOSEQ_SPECIES_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_species.rds", sep=""))
+
+  PHYLOSEQ_PHYLUM_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Phylum")
+  saveRDS(PHYLOSEQ_PHYLUM_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_phylum.rds", sep=""))
+  PHYLOSEQ_CLASS_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Class")
+  saveRDS(PHYLOSEQ_CLASS_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_class.rds", sep=""))
+  PHYLOSEQ_ORDER_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Order")
+  saveRDS(PHYLOSEQ_ORDER_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_order.rds", sep=""))
+  PHYLOSEQ_FAMILY_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Family")
+  saveRDS(PHYLOSEQ_FAMILY_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_family.rds", sep=""))
+  PHYLOSEQ_GENUS_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Genus")
+  saveRDS(PHYLOSEQ_GENUS_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_genus.rds", sep=""))
+  PHYLOSEQ_SPECIES_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Species")
+  saveRDS(PHYLOSEQ_SPECIES_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_species.rds", sep=""))
+
 }
 
 main <- function() {
   # Get arguments from RScript command line
   args = commandArgs(trailingOnly=TRUE)
-  phyloseq_rds_all_assignation = args[1]
-  phyloseq_rds_only_assigned = args[2]
-  nanopore_count_table = args[3]
-  metadata = args[4]
-  final_table_all_assignation = args[5]
-  final_table_only_assigned = args[6]
-  create_phyloseq(phyloseq_rds_all_assignation, phyloseq_rds_only_assigned, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned)
+  phyloseq_rds = args[1]
+  nanopore_count_table = args[2]
+  metadata = args[3]
+  final_table_all_assignation = args[4]
+  final_table_only_assigned = args[5]
+  create_phyloseq(phyloseq_rds, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned)
 }
 
 if (!interactive()) {

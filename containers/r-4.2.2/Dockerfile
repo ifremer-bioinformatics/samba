@@ -43,7 +43,7 @@ RUN mamba install -c bioconda bioconductor-metagenomeseq
 RUN mamba install -c conda-forge r-upsetr
 RUN mamba install -c conda-forge r-plotly
 RUN mamba install -c r r-htmlwidgets
-RUN mamba install -c bioconda bioconductor-microbiome
+RUN R --vanilla -e 'BiocManager::install("microbiome")'
 
 RUN conda clean -a
 ENV PATH /opt/conda/envs/R-4.2.2/bin:$PATH

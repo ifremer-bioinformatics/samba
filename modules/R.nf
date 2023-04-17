@@ -71,9 +71,9 @@ process nanopore_alpha_diversity {
     tag "${var}"
     label 'R_env'
 
-    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_index_values_*.txt'
-    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_bxp_*'
-    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'rarefaction_curve_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_index_values_*.txt'
+    publishDir "${params.outdir}/${params.nanopore_r_results/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_bxp_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'rarefaction_curve_*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha_diversity -> "07_${task.process}_complete.sh" }
 

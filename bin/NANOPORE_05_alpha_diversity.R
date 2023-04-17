@@ -9,11 +9,84 @@
 args = commandArgs(trailingOnly=TRUE)
 
 ## Load up the needed packages ####
-requiredPackages = c("RColorBrewer", "phyloseq", "dplyr", "tidyr", "ggplot2","ggpubr", "stringr", "rstatix","grid", "vegan")
+requiredPackages = c("RColorBrewer", "phyloseq", "reshape2", "dplyr", "tidyr", "ggplot2","ggpubr", "stringr", "rstatix","grid", "vegan")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 color_set = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
+
+## Functions ####
+format_data_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb) {
+  PHYLOSEQ_GROUP <- merge_samples(PHYLOSEQ, env_var)
+  asvtab <- t(otu_table(PHYLOSEQ_GROUP))
+  asvtab <- as(asvtab, "matrix")
+  asvtab <- apply(asvtab, 2, function(x) x / sum(x))
+  taxtab <- tax_table(PHYLOSEQ_GROUP)
+  taxtab <- as(taxtab, "matrix")
+  rownames(asvtab) <- taxtab[, taxa]
+  rownames(taxtab) <- taxtab[, taxa]
+  taxtab <- taxtab[, 1:which(colnames(taxtab)==taxa)]
+  ## Reformat ASV table (using melt function of the reshape2 package)
+  mdf <- melt(asvtab, varnames=c(taxa, env_var))
+  colnames(mdf)[3] <- "Abundance"
+  ## Add taxonomic information
+  mdf <- merge(mdf, taxtab, by=taxa)
+  ## Calculate the total abundance at the class level
+  formula_total_abund <- paste("Abundance", taxa, sep="~")
+  total_abundance <- aggregate(as.formula(formula_total_abund), data=mdf, FUN=sum)
+  ## Keep only taxa_nb top taxa and aggregate the rest as "Other"
+  ordered_abund <- total_abundance[ order(total_abundance[, "Abundance"], decreasing=TRUE),]
+  min_top_abund <- round(ordered_abund[10, "Abundance"] / sum(ordered_abund$Abundance) * 100, 2)
+  list_ordered_abund <- as.character(ordered_abund$Genus)
+  list_ordered_abund <- list_ordered_abund[list_ordered_abund != unknown]
+  top <- list_ordered_abund[1:min(length(list_ordered_abund), taxa_nb)]
+  mdf[, taxa] <- as.character(mdf[ , taxa])
+  ii <- (mdf[, taxa] %in% c(top, unknown))
+  Others_lab <- paste("Others (", taxa, " <", min_top_abund, "%)", sep="") 
+  mdf[!ii , taxa] <- Others_lab
+  formula_mdf <- paste(paste("Abundance", env_var, sep="~"), taxa, sep="+")
+  mdf <- aggregate(as.formula(formula_mdf), data=mdf, FUN=sum)
+  mdf[, taxa] <- factor(mdf[, taxa], levels=c(sort(top), Others_lab, unknown))
+  ## Sort the entries by abundance to produce nice stacked bars in ggplot2
+  mdf <- mdf[ order(mdf[, taxa], mdf$Abundance, decreasing=TRUE), ]
+  return(mdf)
+}
+
+ggplot_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_pie, pie_data_filename, pie_plot_filename) {
+  formated_data <- format_data_pie(PHYLOSEQ, env_var, taxa, unknown, taxa_nb)
+  formated_data$Abundance <- formated_data$Abundance*100
+  Others_lab <- as.character(unique(formated_data[grepl("Others", formated_data[, taxa]), taxa]))
+  ## Management of pie colors
+  if (!is.null(taxa) && any(c(Others_lab, unknown) %in% unique(formated_data[, taxa]))) {
+    taxa4color <- as.character(unique(formated_data[, taxa]))
+    taxa4color <- taxa4color[ ! taxa4color %in% c(Others_lab, unknown)]
+    colvals <- c(color_pie, "grey45", "black")
+    names(colvals) <- c(taxa4color, Others_lab, unknown)
+  }
+  group_formula <- c(env_var, taxa, "Abundance")
+  formated_data <- formated_data %>% group_by_at(group_formula) %>% summarise()
+  dcast_formula <- paste(taxa, env_var, sep="~")
+  pie_data <- dcast(formated_data, as.formula(dcast_formula))
+  write.table(pie_data, pie_data_filename, col.names=T, row.names=F, sep="\t", quote=F)
+  
+  ggplot(formated_data, aes_string(x=1, y="Abundance", fill=taxa)) +
+    geom_bar(position="stack", stat="identity", width=2) +
+    coord_polar("y", start=0) +
+    theme_void() +
+    facet_wrap(as.formula(paste("~", env_var))) +
+    scale_fill_manual(values=colvals) +
+    theme(strip.text.x = element_text(size=12, face="bold")) +
+    theme(strip.text.y = element_text(size=12, face="bold")) +
+    theme(legend.box.spacing = unit(1, "cm")) +
+    theme(legend.position = "right") +
+    theme(legend.title = element_text(size=14, face="bold")) +
+    theme(legend.text = element_text(size=12)) +
+    theme(plot.background = element_rect(fill="white", color="white")) +
+    theme(panel.background = element_rect(fill="white", color="white"))
+  ggsave(filename=paste(pie_plot_filename,"_",taxa,".svg",sep=""), device="svg", width=14, height=10)
+  ggsave(filename=paste(pie_plot_filename,"_",taxa,".png",sep=""), device="png", width=14, height=10)
+  
+}
 
 # ~~~~~~~~~~~~~~~ #
 # Alpha diversity #
@@ -90,3 +163,19 @@ FINAL_rarefaction_curve = ggplot(rarefaction_curve_metadata) +
 
 ggsave(filename=paste(args[5],"_",args[3],".svg", sep=""), FINAL_rarefaction_curve, device="svg", width=14, height=12)
 ggsave(filename=paste(args[5],"_",args[3],".png", sep=""), FINAL_rarefaction_curve, device="png", width=14, height=12)
+
+# ~~~~~~~~~~~~~~~~~~~ #
+# Taxonomy inspection #
+# ~~~~~~~~~~~~~~~~~~~ #
+tmp_df <- data.frame(tax_table(PHYLOSEQ))
+if(length(tmp_df[tmp_df$Kingdom=="Bacteria",]$Kingdom) > length(tmp_df[tmp_df$Kingdom=="Eukaryota",]$Kingdom)) {
+  unknown = "Unknown Bacteria"
+} else {
+  unknown = "Unknown Eukaryota"
+}
+ggplot_pie(PHYLOSEQ_PHYLUM, args[3], "Phylum", unknown, args[6], color_set, paste(args[7],"Phylum.tsv", sep="_"), args[8])
+ggplot_pie(PHYLOSEQ_CLASS, args[3], "Class", unknown, args[6], color_set, paste(args[7],"Class.tsv", sep="_"), args[8])
+ggplot_pie(PHYLOSEQ_ORDER, args[3], "Order", unknown, args[6], color_set, paste(args[7],"Order.tsv", sep="_"), args[8])
+ggplot_pie(PHYLOSEQ_FAMILY, args[3], "Family", unknown, args[6], color_set, paste(args[7],"Family.tsv", sep="_"), args[8])
+ggplot_pie(PHYLOSEQ_GENUS, args[3], "Genus", unknown, args[6], color_set, paste(args[7],"Genus.tsv", sep="_"), args[8])
+ggplot_pie(PHYLOSEQ_SPECIES, args[3], "Species", unknown, args[6], color_set, paste(args[7],"Species.tsv", sep="_"), args[8])

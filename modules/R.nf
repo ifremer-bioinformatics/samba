@@ -72,8 +72,10 @@ process nanopore_alpha_diversity {
     label 'R_env'
 
     publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_index_values_*.txt'
-    publishDir "${params.outdir}/${params.nanopore_r_results/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_bxp_*'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'rarefaction_curve_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_all_assignation", mode: 'copy', pattern: 'alpha_div_bxp_all_assignation_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_only_assigned", mode: 'copy', pattern: 'alpha_div_bxp_only_assigned_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_all_assignation", mode: 'copy', pattern: 'rarefaction_curve_all_assignation_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_only_assigned", mode: 'copy', pattern: 'rarefaction_curve_only_assigned_*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha_diversity -> "07_${task.process}_complete.sh" }
 
@@ -83,8 +85,10 @@ process nanopore_alpha_diversity {
 
     output:
         path('alpha_div_index_values_*.txt')
-        path('alpha_div_bxp_*'), emit: alpha_bxp
-        path('rarefaction_curve_*')
+        path('alpha_div_bxp_all_assignation_*')
+        path('alpha_div_bxp_only_assigned_*')
+        path('rarefaction_curve_all_assignation_*')
+        path('rarefaction_curve_only_assigned_*')
         path('completecmd')
         path('v_*.txt')
         val('report_ok'), emit: report_ok

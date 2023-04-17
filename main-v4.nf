@@ -30,6 +30,7 @@ def helpMessage() {
 
 	General parameters:
 	--stat_var			[str]	Variable(s) of interest for statistical analyses (comma-separated list).
+	--taxa_nb			[int]	Number of taxa to represent (default = "10").
 
 	Other options:
 	--outdir			[path]	The output directory where the results will be saved.

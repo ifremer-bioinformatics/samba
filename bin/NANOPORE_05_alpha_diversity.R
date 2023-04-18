@@ -108,7 +108,7 @@ format_data_barplot <- function(PHYLOSEQ, taxa, unknown, taxa_nb) {
   ## Keep only taxa_nb top taxa and aggregate the rest as "Other"
   ordered_abund <- total_abundance[ order(total_abundance[, "Abundance"], decreasing=TRUE),]
   min_top_abund <- round(ordered_abund[10, "Abundance"] / sum(ordered_abund$Abundance) * 100, 2)
-  list_ordered_abund <- as.character(ordered_abund$Genus)
+  list_ordered_abund <- as.character(ordered_abund[, taxa])
   list_ordered_abund <- list_ordered_abund[list_ordered_abund != unknown]
   top <- list_ordered_abund[1:min(length(list_ordered_abund), taxa_nb)]
   mdf[, taxa] <- as.character(mdf[ , taxa])

@@ -17,13 +17,18 @@ create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_
   nanopore_metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
   rawtable = read.table(nanopore_count_table, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
   rawtable = rawtable %>% select (c(-Identity, -Coverage))
-  rawtable = data.frame(rawtable[,1:7], rawtable[,9], do.call(rbind, list(str_split_fixed(rawtable$Taxonomy, ";",7))))
+  rawtable = data.frame(rawtable[,1:7], rawtable[,9], do.call(rbind, list(str_split_fixed(rawtable$Taxonomy, ";",7))), check.names=FALSE)
   colnames(rawtable)[(length(rawtable)-7):length(rawtable)] = c("Assignation", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
   
   # Reformat taxonomy
-  rawtable = data.frame(apply(rawtable, 2, function(x) gsub(" ", "", x)))
-  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("uncultured$", "", x)))
-  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("Unknown_Family", "", x)))
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub(" ", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("uncultured$", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("unidentified_marine$", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("uncultured_marine$", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("unidentified_eubacterium$", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("unidentified$", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("Unknown_Family", "", x)), check.names=FALSE)
+  rawtable$Species = str_replace_all(rawtable$Species, "^wastewater_metagenome$", "")
   if(length(rawtable[rawtable$Kingdom=="Bacteria",]$Kingdom) > length(rawtable[rawtable$Kingdom=="Eukaryota",]$Kingdom)) {
     unknown = "Unknown Bacteria"
   } else {
@@ -104,7 +109,20 @@ create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_
     if(length(rawtable[rawtable$Phylum=="",]$Phylum) > 0) {
       rawtable[rawtable$Phylum=="",]$Phylum <- unknown
     }
-  
+
+    ## Kingdom level
+    if(length(rawtable[rawtable$Kingdom=="",]$Kingdom) > 0) {
+      if(unknown == "Unknown Bacteria") {
+        rawtable[rawtable$Kingdom=="",]$Kingdom <- "Bacteria"
+      } else {
+        rawtable[rawtable$Kingdom=="",]$Kingdom <- "Eukaryota"
+      }
+    }
+
+    ## Manage uncultured species
+    rawtable[grepl("uncultured", rawtable$Species),]$Species <- paste("Uncultured", rawtable[grepl("uncultured", rawtable$Species),]$Genus, sep=" ")
+    rawtable = data.frame(apply(rawtable, 2, function(x) gsub("Uncultured Unknown", "Uncultured", x)), check.names=FALSE)
+
   # Subset data according to assignation category
   rawtable_all_assignation = rawtable %>% select(-Assignation)
   write.table(rawtable_all_assignation, final_table_all_assignation, sep="\t", dec=",", col.names=T, row.names=T, quote=F)

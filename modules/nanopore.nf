@@ -69,7 +69,8 @@ process nanopore_count_table {
 
     label 'biopython'
 
-    publishDir "${params.outdir}/${params.nanopore_count_table_results}", mode: 'copy', pattern: '*.tsv'
+    publishDir "${params.outdir}/${params.nanopore_count_table_results}", mode: 'copy', pattern: 'samples.tsv'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: 'samples.tsv'
 
     input:
         path(bam)

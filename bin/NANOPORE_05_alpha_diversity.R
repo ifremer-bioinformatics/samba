@@ -196,11 +196,11 @@ df_alpha_div_sdf$Measure = factor(df_alpha_div_sdf$Measure, levels=c("Observed",
 ## Alpha diversity plots according to user-selected variable ####
 test_formula = paste("Value", args[3], sep="~")
 var_value = length(unique(df_alpha_div_sdf[, args[3]]))
-stats_var = df_alpha_div_sdf %>% group_by(Measure) %>% t_test(as.formula(test_formula)) %>% adjust_pvalue(method="bonferroni") %>% add_significance() %>% add_xy_position(x = "supp")
+stats_var = df_alpha_div_sdf %>% group_by(Measure) %>% t_test(as.formula(test_formula)) %>% adjust_pvalue(method="bonferroni") %>% add_significance() %>% add_y_position(scales="free")
 var_color = adjustcolor(color_set[2:(var_value+1)], alpha.f=0.8)
 
 alpha_bxp_var = ggboxplot(df_alpha_div_sdf, x=args[3], y="Value", fill=args[3], facet.by="Measure", add="jitter", scales="free_y", add.params=list(size=1)) +
-  stat_pvalue_manual(stats_var, hide.ns=TRUE, label="{signif(p.adj,1)}{p.adj.signif}", label.size=4) +
+  stat_pvalue_manual(stats_var, hide.ns=TRUE, label="{signif(p.adj,1)}{p.adj.signif}", label.size=4, tip.length = 0.02) +
   scale_y_continuous(expand=expansion(mult=c(0.05, 0.1))) +
   scale_fill_manual(values=var_color) +
   labs(y="Index values", fill=args[3]) +

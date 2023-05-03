@@ -17,7 +17,7 @@ create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_
   nanopore_metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
   rawtable = read.table(nanopore_count_table, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
   rawtable = rawtable %>% select (c(-Identity, -Coverage))
-  rawtable = data.frame(rawtable[,1:7], rawtable[,9], do.call(rbind, list(str_split_fixed(rawtable$Taxonomy, ";",7))), check.names=FALSE)
+  rawtable = data.frame(rawtable[,1:(length(rawtable)-2)], rawtable[,length(rawtable)], do.call(rbind, list(str_split_fixed(rawtable$Taxonomy, ";",7))), check.names=FALSE)
   colnames(rawtable)[(length(rawtable)-7):length(rawtable)] = c("Assignation", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
   
   # Reformat taxonomy

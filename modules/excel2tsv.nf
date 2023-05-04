@@ -16,9 +16,9 @@ process excel2tsv {
         path("excel2tsv.log")
 
     script:
-    def datatype = params.singleEnd ? "single" : "paired"
+    def seqtype = params.singleEnd ? "single" : "paired"
     """
-    01_excel2tsv.py -x ${xls} -s ${datatype} &> excel2tsv.log 2>&1
+    01_excel2tsv.py -x ${xls} -d ${params.data_type} -s ${seqtype} &> excel2tsv.log 2>&1
     """
 
 }

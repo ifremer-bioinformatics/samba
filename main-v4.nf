@@ -473,7 +473,7 @@ workflow {
     /*                                       */
     /*---------------------------------------*/
 
-    if (params.data_type == "illumina" && !params.stats_only && !params.dada2merge) {
+    if (params.data_type == "illumina") {
     
         /* Verify data integrity */
             if (params.data_integrity_enable) {

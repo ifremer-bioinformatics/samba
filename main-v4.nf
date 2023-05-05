@@ -27,6 +27,7 @@ def helpMessage() {
 	--excel_sample_file		[path]	Path to the XLS input file (EXCEL 97-2004) containing the manifest and metadata sheets.
 	--data_type			[str]	Set the type of your data. Can be: illumina, nanopore or pacbio.
 	--singleEnd			[bool]	Set to true to specify that the inputs are single-end reads (default = false).
+	--raw_read_length		[int]	Set the length of your raw reads e.g 250 or 300bp (default = 250).
 
 	General parameters:
 	--stat_var			[str]	Variable(s) of interest for statistical analyses (comma-separated list).
@@ -491,13 +492,15 @@ workflow {
         /* OPTIONAL: Optimizing rRNA gene trimming parameters for DADA2 using FIGARO */
             if (params.figaro_enable) {
                 figaro(ready)
+                optimal_values = figaro.out.figaro_csv.splitCsv(header: true, sep:',', limit:1).map { row -> tuple( row."trimPosition_R1", row."trimPosition_R2", row."maxExpectedError_R1", row."maxExpectedError_R2") }
             }
 
         /* ASV inference using DADA2 */
             /* ~~~ input management ~~~ */
             dada2_input = params.cutadapt_enable ? q2_cutadapt.out.trimmed_data : q2_import_data.out.imported_data
+            dada2_trimParams = params.figaro_enable ? optimal_values : Channel.from(params.FtruncLen,params.RtruncLen,params.FmaxEE,params.RmaxEE).collect()
             /* ~~~ process ~~~ */
-            q2_dada2(dada2_input,excel2tsv.out.metadata_xls)
+            q2_dada2(dada2_input,excel2tsv.out.metadata_xls,dada2_trimParams)
 
         /* OPTIONAL: swarm clustering */
             if (params.swarm_clustering_enable) {

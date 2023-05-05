@@ -65,6 +65,7 @@ process q2_dada2 {
     input:
         path(dada2_input_data)
         path(metadata)
+        val(dada2_params)
 
     output:
         path('DADA2_rep_seqs.qza'), emit: dada2_rep_seqs
@@ -81,7 +82,7 @@ process q2_dada2 {
 
     script:
     """
-    06_q2_dada2.sh ${params.singleEnd} ${dada2_input_data} ${params.FtrimLeft} ${params.RtrimLeft} ${params.FtruncLen} ${params.RtruncLen} ${params.truncQ} ${params.FmaxEE} ${params.RmaxEE} ${params.n_read_learn} ${params.pooling_method} ${params.chimeras_method} ${task.cpus} DADA2_rep_seqs.qza DADA2_table.qza DADA2_process_stats.qza DADA2_process_stats.qzv DADA2_table.qzv ${metadata} DADA2_rep_seqs.qzv 06_DADA2_output completecmd &> q2_dada2.log 2>&1
+    06_q2_dada2.sh ${params.singleEnd} ${dada2_input_data} ${params.figaro_enable} ${params.raw_read_length} ${params.primerF} ${params.primerR} ${params.FtrimLeft} ${params.RtrimLeft} ${dada2_params[0]} ${dada2_params[1]} ${params.truncQ} ${dada2_params[2]} ${dada2_params[3]} ${params.n_read_learn} ${params.pooling_method} ${params.chimeras_method} ${task.cpus} DADA2_rep_seqs.qza DADA2_table.qza DADA2_process_stats.qza DADA2_process_stats.qzv DADA2_table.qzv ${metadata} DADA2_rep_seqs.qzv 06_DADA2_output completecmd &> q2_dada2.log 2>&1
     echo '1.26.0' > v_dada2.txt
     """
 

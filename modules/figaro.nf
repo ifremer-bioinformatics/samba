@@ -11,7 +11,7 @@ process figaro {
 
     output:
         path('05_figaro_output')
-        path('figaro.csv')
+        path('figaro.csv'), emit: figaro_csv
         path('v_figaro.txt')
         path('completecmd')
 

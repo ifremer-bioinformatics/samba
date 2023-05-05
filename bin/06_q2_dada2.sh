@@ -9,26 +9,50 @@ args=("$@")
 
 SINGLE_END=${args[0]}
 DADA2_INPUT_DATA=${args[1]}
-F_TRIM_LEFT=${args[2]}
-R_TRIM_LEFT=${args[3]}
-F_TRUNC_LENGTH=${args[4]}
-R_TRUNC_LENGTH=${args[5]}
-TRUNC_Q=${args[6]}
-F_MAX_EE=${args[7]}
-R_MAX_EE=${args[8]}
-N_READS_LEARN=${args[9]}
-POOLING_METHOD=${args[10]}
-CHIMERA_METHOD=${args[11]}
-CPUS=${args[12]}
-REP_SEQS_QZA=${args[13]}
-TABLE_QZA=${args[14]}
-DADA2_STATS_QZA=${args[15]}
-DADA2_STATS_QZV=${args[16]}
-TABLE_QZV=${args[17]}
-METADATA=${args[18]}
-REP_SEQS_QZV=${args[19]}
-DADA2_OUTPUT=${args[20]}
-LOGCMD=${args[21]}
+FIGARO_ENABLE=${args[2]}
+RAW_LENGTH=${args[3]}
+PRIMER_F=${args[4]}
+PRIMER_R=${args[5]}
+F_TRIM_LEFT=${args[6]}
+R_TRIM_LEFT=${args[7]}
+F_TRUNC_LENGTH=${args[8]}
+R_TRUNC_LENGTH=${args[9]}
+TRUNC_Q=${args[10]}
+F_MAX_EE=${args[11]}
+R_MAX_EE=${args[12]}
+N_READS_LEARN=${args[13]}
+POOLING_METHOD=${args[14]}
+CHIMERA_METHOD=${args[15]}
+CPUS=${args[16]}
+REP_SEQS_QZA=${args[17]}
+TABLE_QZA=${args[18]}
+DADA2_STATS_QZA=${args[19]}
+DADA2_STATS_QZV=${args[20]}
+TABLE_QZV=${args[21]}
+METADATA=${args[22]}
+REP_SEQS_QZV=${args[23]}
+DADA2_OUTPUT=${args[24]}
+LOGCMD=${args[25]}
+
+if ${FIGARO_ENABLE}
+then
+    LENGTH_PRIMER_F=$(echo ${PRIMER_F} | awk '{print length}')
+    LENGTH_PRIMER_R=$(echo ${PRIMER_R} | awk '{print length}')
+    F_LENGTH_TEST=$((F_TRUNC_LENGTH + LENGTH_PRIMER_F))
+    R_LENGTH_TEST=$((R_TRUNC_LENGTH + LENGTH_PRIMER_R)) 
+    if [ "${F_LENGTH_TEST}" -ge "${RAW_LENGTH}" ]
+    then
+        F_TRUNC_LENGTH=0
+    else
+        F_TRUNC_LENGTH=${F_TRUNC_LENGTH}
+    fi
+    if ["${R_LENGTH_TEST}" -ge "${RAW_LENGTH}"]
+    then
+        R_TRUNC_LENGTH=0
+    else
+        R_TRUNC_LENGTH=${R_TRUNC_LENGTH}
+    fi
+fi
 
 if ${SINGLE_END}
 then

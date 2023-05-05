@@ -164,9 +164,11 @@ def export_to_tsv_for_qiime(data, metadata_vars, datatype, seqtype):
     manifest = open('q2_manifest.sort.tsv', 'w')
     metadata = open('q2_metadata.sort.tsv', 'w')
 
-    h_manifest = ['sample-id', 'absolute-filepath']
+    h_manifest = ['sample-id']
     if datatype == 'illumina' and seqtype == 'paired':
-        h_manifest.append('reverse-absolute-filepath')
+        h_manifest = h_manifest + ['forward-absolute-filepath', 'reverse-absolute-filepath']
+    else:
+        h_manifest.append('absolute-filepath')
 
     h_metadata = ['sampleid']
     if datatype == 'illumina':

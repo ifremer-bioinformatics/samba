@@ -62,6 +62,10 @@ ggplot_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_pie, pie
     taxa4color <- taxa4color[ ! taxa4color %in% c(Others_lab, unknown)]
     colvals <- c(color_pie[1:taxa_nb], "grey45", "black")
     names(colvals) <- c(taxa4color, Others_lab, unknown)
+  } else {
+    taxa4color <- as.character(unique(formated_data[, taxa]))
+    colvals <- color_pie[1:taxa_nb]
+    names(colvals) <- taxa4color
   }
   group_formula <- c(env_var, taxa, "Abundance")
   formated_data <- formated_data %>% group_by_at(group_formula) %>% summarise()
@@ -137,6 +141,10 @@ ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar,
     taxa4color <- taxa4color[ ! taxa4color %in% c(Others_lab, unknown)]
     colvals <- c(color_bar[1:taxa_nb], "grey45", "black")
     names(colvals) <- c(taxa4color, Others_lab, unknown)
+  } else {
+    taxa4color <- as.character(unique(formated_data[, taxa]))
+    colvals <- color_bar[1:taxa_nb]
+    names(colvals) <- taxa4color
   }
   sample_abund <- formated_data[, c("Samples", taxa, "Abundance")]
   dcast_formula <- paste(taxa, "Samples", sep="~")

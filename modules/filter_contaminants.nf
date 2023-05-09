@@ -34,9 +34,7 @@ process filter_contaminants {
 
     script:
     """
-    sed '1d' ${asv_table} > microdecon_table
-    sed -i 's/#OTU ID/ASV_ID/g' microdecon_table
-    sed -i "s/'//g" microdecon_table
+    sed "s/'//g" ${asv_table} > microdecon_table
     Rscript --vanilla ${baseDir}/bin/11a_filter_contaminants.R microdecon_table ${params.list_control_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microdecon.log 2>&1
     cp ${baseDir}/bin/11a_filter_contaminants.R completecmd
     Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"

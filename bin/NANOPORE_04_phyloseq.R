@@ -146,7 +146,9 @@ create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_
     }
 
     ## Manage uncultured species
-    rawtable[grepl("uncultured", rawtable$Species),]$Species <- paste("Uncultured", rawtable[grepl("uncultured", rawtable$Species),]$Genus, sep=" ")
+    if(rawtable[grepl("uncultured", rawtable$Species),]$Species > 0) {
+      rawtable[grepl("uncultured", rawtable$Species),]$Species <- paste("Uncultured", rawtable[grepl("uncultured", rawtable$Species),]$Genus, sep=" ")
+    }
     rawtable = data.frame(apply(rawtable, 2, function(x) gsub("Uncultured Unknown", "Uncultured", x)), check.names=FALSE)
 
   # Subset data according to assignation category

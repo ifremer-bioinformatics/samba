@@ -183,12 +183,21 @@ ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar,
 
 ## Phyloseq objects import ####
 PHYLOSEQ = readRDS(paste(args[1],".rds", sep=""))
-PHYLOSEQ_PHYLUM = readRDS(paste(args[1],"_phylum.rds", sep=""))
+if(args[11] == "silva") {
+  PHYLOSEQ_PHYLUM = readRDS(paste(args[1],"_phylum.rds", sep=""))
+}
 PHYLOSEQ_CLASS = readRDS(paste(args[1],"_class.rds", sep=""))
 PHYLOSEQ_ORDER = readRDS(paste(args[1],"_order.rds", sep=""))
 PHYLOSEQ_FAMILY = readRDS(paste(args[1],"_family.rds", sep=""))
 PHYLOSEQ_GENUS = readRDS(paste(args[1],"_genus.rds", sep=""))
 PHYLOSEQ_SPECIES = readRDS(paste(args[1],"_species.rds", sep=""))
+if(args[11] == "pr2-4" || args[11] == "pr2-5") {
+  PHYLOSEQ_SUPERGROUP = readRDS(paste(args[1],"_supergroup.rds", sep=""))
+  PHYLOSEQ_DIVISION = readRDS(paste(args[1],"_division.rds", sep=""))
+}
+if(args[11] == "pr2-5") {
+  PHYLOSEQ_SUBDIVISION = readRDS(paste(args[1],"_subdivision.rds", sep=""))
+}
 
 ## Calcul of diversity indexes (Chao1, Shannon, InvSimpson) ####
 alpha_rich = estimate_richness(PHYLOSEQ_SPECIES, measures=c("Observed", "Chao1", "ACE", "Shannon", "InvSimpson"))
@@ -259,22 +268,46 @@ ggsave(filename=paste(args[5],"_",args[3],".png", sep=""), FINAL_rarefaction_cur
 
 ## Pie graph with sample grouped by env_var 
 tmp_df <- data.frame(tax_table(PHYLOSEQ))
-if(length(tmp_df[tmp_df$Kingdom=="Bacteria",]$Kingdom) > length(tmp_df[tmp_df$Kingdom=="Eukaryota",]$Kingdom)) {
-  unknown = "Unknown Bacteria"
-} else {
-  unknown = "Unknown Eukaryota"
+if(args[11] == "silva") {
+  if(length(tmp_df[tmp_df$Kingdom=="Bacteria",]$Kingdom) > length(tmp_df[tmp_df$Kingdom=="Eukaryota",]$Kingdom)) {
+    unknown = "Unknown Bacteria"
+  } else {
+    unknown = "Unknown Eukaryota"
+  }
 }
-ggplot_pie(PHYLOSEQ_PHYLUM, args[3], "Phylum", unknown, args[6], color_set, paste(args[7],args[3],"Phylum.tsv", sep="_"), args[8])
+if(args[11] == "pr2-4" || args[11] == "pr2-5") {
+    unknown = "Unknown Eukaryota"
+}
+
+if(args[11] == "silva") {
+  ggplot_pie(PHYLOSEQ_PHYLUM, args[3], "Phylum", unknown, args[6], color_set, paste(args[7],args[3],"Phylum.tsv", sep="_"), args[8])
+}
 ggplot_pie(PHYLOSEQ_CLASS, args[3], "Class", unknown, args[6], color_set, paste(args[7],args[3],"Class.tsv", sep="_"), args[8])
 ggplot_pie(PHYLOSEQ_ORDER, args[3], "Order", unknown, args[6], color_set, paste(args[7],args[3],"Order.tsv", sep="_"), args[8])
 ggplot_pie(PHYLOSEQ_FAMILY, args[3], "Family", unknown, args[6], color_set, paste(args[7],args[3],"Family.tsv", sep="_"), args[8])
 ggplot_pie(PHYLOSEQ_GENUS, args[3], "Genus", unknown, args[6], color_set, paste(args[7],args[3],"Genus.tsv", sep="_"), args[8])
 ggplot_pie(PHYLOSEQ_SPECIES, args[3], "Species", unknown, args[6], color_set, paste(args[7],args[3],"Species.tsv", sep="_"), args[8])
+if(args[11] == "pr2-4" || args[11] == "pr2-5") {
+  ggplot_pie(PHYLOSEQ_SUPERGROUP, args[3], "Supergroup", unknown, args[6], color_set, paste(args[7],args[3],"Supergroup.tsv", sep="_"), args[8])
+  ggplot_pie(PHYLOSEQ_DIVISION, args[3], "Division", unknown, args[6], color_set, paste(args[7],args[3],"Division.tsv", sep="_"), args[8])
+}
+if(args[11] == "pr2-5") {
+  ggplot_pie(PHYLOSEQ_SUBDIVISION, args[3], "Subdivision", unknown, args[6], color_set, paste(args[7],args[3],"Subdivision.tsv", sep="_"), args[8])
+}
 
 ## Taxonomic barplot for all samples facetted by env_var
-ggplot_barplot(PHYLOSEQ_PHYLUM, args[3], "Phylum", unknown, args[6], color_set, paste(args[9],args[3],"Phylum.tsv", sep="_"), args[10])
+if(args[11] == "silva") {
+  ggplot_barplot(PHYLOSEQ_PHYLUM, args[3], "Phylum", unknown, args[6], color_set, paste(args[9],args[3],"Phylum.tsv", sep="_"), args[10])
+}
 ggplot_barplot(PHYLOSEQ_CLASS, args[3], "Class", unknown, args[6], color_set, paste(args[9],args[3],"Class.tsv", sep="_"), args[10])
 ggplot_barplot(PHYLOSEQ_ORDER, args[3], "Order", unknown, args[6], color_set, paste(args[9],args[3],"Order.tsv", sep="_"), args[10])
 ggplot_barplot(PHYLOSEQ_FAMILY, args[3], "Family", unknown, args[6], color_set, paste(args[9],args[3],"Family.tsv", sep="_"), args[10])
 ggplot_barplot(PHYLOSEQ_GENUS, args[3], "Genus", unknown, args[6], color_set, paste(args[9],args[3],"Genus.tsv", sep="_"), args[10])
 ggplot_barplot(PHYLOSEQ_SPECIES, args[3], "Species", unknown, args[6], color_set, paste(args[9],args[3],"Species.tsv", sep="_"), args[10])
+if(args[11] == "pr2-4" || args[11] == "pr2-5") {
+  ggplot_barplot(PHYLOSEQ_SUPERGROUP, args[3], "Supergroup", unknown, args[6], color_set, paste(args[9],args[3],"Supergroup.tsv", sep="_"), args[10])
+  ggplot_barplot(PHYLOSEQ_DIVISION, args[3], "Division", unknown, args[6], color_set, paste(args[9],args[3],"Division.tsv", sep="_"), args[10])
+}
+if(args[11] == "pr2-5") {
+  ggplot_barplot(PHYLOSEQ_SUBDIVISION, args[3], "Subdivision", unknown, args[6], color_set, paste(args[9],args[3],"Subdivision.tsv", sep="_"), args[10])
+}

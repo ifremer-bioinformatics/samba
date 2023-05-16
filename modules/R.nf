@@ -111,8 +111,8 @@ process nanopore_alpha_diversity {
 
     script :
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R phyloseq_all_assignation alpha_div_index_values_all_assignation.txt ${var} alpha_div_bxp_all_assignation rarefaction_curve_all_assignation ${params.taxa_nb} abundance_table_all_assignation pie_all_assignation sample_abundance_all_assignation barplot_all_assignation > alpha_diversity_all_assignation.log 2&>1
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R phyloseq_only_assigned alpha_div_index_values_only_assigned.txt ${var} alpha_div_bxp_only_assigned rarefaction_curve_only_assigned ${params.taxa_nb} abundance_table_only_assigned pie_only_assigned sample_abundance_only_assigned barplot_only_assigned > alpha_diversity_only_assigned.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R phyloseq_all_assignation alpha_div_index_values_all_assignation.txt ${var} alpha_div_bxp_all_assignation rarefaction_curve_all_assignation ${params.taxa_nb} abundance_table_all_assignation pie_all_assignation sample_abundance_all_assignation barplot_all_assignation ${params.db_name} > alpha_diversity_all_assignation.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_05_alpha_diversity.R phyloseq_only_assigned alpha_div_index_values_only_assigned.txt ${var} alpha_div_bxp_only_assigned rarefaction_curve_only_assigned ${params.taxa_nb} abundance_table_only_assigned pie_only_assigned sample_abundance_only_assigned barplot_only_assigned ${params.db_name} > alpha_diversity_only_assigned.log 2&>1
     cp ${baseDir}/bin/NANOPORE_05_alpha_diversity.R completecmd
     touch report_ok
 

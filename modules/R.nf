@@ -47,14 +47,14 @@ process nanopore_phyloseq_obj {
         path(metadata)
 
     output:
-        path('count_table_for_stats*.tsv')
+        path('*.tsv')
         path('*.rds'), emit: phy_obj
         path('v_*.txt')
         path('completecmd')
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} &> stats_prepare_data.log 2&>1
     cp ${baseDir}/bin/NANOPORE_04_phyloseq.R completecmd
 
     ## get statistics libraries version for report

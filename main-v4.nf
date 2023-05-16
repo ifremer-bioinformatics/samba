@@ -78,6 +78,7 @@ def helpMessage() {
 	--pval_crit			[float]	dbOTU3 P-value criterion (default = 0.0005).
 
 	Taxonomic assignation:
+	--db_name			[str]	Name of the taxonomic database. Can be: silva, pr2-4 or pr2-5.
 	--database			[file]	Path to a trained Naive Bayes QIIME 2 classifier.
 	--confidence			[float]	Confidence threshold for limiting taxonomic depth. Set to "disable" to disable confidence calculation, or 0 to calculate confidence but not apply it to limit the taxonomic depth of the assignments (default = 0.7).
 
@@ -117,6 +118,12 @@ def helpMessage() {
 	--min_samples			[int]	Minimum number of samples that an ASV needs to be identfied within (default = "1").
 	--picrust2_tested_variable	[str]	Variable(s) of interest for functional predictions (comma-separated list).
 
+	@@ PROCESS OPTIONS FOR ILLUMINA MERGED RUNS ANALYSIS @@
+
+	Merging runs:
+	--merge_table_dir		[path]	Path to a directory containing ASV tables from all runs analysed separately (QIIME 2 format).
+	--merge_repseq_dir		[path]  Path to a directory containing reference sequences of ASVs from all runs analysed separately (QIIME 2 format).
+
 	@@ PROCESS OPTIONS FOR NANOPORE ANALYSIS @@
 
 	Length filtering of raw reads:
@@ -126,6 +133,7 @@ def helpMessage() {
 	Read mapping using minimap2:
 	--batch_size			[int]	Minibatch size for mapping (default = "25M").
 	--minimap2_preset		[str]	minimap2 preset (default = "map-ont").
+	--db_name			[str]   Name of the taxonomic database. Can be: silva, pr2-4 or pr2-5.
 	--minimap2_db			[path]	Path to a minimap2 index format of the taxonomic database.
 
 	Get count table:
@@ -160,6 +168,17 @@ if (workflow.profile == 'illumina,singularity') {
     illumina_params_file = file("${baseDir}/conf/illumina.config", checkIfExists: true)
     illumina_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina.config")
 }
+if (workflow.profile == 'illumina_merge_runs,singularity') {
+    illumina_params_file = file("${baseDir}/conf/illumina_merge_runs.config", checkIfExists: true)
+    illumina_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina_merge_runs.config")
+    params.data_integrity_enable = false
+    params.cutadapt_enable = false
+    params.figaro_enable = false
+    params.swarm_clustering_enable = false
+    params.dbotu3_enable = false
+    params.filter_contaminants_enable = false
+}
+
 if (workflow.profile == 'illumina_test,singularity') {
     illumina_test_params_file = file("${baseDir}/conf/illumina_test.config", checkIfExists: true)
     illumina_test_params_file.copyTo("${params.outdir}/00_pipeline_config/illumina_test.config")
@@ -195,6 +214,7 @@ summary['Output dir'] = params.outdir
 summary['Profile'] = workflow.profile
 if (workflow.profile == 'illumina,singularity') summary['Data type'] = 'Illumina short reads'
 if (workflow.profile == 'illumina_test,singularity') summary['Data type'] = 'Illumina short reads test workflow'
+if (workflow.profile == 'illumina_merge_runs,singularity') summary['Data type'] = 'Workflow for multiple runs of Illumina short reads'
 if (workflow.profile == 'nanopore,singularity') summary['Data type'] = 'Nanopore long reads'
 if (workflow.profile == 'nanopore_test,singularity') summary['Data type'] = 'Nanopore long reads test workflow'
 summary['Sample Input Excel File'] = file_excel_sample_file.name
@@ -275,9 +295,11 @@ if (params.data_type == 'illumina') {
     }
 
     /* Verify DADA2 parameters */
-    if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.n_read_learn.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
-        log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all parameters in the 'DADA2 process parameters' section of the illumina.config file"
-        exit 1
+    if (workflow.profile == 'illumina,singularity') {
+        if(params.FtrimLeft.isEmpty() || params.RtrimLeft.isEmpty() || params.FtruncLen.isEmpty() || params.RtruncLen.isEmpty() || params.truncQ.isEmpty() || params.FmaxEE.isEmpty() || params.RmaxEE.isEmpty() || params.n_read_learn.isEmpty() || params.pooling_method.isEmpty() || params.chimeras_method.isEmpty() ) {
+            log.error "ERROR: DADA2 parameters have not been configured correctly. At least one of the parameters is not filled in. Please check and configure all parameters in the 'DADA2 process parameters' section of the illumina.config file"
+            exit 1
+        }
     }
 
     /* Set dbOTU3 to false if swarm clustering is activated */
@@ -286,8 +308,8 @@ if (params.data_type == 'illumina') {
     }
 
     /* Verify the taxonomic database */
-    if(params.database.isEmpty()) {
-        log.error "ERROR: No taxonomic database has been provided. Please check and configure the '--database' parameter in the illumina.config file"
+    if(params.database.isEmpty() || params.db_name.isEmpty()) {
+        log.error "ERROR: No taxonomic database and/or its name has/have been provided. Please check and configure the '--database' and/or '--db_name' parameter(s) in the illumina.config file"
         exit 1
     }
 
@@ -362,6 +384,10 @@ if (params.data_type == 'nanopore') {
         log.error "ERROR: Please check and configure all the minimap2 parameters in the nanopore.config file: '--batch_size', '--minimap2_preset' and '--minimap2_db'"
         exit 1
     }
+    if (params.db_name.isEmpty()) {
+        log.error "ERROR: Please check and set the name of your taxonomic database. Name can be silva, pr2-4 or pr2-5 and have to be configure in the nanopore.config file: '--db_name'"
+        exit 1
+    }
     if (params.ref_tax.isEmpty() || params.tax_rank.isEmpty()) {
         log.error "ERROR: No reference taxonomy file and/or taxonomic level to analyse has/have been provided. Please check and configure the '--ref_tax' and/or '--tax_rank' parameters in the nanopore.config file"
         exit 1
@@ -406,6 +432,15 @@ channel
     .flatten()
     .set { stat_var_ch }
 
+if (workflow.profile == 'illumina_merge_runs,singularity') {
+    channel
+        .fromPath( params.merge_table_dir )
+        .set { merge_table_dir }
+    channel
+        .fromPath( params.merge_repseq_dir )
+        .set { merge_repseq_dir }
+}
+
 /*
  * IMPORTING MODULES
  */
@@ -431,6 +466,7 @@ include { format_final_outputs } from './modules/format_final_outputs.nf'
 include { q2_ancombc } from './modules/qiime2.nf'
 include { picrust2 } from './modules/picrust2.nf'
 include { create_phyloseq } from './modules/R.nf'
+include { q2_merge } from './modules/qiime2.nf'
 
 /* Nanopore modules */
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
@@ -474,7 +510,7 @@ workflow {
     /*                                       */
     /*---------------------------------------*/
 
-    if (params.data_type == "illumina") {
+    if (params.data_type == "illumina" && workflow.profile != 'illumina_merge_runs,singularity') {
     
         /* Verify data integrity */
             if (params.data_integrity_enable) {
@@ -573,6 +609,19 @@ workflow {
 
         /* Create the phyloseq object for statistical analyses */
             create_phyloseq(final_asv_table_tsv,excel2tsv.out.metadata_xls,q2_asv_phylogeny.out.asv_phylogeny_nwk)
+
+    }
+
+    /*---------------------------------------*/
+    /*                                       */
+    /* Illumina multiple run analysis        */
+    /*                                       */
+    /*---------------------------------------*/
+
+    if (workflow.profile == 'illumina_merge_runs,singularity') {
+
+    /* Merge runs */
+        q2_merge(merge_table_dir,merge_repseq_dir,excel2tsv.out.metadata_xls)
 
     }
 

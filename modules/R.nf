@@ -21,7 +21,7 @@ process create_phyloseq {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/15_create_phyloseq_obj.R ${asv_table_tsv} asv_table_for_stats.tsv ${metadata} metadata_for_stats.tsv ${tree} phyloseq.rds &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/15_create_phyloseq_obj.R ${asv_table_tsv} asv_table_for_stats.tsv ${metadata} metadata_for_stats.tsv ${tree} phyloseq.rds ${params.db_name} &> stats_prepare_data.log 2&>1
     cp ${baseDir}/bin/15_create_phyloseq_obj.R completecmd
 
     ## get statistics libraries version for report

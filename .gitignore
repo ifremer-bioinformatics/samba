@@ -7,3 +7,4 @@ runSAMBA*.o*
 results
 work
 containers/*.sif
+merge_test/

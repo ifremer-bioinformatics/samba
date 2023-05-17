@@ -287,10 +287,10 @@ process q2_merge {
 
     label 'qiime2_env'
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '02_merge_runs_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '04_merge_runs_output'
     publishDir "${params.outdir}/${params.merge_runs_step}", mode: 'copy', pattern: 'merged_*'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs :
- { complete_cmd_merge -> "cmd/02_${task.process}_complete.sh" }
+ { complete_cmd_merge -> "cmd/04_${task.process}_complete.sh" }
 
     input:
         path(table_dir)
@@ -302,13 +302,13 @@ process q2_merge {
         path('merged_table.qzv')
         path('merged_seq.qza'), emit: merged_seqs_qza
         path('merged_seq.qzv')
-        path('02_merge_runs_output'), emit: merge_outdir
-        path('02_merge_runs_output/sequences.fasta'), emit: merged_seqs_fasta
+        path('04_merge_runs_output'), emit: merge_outdir
+        path('04_merge_runs_output/sequences.fasta'), emit: merged_seqs_fasta
         path('completecmd')
 
     script:
     """
-    02_q2_merge.sh ${table_dir} merged_table.qza ${repseq_dir} merged_seq.qza merged_table.qzv ${metadata} merged_seq.qzv 02_merge_runs_output completecmd &> q2_merge.log 2>&1
+    04_q2_merge.sh ${table_dir} merged_table.qza ${repseq_dir} merged_seq.qza merged_table.qzv ${metadata} merged_seq.qzv 04_merge_runs_output completecmd &> q2_merge.log 2>&1
     """
 
 }

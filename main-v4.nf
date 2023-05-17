@@ -620,8 +620,11 @@ workflow {
 
     if (workflow.profile == 'illumina_merge_runs,singularity') {
 
-    /* Merge runs */
-        q2_merge(merge_table_dir,merge_repseq_dir,excel2tsv.out.metadata_xls)
+        /* Import all data from multiple runs in QIIME2 format */
+            q2_import_data(manifest)
+
+        /* Merge runs */
+            q2_merge(merge_table_dir,merge_repseq_dir,excel2tsv.out.metadata_xls)
 
     }
 

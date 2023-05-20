@@ -184,19 +184,19 @@ ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar,
 ## Phyloseq objects import ####
 PHYLOSEQ = readRDS(paste(args[1],".rds", sep=""))
 if(args[11] == "silva") {
-  PHYLOSEQ_PHYLUM = readRDS(paste(args[1],"_phylum.rds", sep=""))
+  PHYLOSEQ_PHYLUM = readRDS(paste(args[1],"_Phylum.rds", sep=""))
 }
-PHYLOSEQ_CLASS = readRDS(paste(args[1],"_class.rds", sep=""))
-PHYLOSEQ_ORDER = readRDS(paste(args[1],"_order.rds", sep=""))
-PHYLOSEQ_FAMILY = readRDS(paste(args[1],"_family.rds", sep=""))
-PHYLOSEQ_GENUS = readRDS(paste(args[1],"_genus.rds", sep=""))
-PHYLOSEQ_SPECIES = readRDS(paste(args[1],"_species.rds", sep=""))
+PHYLOSEQ_CLASS = readRDS(paste(args[1],"_Class.rds", sep=""))
+PHYLOSEQ_ORDER = readRDS(paste(args[1],"_Order.rds", sep=""))
+PHYLOSEQ_FAMILY = readRDS(paste(args[1],"_Family.rds", sep=""))
+PHYLOSEQ_GENUS = readRDS(paste(args[1],"_Genus.rds", sep=""))
+PHYLOSEQ_SPECIES = readRDS(paste(args[1],"_Species.rds", sep=""))
 if(args[11] == "pr2-4" || args[11] == "pr2-5") {
-  PHYLOSEQ_SUPERGROUP = readRDS(paste(args[1],"_supergroup.rds", sep=""))
-  PHYLOSEQ_DIVISION = readRDS(paste(args[1],"_division.rds", sep=""))
+  PHYLOSEQ_SUPERGROUP = readRDS(paste(args[1],"_Supergroup.rds", sep=""))
+  PHYLOSEQ_DIVISION = readRDS(paste(args[1],"_Division.rds", sep=""))
 }
 if(args[11] == "pr2-5") {
-  PHYLOSEQ_SUBDIVISION = readRDS(paste(args[1],"_subdivision.rds", sep=""))
+  PHYLOSEQ_SUBDIVISION = readRDS(paste(args[1],"_Subdivision.rds", sep=""))
 }
 
 ## Calcul of diversity indexes (Chao1, Shannon, InvSimpson) ####

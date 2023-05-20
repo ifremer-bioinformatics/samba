@@ -432,6 +432,26 @@ channel
     .flatten()
     .set { stat_var_ch }
 
+if (params.db_name == 'silva') {
+    channel
+        .from(params.silva_rank)
+        .splitCsv(sep : ',', strip : true)
+        .flatten()
+        .set { tax_rank_ch }
+} else if (params.db_name == 'pr2-4') {
+    channel
+        .from(params.pr2_4_rank)
+        .splitCsv(sep : ',', strip : true)
+        .flatten()
+        .set { tax_rank_ch }
+} else {
+    channel
+        .from(params.pr2_5_rank)
+        .splitCsv(sep : ',', strip : true)
+        .flatten()
+        .set { tax_rank_ch }
+}
+
 if (workflow.profile == 'illumina_merge_runs,singularity') {
     channel
         .fromPath( params.merge_table_dir )
@@ -475,6 +495,7 @@ include { nanopore_getfasta } from './modules/nanopore.nf'
 include { nanopore_count_table } from './modules/nanopore.nf'
 include { nanopore_phyloseq_obj } from './modules/R.nf'
 include { nanopore_alpha_diversity } from './modules/R.nf'
+include { agglomerate_phyloseq } from './modules/R.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -626,6 +647,9 @@ workflow {
         /* Merge runs */
             q2_merge(merge_table_dir,merge_repseq_dir,excel2tsv.out.metadata_xls)
 
+        /* Taxonomy assignation of merged ASVs */
+            q2_assign_taxo(q2_merge.out.merged_seqs_qza,q2_merge.out.merge_outdir)
+
     }
 
     /*---------------------------------------*/
@@ -654,9 +678,10 @@ workflow {
 
         /* Create the phyloseq object for statistical analyses */
            nanopore_phyloseq_obj(nanopore_count_table.out.nanopore_count_table,excel2tsv.out.metadata_xls)
+           agglomerate_phyloseq(nanopore_phyloseq_obj.out.phy_obj.collect(),tax_rank_ch)
 
         /* Run alpha diversity analyses */
-           nanopore_alpha_diversity(nanopore_phyloseq_obj.out.phy_obj.collect(),stat_var_ch)
+           nanopore_alpha_diversity(nanopore_phyloseq_obj.out.phy_obj.collect(),agglomerate_phyloseq.out.phy_obj_taxlevel.collect(),stat_var_ch)
 
     }
 

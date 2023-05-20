@@ -53,9 +53,10 @@ create_phyloseq_obj <- function(raw_asv_table, asv_table_phyloseq, raw_metadata,
     if (db == "silva") {
       ## Reformat taxonomy
       not_formated_tax_table = data.frame(tax_table(PHYLOSEQ))
-      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub(" ", "", x)))
-      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub("uncultured$", "", x)))
-      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub("Unknown_Family", "", x)))
+      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub(" ", "", x)), check.names=FALSE)
+      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub("uncultured$", "", x)), check.names=FALSE)
+      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub("Unknown_Family", "", x)), check.names=FALSE)
+      not_formated_tax_table = data.frame(apply(not_formated_tax_table, 2, function(x) gsub("^Incertae_Sedis$", "", x)), check.names=FALSE)
       
       # Genus level
       if(length(not_formated_tax_table[not_formated_tax_table$Genus=="" & not_formated_tax_table$Family!="",]$Genus) != 0) {

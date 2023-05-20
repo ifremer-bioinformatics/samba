@@ -40,7 +40,7 @@ process nanopore_phyloseq_obj {
     publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.tsv'
     publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.rds'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phyloseq -> "06_${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_phyloseq -> "06a_${task.process}_complete.sh" }
 
     input:
         path(asv_table_tsv)
@@ -54,14 +54,40 @@ process nanopore_phyloseq_obj {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_04_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} &> stats_prepare_data.log 2&>1
-    cp ${baseDir}/bin/NANOPORE_04_phyloseq.R completecmd
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04a_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} &> stats_prepare_data.log 2&>1
+    cp ${baseDir}/bin/NANOPORE_04a_phyloseq.R completecmd
 
     ## get statistics libraries version for report
     Rscript -e "write(x=as.character(paste0(R.Version()[c('major','minor')], collapse = '.')), file='v_R.txt')"
     Rscript -e "library(dplyr); write(x=as.character(packageVersion('dplyr')), file='v_dplyr.txt')"
     Rscript -e "library(stringr); write(x=as.character(packageVersion('stringr')), file='v_stringr.txt')"
     Rscript -e "library(phyloseq); x=as.character(packageVersion('phyloseq')); write(x, file='v_phyloseq.txt')"
+    """
+
+}
+
+process agglomerate_phyloseq {
+
+    tag "${tax_level}"
+    label 'R_env'
+
+    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.tsv'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: '*.rds'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_agglomerate_phyloseq -> "06b_${task.process}_complete.sh" }
+
+    input:
+        path(phyloseq)
+        each(tax_level)
+
+    output:
+        path('*.tsv')
+        path('*.rds'), emit: phy_obj_taxlevel
+        path('completecmd')
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04b_agglomerate_taxlevel.R phyloseq_all_assignation.rds phyloseq_only_assigned.rds ${tax_level} &> agglomerate_phyloseq_taxlevel.log 2&>1
+    cp ${baseDir}/bin/NANOPORE_04b_agglomerate_taxlevel.R completecmd
     """
 
 }
@@ -89,6 +115,7 @@ process nanopore_alpha_diversity {
 
     input:
         path(phyloseq)
+        path(phyloseq_taxlevel)
         each(var)
 
     output:

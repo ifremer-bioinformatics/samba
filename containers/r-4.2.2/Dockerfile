@@ -19,7 +19,7 @@ RUN conda install -c conda-forge mamba
 RUN mamba install -c conda-forge r-stringr
 RUN mamba install -c conda-forge r-dplyr
 RUN mamba install -c conda-forge r-vegan
-RUN R --vanilla -e 'install.packages("BiocManager", repos="https://mirror.ibcp.fr/pub/CRAN/")'
+RUN mamba install -c conda-forge r-biocmanager
 RUN R --vanilla -e 'BiocManager::install("phyloseq")'
 RUN mamba install -c conda-forge r-tidyr
 RUN mamba install -c conda-forge r-ggplot2
@@ -27,6 +27,8 @@ RUN mamba install -c conda-forge r-ggpubr
 RUN mamba install -c conda-forge r-rstatix
 RUN R --vanilla -e 'install.packages("grid", repos="https://mirror.ibcp.fr/pub/CRAN/")'
 RUN mamba install -c conda-forge r-svglite
+RUN mamba install -c conda-forge r-remotes
+RUN R --vanilla -e 'remotes::install_github("mikemc/speedyseq")'
 
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen

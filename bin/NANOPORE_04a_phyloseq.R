@@ -55,6 +55,7 @@ create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_
   rawtable = data.frame(apply(rawtable, 2, function(x) gsub("^rock_porewater$", "", x)), check.names=FALSE)
   rawtable = data.frame(apply(rawtable, 2, function(x) gsub("^saltmarsh_clone$", "", x)), check.names=FALSE)
   rawtable = data.frame(apply(rawtable, 2, function(x) gsub("^synthetic_construct$", "", x)), check.names=FALSE)
+  rawtable = data.frame(apply(rawtable, 2, function(x) gsub("^Incertae_Sedis$", "", x)), check.names=FALSE)
   rawtable$Species = str_replace_all(rawtable$Species, "^wastewater_metagenome$", "")
   if(length(rawtable[rawtable$Kingdom=="Bacteria",]$Kingdom) > length(rawtable[rawtable$Kingdom=="Eukaryota",]$Kingdom)) {
     unknown = "Unknown Bacteria"
@@ -224,83 +225,6 @@ create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_
   
   NANOPORE_PHYLOSEQ_ONLY_ASSIGNED = phyloseq(NANOPORE_ABUND_ONLY_ASSIGNED, NANOPORE_TAX_ONLY_ASSIGNED, NANOPORE_METADATA)
   saveRDS(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned.rds", sep=""))
-
-  ## Aggregate sequence at each taxa level ####
-  if(db == "silva") {
-    PHYLOSEQ_PHYLUM_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Phylum")
-    TABLE_ALL_PHYLUM = data.frame(otu_table(PHYLOSEQ_PHYLUM_ALL_ASSIGNATION), check.names=FALSE)
-    write.table(TABLE_ALL_PHYLUM, "asv_table_all_assignation_phylum.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_PHYLUM_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_phylum.rds", sep=""))
-  }
-  if(db == "pr2-4" || db == "pr2-5") {
-    PHYLOSEQ_SUPERGROUP_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Supergroup")
-    TABLE_ALL_SUPERGROUP = data.frame(otu_table(PHYLOSEQ_SUPERGROUP_ALL_ASSIGNATION), check.names=FALSE)
-    write.table(TABLE_ALL_SUPERGROUP, "asv_table_all_assignation_supergroup.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_SUPERGROUP_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_supergroup.rds", sep=""))
-    PHYLOSEQ_DIVISION_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Division")
-    TABLE_ALL_DIVISION = data.frame(otu_table(PHYLOSEQ_DIVISION_ALL_ASSIGNATION), check.names=FALSE)
-    write.table(TABLE_ALL_DIVISION, "asv_table_all_assignation_division.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_DIVISION_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_division.rds", sep=""))
-  }
-  if(db == "pr2-5") {
-    PHYLOSEQ_SUBDIVISION_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Subdivision")
-    TABLE_ALL_SUBDIVISION = data.frame(otu_table(PHYLOSEQ_SUBDIVISION_ALL_ASSIGNATION), check.names=FALSE)
-    write.table(TABLE_ALL_SUBDIVISION, "asv_table_all_assignation_subdivision.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_SUBDIVISION_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_subdivision.rds", sep=""))
-  }
-  PHYLOSEQ_CLASS_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Class")
-  TABLE_ALL_CLASS = data.frame(otu_table(PHYLOSEQ_CLASS_ALL_ASSIGNATION), check.names=FALSE)
-  write.table(TABLE_ALL_CLASS, "asv_table_all_assignation_class.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-  saveRDS(PHYLOSEQ_CLASS_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_class.rds", sep=""))
-  PHYLOSEQ_ORDER_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Order")
-  TABLE_ALL_ORDER = data.frame(otu_table(PHYLOSEQ_ORDER_ALL_ASSIGNATION), check.names=FALSE)
-  write.table(TABLE_ALL_ORDER, "asv_table_all_assignation_order.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-  saveRDS(PHYLOSEQ_ORDER_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_order.rds", sep=""))
-  PHYLOSEQ_FAMILY_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Family")
-  TABLE_ALL_FAMILY = data.frame(otu_table(PHYLOSEQ_FAMILY_ALL_ASSIGNATION), check.names=FALSE)
-  write.table(TABLE_ALL_FAMILY, "asv_table_all_assignation_family.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-  saveRDS(PHYLOSEQ_FAMILY_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_family.rds", sep=""))
-  PHYLOSEQ_GENUS_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Genus")
-  TABLE_ALL_GENUS = data.frame(otu_table(PHYLOSEQ_GENUS_ALL_ASSIGNATION), check.names=FALSE)
-  write.table(TABLE_ALL_GENUS, "asv_table_all_assignation_genus.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-  saveRDS(PHYLOSEQ_GENUS_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_genus.rds", sep=""))
-  PHYLOSEQ_SPECIES_ALL_ASSIGNATION = tax_glom(NANOPORE_PHYLOSEQ_ALL_ASSIGNATION, "Species")
-  TABLE_ALL_SPECIES = data.frame(otu_table(PHYLOSEQ_SPECIES_ALL_ASSIGNATION), check.names=FALSE)
-  write.table(TABLE_ALL_SPECIES, "asv_table_all_assignation_species.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-  saveRDS(PHYLOSEQ_SPECIES_ALL_ASSIGNATION, file=paste(phyloseq_rds,"all_assignation_species.rds", sep=""))
-
-  if(db == "silva") {
-    PHYLOSEQ_PHYLUM_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Phylum")
-    TABLE_ASSIGNED_PHYLUM = data.frame(otu_table(PHYLOSEQ_PHYLUM_ONLY_ASSIGNED), check.names=FALSE)
-    write.table(TABLE_ASSIGNED_PHYLUM, "asv_table_only_assigned_phylum.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_PHYLUM_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_phylum.rds", sep=""))
-  }
-  if(db == "pr2-4" || db == "pr2-5") {
-    PHYLOSEQ_SUPERGROUP_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Supergroup")
-    TABLE_ASSIGNED_SUPERGROUP = data.frame(otu_table(PHYLOSEQ_SUPERGROUP_ONLY_ASSIGNED), check.names=FALSE)
-    write.table(TABLE_ASSIGNED_SUPERGROUP, "asv_table_only_assigned_supergroup.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_SUPERGROUP_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_supergroup.rds", sep=""))
-    PHYLOSEQ_DIVISION_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Division")
-    TABLE_ASSIGNED_DIVISION = data.frame(otu_table(PHYLOSEQ_DIVISION_ONLY_ASSIGNED), check.names=FALSE)
-    write.table(TABLE_ASSIGNED_DIVISION, "asv_table_only_assigned_division.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_DIVISION_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_division.rds", sep=""))
-  }
-  if(db == "pr2-5") {
-    PHYLOSEQ_SUBDIVISION_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Subdivision")
-    TABLE_ASSIGNED_SUBDIVISION = data.frame(otu_table(PHYLOSEQ_SUBDIVISION_ONLY_ASSIGNED), check.names=FALSE)
-    write.table(TABLE_ASSIGNED_SUBDIVISION, "asv_table_only_assigned_subdivision.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-    saveRDS(PHYLOSEQ_SUBDIVISION_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_subdivision.rds", sep=""))
-  }
-    PHYLOSEQ_CLASS_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Class")
-    saveRDS(PHYLOSEQ_CLASS_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_class.rds", sep=""))
-    PHYLOSEQ_ORDER_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Order")
-    saveRDS(PHYLOSEQ_ORDER_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_order.rds", sep=""))
-    PHYLOSEQ_FAMILY_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Family")
-    saveRDS(PHYLOSEQ_FAMILY_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_family.rds", sep=""))
-    PHYLOSEQ_GENUS_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Genus")
-    saveRDS(PHYLOSEQ_GENUS_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_genus.rds", sep=""))
-    PHYLOSEQ_SPECIES_ONLY_ASSIGNED = tax_glom(NANOPORE_PHYLOSEQ_ONLY_ASSIGNED, "Species")
-    saveRDS(PHYLOSEQ_SPECIES_ONLY_ASSIGNED, file=paste(phyloseq_rds,"only_assigned_species.rds", sep=""))
 
 }
 

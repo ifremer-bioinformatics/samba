@@ -487,6 +487,7 @@ include { q2_ancombc } from './modules/qiime2.nf'
 include { picrust2 } from './modules/picrust2.nf'
 include { create_phyloseq } from './modules/R.nf'
 include { q2_merge } from './modules/qiime2.nf'
+include { illumina_alpha_diversity } from './modules/R.nf'
 
 /* Nanopore modules */
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
@@ -630,6 +631,9 @@ workflow {
 
         /* Create the phyloseq object for statistical analyses */
             create_phyloseq(final_asv_table_tsv,excel2tsv.out.metadata_xls,q2_asv_phylogeny.out.asv_phylogeny_nwk)
+
+        /* Alpha diversity analysis */
+            illumina_alpha_diversity(create_phyloseq.out.phyloseq,stat_var_ch)
 
     }
 

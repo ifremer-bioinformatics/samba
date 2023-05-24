@@ -97,12 +97,12 @@ process illumina_alpha_diversity {
     tag "${var}"
     label 'R_env'
 
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_index_values_*.txt'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_all_assignation", mode: 'copy', pattern: 'alpha_div_bxp_*'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_all_assignation", mode: 'copy', pattern: 'rarefaction_curve_*'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_all_assignation", mode: 'copy', pattern: 'abundance_table_*.tsv'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_only_assigned", mode: 'copy', pattern: 'sample_abundance_*.tsv'
-    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/01_alpha_diversity/figures_all_assignation", mode: 'copy', pattern: 'barplot_*'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_index_values_*.txt'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'alpha_div_bxp_*'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'rarefaction_curve_*'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'abundance_table_*.tsv'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'sample_abundance_*.tsv'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'barplot_*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha_diversity -> "16_${task.process}_complete.sh" }
 

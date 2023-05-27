@@ -103,6 +103,7 @@ process illumina_alpha_diversity {
     publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'abundance_table_*.tsv'
     publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'sample_abundance_*.tsv'
     publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'barplot_*'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/01_alpha_diversity", mode: 'copy', pattern: 'pie_*'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
     publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_alpha_diversity -> "16_${task.process}_complete.sh" }
 
@@ -199,6 +200,36 @@ process nanopore_alpha_diversity {
     Rscript -e "library(grid); write(x=as.character(packageVersion('grid')), file='v_grid.txt')"
     Rscript -e "library(vegan); x=as.character(packageVersion('vegan')); write(x, file='v_vegan.txt')"
     Rscript -e "library(RColorBrewer); x=as.character(packageVersion('RColorBrewer')); write(x, file='v_RColorBrewer.txt')"
+    """
+
+}
+
+process beta_diversity {
+
+    tag "${var}_${normalisation}"
+    label 'R_env'
+
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/04_ordination_plots", mode: 'copy', pattern: '*.png'
+    publishDir "${params.outdir}/${params.report_results}/figures", mode: 'copy', pattern: '*.png'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs :
+ { complete_cmd_ordination_plots -> "17_${task.process}_complete.sh" }
+
+    input:
+        path(phyloseq)
+        each(normalisation)
+        each(var)
+
+    output:
+        path('*_NMDS_bray*'), emit: ordi_plots
+        path('*_permanova_table.png')
+        path('completecmd')
+        val('report_ok'), emit: report_ok
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/bin/17_beta_diversity.R ${phyloseq} ${normalisation} ${var} ${params.projectName} &> ordination_plots.log 2&>1
+    cp ${baseDir}/bin/17_beta_diversity.R completecmd
+    touch report_ok
     """
 
 }

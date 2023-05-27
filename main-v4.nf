@@ -30,6 +30,7 @@ def helpMessage() {
 	--raw_read_length		[int]	Set the length of your raw reads e.g 250 or 300bp (default = 250).
 
 	General parameters:
+	--normalisation_type		[str]	Normalisation method(s) used. Can be "rarefaction", "css", "deseq2" or multiple methods: "rarefaction,css,deseq2" (default = "rarefaction,css,deseq2").
 	--stat_var			[str]	Variable(s) of interest for statistical analyses (comma-separated list).
 	--taxa_nb			[int]	Number of taxa to represent (default = "10").
 
@@ -117,6 +118,8 @@ def helpMessage() {
 	--min_reads			[int]	Minimum number of reads across all samples for each input ASV (default = "1").
 	--min_samples			[int]	Minimum number of samples that an ASV needs to be identfied within (default = "1").
 	--picrust2_tested_variable	[str]	Variable(s) of interest for functional predictions (comma-separated list).
+	--top_level_mapfile		[path]	Path to the METACYC mapping file of the top level pathways
+	--secondary_level_mapfile	[path]	Path to the METACYC mapping file of the secondary level pathways
 
 	@@ PROCESS OPTIONS FOR ILLUMINA MERGED RUNS ANALYSIS @@
 
@@ -252,6 +255,8 @@ if (params.data_type == 'nanopore') {
     summary['Reference taxonomy file'] = file_nanopore_ref_tax.name
     summary['Taxonomic level inspected'] = params.tax_rank
 }
+summary['Variable tested'] = params.stat_var
+summary['Normalisation method(s) used'] = params.normalisation_type 
 
 log.info summary.collect { k,v -> "${k.padRight(42)}: $v" }.join("\n")
 log.info "\033[1;34m-------------------------------------------------------------------\033[0m"
@@ -367,8 +372,8 @@ if (params.data_type == 'illumina') {
 
     /* Verify parameters for functional predictions if it is activated */
     if (params.picrust2_enable) {
-        if (params.nsti.isEmpty() || params.hsp_method.isEmpty() || params.min_reads.isEmpty() || params.min_samples.isEmpty() || params.picrust2_tested_variable.isEmpty()) {
-            log.error "ERROR: At least one of the parameters for the functional predictions process is empty. Please check and configure the '--nsti', '--hsp_method', '--min_reads', '--min_samples' and/or '--picrust2_tested_variable' parameters in the illumina.config file"
+        if (params.nsti.isEmpty() || params.hsp_method.isEmpty() || params.min_reads.isEmpty() || params.min_samples.isEmpty() || params.picrust2_tested_variable.isEmpty() || params.top_level_mapfile.isEmpty() || params.secondary_level_mapfile.isEmpty()) {
+            log.error "ERROR: At least one of the parameters for the functional predictions process is empty. Please check and configure the '--nsti', '--hsp_method', '--min_reads', '--min_samples', '--picrust2_tested_variable', '--top_level_mapfile' and/or '--secondary_level_mapfile' parameters in the illumina.config file"
             exit 1
         }
     }
@@ -396,6 +401,13 @@ if (params.data_type == 'nanopore') {
         log.error "ERROR: No Kingdom studied has been provided. Please check and configure the '--kingdom' parameter in the nanopore.config file"
         exit 1
     }
+}
+
+/* General variables */
+
+if(params.stat_var.isEmpty() || params.taxa_nb.isEmpty() || params.normalisation_type.isEmpty()) {
+    log.error "ERROR: One or more parameters used for statistical analysis processes have not been configured correctly. Please check and correct '--stat_var', '--taxa_nb' and/or '--normalisation_type' provided in the config file"
+    exit 1
 }
 
 /*
@@ -431,6 +443,12 @@ channel
     .splitCsv(sep : ',', strip : true)
     .flatten()
     .set { stat_var_ch }
+
+channel
+    .from(params.normalisation_type)
+    .splitCsv(sep : ',', strip : true)
+    .flatten()
+    .set { norm_type_ch }
 
 if (params.db_name == 'silva') {
     channel
@@ -488,6 +506,7 @@ include { picrust2 } from './modules/picrust2.nf'
 include { create_phyloseq } from './modules/R.nf'
 include { q2_merge } from './modules/qiime2.nf'
 include { illumina_alpha_diversity } from './modules/R.nf'
+/*include { illumina_beta_diversity } from './modules/R.nf'*/
 
 /* Nanopore modules */
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
@@ -626,7 +645,7 @@ workflow {
 
         /* OPTIONAL: Functional predictions using PICRUSt2 */
         if (params.picrust2_enable) {
-            picrust2(final_asv_table_biom,final_asv_sequences_fasta)
+            picrust2(final_asv_table_biom,final_asv_sequences_fasta,final_asv_table_tsv,excel2tsv.out.metadata_xls,picrust2_tested_variable_ch)
         }
 
         /* Create the phyloseq object for statistical analyses */
@@ -634,6 +653,9 @@ workflow {
 
         /* Alpha diversity analysis */
             illumina_alpha_diversity(create_phyloseq.out.phyloseq,stat_var_ch)
+
+        /* Beta diversity analysis */
+            /*illumina_beta_diversity(create_phyloseq.out.phyloseq,norm_type_ch,stat_var_ch)*/
 
     }
 

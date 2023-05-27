@@ -10,7 +10,7 @@ process filter_contaminants {
     publishDir "${params.outdir}/${params.filter_contaminants_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.filter_contaminants_step}", mode: 'copy', pattern: 'decontaminated_ASV_table.biom'
     publishDir "${params.outdir}/${params.report_dirname}/98_version", mode: 'copy', pattern: 'v_*.txt'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filter_contaminants -> "cmd/11_${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filter_contaminants -> "cmd/09_${task.process}_complete.sh" }
  
     input:
         path(asv_table)
@@ -35,10 +35,10 @@ process filter_contaminants {
     script:
     """
     sed "s/'//g" ${asv_table} > microdecon_table
-    Rscript --vanilla ${baseDir}/bin/11a_filter_contaminants.R microdecon_table ${params.list_control_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microdecon.log 2>&1
-    cp ${baseDir}/bin/11a_filter_contaminants.R completecmd
+    Rscript --vanilla ${baseDir}/bin/09a_filter_contaminants.R microdecon_table ${params.list_control_samples} decontaminated_ASV_table.tsv abundance_removed.txt ASV_removed.txt &> microdecon.log 2>&1
+    cp ${baseDir}/bin/09a_filter_contaminants.R completecmd
     Rscript -e "write(x=as.character(packageVersion('microDecon')), file='v_microdecon.txt')"
-    11b_filter_contaminants_output.sh decontaminated_ASV_table.tsv decontaminated_ASV_table.biom decontaminated_ASV_table.qza ${asv_seqs} decontaminated_ASV.fasta decontaminated_ASV_seqs.qza decontaminated_ASV_table.qzv ${metadata} filter_contaminants_export decontaminated_ASV_seqs.qzv completecmd &> microdecon-to_qiime2.log 2>&1
+    09b_filter_contaminants_output.sh decontaminated_ASV_table.tsv decontaminated_ASV_table.biom decontaminated_ASV_table.qza ${asv_seqs} decontaminated_ASV.fasta decontaminated_ASV_seqs.qza decontaminated_ASV_table.qzv ${metadata} filter_contaminants_export decontaminated_ASV_seqs.qzv completecmd &> microdecon-to_qiime2.log 2>&1
     echo '1.3-r106' > v_seqtk.txt
     """
 }

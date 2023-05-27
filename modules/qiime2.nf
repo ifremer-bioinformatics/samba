@@ -155,10 +155,10 @@ process q2_filter_table_by_tax {
 
     label 'qiime2_env'
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '09_filter_table_by_tax_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '10_filter_table_by_tax_output'
     publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.filter_table_by_tax_step}", mode: 'copy', pattern: 'asv_table_tax_filtered.biom'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/09_${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_tax -> "cmd/10_${task.process}_complete.sh" }
 
     input:
         path(asv_table)
@@ -172,15 +172,15 @@ process q2_filter_table_by_tax {
         path('asv_table_tax_filtered.qzv')
         path('asv_seqs_tax_filtered.qza'), emit: asv_seqs_tax_filtered_qza
         path('asv_seqs_tax_filtered.qzv')
-        path('09_filter_table_by_tax_output'), emit: filter_table_by_tax_output
-        path('09_filter_table_by_tax_output/sequences.fasta'), emit: filter_table_by_tax_seqs_fasta
+        path('10_filter_table_by_tax_output'), emit: filter_table_by_tax_output
+        path('10_filter_table_by_tax_output/sequences.fasta'), emit: filter_table_by_tax_seqs_fasta
         path('asv_table_tax_filtered.biom'), emit: asv_table_tax_filtered_biom
         path('asv_table_tax_filtered.tsv'), emit: asv_table_tax_filtered_tsv
         path('completecmd')
 
     script:
     """
-    09_q2_filter_table_by_tax.sh ${params.filtering_type} ${asv_table} ${tax_qza} ${params.tax_to_filter} asv_table_tax_filtered.qza ${asv_seqs} asv_seqs_tax_filtered.qza asv_table_tax_filtered.qzv ${metadata} asv_seqs_tax_filtered.qzv 09_filter_table_by_tax_output ${tax_tsv} asv_table_tax_filtered.biom asv_table_tax_filtered.tsv completecmd &> q2_filter_table_by_tax.log 2>&1
+    10_q2_filter_table_by_tax.sh ${params.filtering_type} ${asv_table} ${tax_qza} ${params.tax_to_filter} asv_table_tax_filtered.qza ${asv_seqs} asv_seqs_tax_filtered.qza asv_table_tax_filtered.qzv ${metadata} asv_seqs_tax_filtered.qzv 10_filter_table_by_tax_output ${tax_tsv} asv_table_tax_filtered.biom asv_table_tax_filtered.tsv completecmd &> q2_filter_table_by_tax.log 2>&1
     """
 
 }
@@ -189,10 +189,10 @@ process q2_filter_table_by_data {
 
     label 'qiime2_env'
 
-    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '10_filter_table_by_data_output'
+    publishDir "${params.outdir}/${params.report_dirname}", mode: 'copy', pattern: '11_filter_table_by_data_output'
     publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: '*.qz*'
     publishDir "${params.outdir}/${params.filter_table_by_data_step}", mode: 'copy', pattern: 'asv_table_filtered.biom'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_data -> "cmd/10_${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_filtering_data -> "cmd/11_${task.process}_complete.sh" }
 
     input:
         path(asv_table)
@@ -205,15 +205,15 @@ process q2_filter_table_by_data {
         path('final_asv_table_filtered.qzv')
         path('final_asv_seqs_filtered.qza'), emit: final_asv_seqs_filtered_qza
         path('final_asv_seqs_filtered.qzv')
-        path('10_filter_table_by_data_output'), emit: filter_table_by_data_output
-        path('10_filter_table_by_data_output/sequences.fasta'), emit: filter_table_by_data_seqs_fasta
+        path('11_filter_table_by_data_output'), emit: filter_table_by_data_output
+        path('11_filter_table_by_data_output/sequences.fasta'), emit: filter_table_by_data_seqs_fasta
         path('asv_table_filtered.biom'), emit: final_asv_table_filtered_biom
         path('asv_table_filtered.tsv'), emit: final_asv_table_filtered_tsv
         path('completecmd')
 
     script:
     """
-    10_q2_filter_table_by_data.sh ${params.filter_by_id} ${params.list_sample_to_remove} ${asv_table} asv_table_samples_filtered.qza ${asv_seqs} asv_seqs_samples_filtered.qza ${params.filter_by_frequency} ${params.min_frequency_sample} ${params.min_frequency_asv} ${params.contingency_asv} asv_table_frequency_filtered.qza asv_seqs_frequency_filtered.qza final_asv_table_filtered.qzv ${metadata} final_asv_seqs_filtered.qzv 10_filter_table_by_data_output ${tax_tsv} asv_table_filtered.biom asv_table_filtered.tsv completecmd &> q2_filter_table_by_data.log 2>&1
+    11_q2_filter_table_by_data.sh ${params.filter_by_id} ${params.list_sample_to_remove} ${asv_table} asv_table_samples_filtered.qza ${asv_seqs} asv_seqs_samples_filtered.qza ${params.filter_by_frequency} ${params.min_frequency_sample} ${params.min_frequency_asv} ${params.contingency_asv} asv_table_frequency_filtered.qza asv_seqs_frequency_filtered.qza final_asv_table_filtered.qzv ${metadata} final_asv_seqs_filtered.qzv 11_filter_table_by_data_output ${tax_tsv} asv_table_filtered.biom asv_table_filtered.tsv completecmd &> q2_filter_table_by_data.log 2>&1
     """
 
 }
@@ -267,18 +267,16 @@ process q2_ancombc {
     output:
         path('ancombc_output_*.qza')
         path('*_level_ancombc_*')
-        path('ancombc_family_output_*.qza')
-        path('ancombc_genus_output_*.qza')
         path('heatmap_ancombc_*')
         path('completecmd')
 
     script:
     def ref_level = params.use_custom_reference ? params.reference_level : "none"
     """
-    13a_q2_ancombc.sh ${asv_table} ${metadata} ${params.use_custom_reference} ${ref_level} ${params.p_adj_method} ${params.max_iter} ${params.alpha} ${ancombc_formula} ancombc_output_${ancombc_formula}.qza asv_level_ancombc_${ancombc_formula} ${taxonomy} ancombc_table_family_${ancombc_formula}.qza ancombc_family_output_${ancombc_formula}.qza family_level_ancombc_${ancombc_formula} ancombc_table_genus_${ancombc_formula}.qza ancombc_genus_output_${ancombc_formula}.qza genus_level_ancombc_${ancombc_formula} completecmd &> q2_ancom.log 2>&1
-    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} asv_level_ancombc_${ancombc_formula}/lfc_slice.csv asv_level_ancombc_${ancombc_formula}/q_val_slice.csv asv_level_ancombc_${ancombc_formula}_summary.tsv ${metadata} heatmap_ancombc_asv_level_${ancombc_formula}
-    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} family_level_ancombc_${ancombc_formula}/lfc_slice.csv family_level_ancombc_${ancombc_formula}/q_val_slice.csv family_level_ancombc_${ancombc_formula}_summary.tsv ${metadata} heatmap_ancombc_family_level_${ancombc_formula}
-    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary.R ${ancombc_formula} genus_level_ancombc_${ancombc_formula}/lfc_slice.csv genus_level_ancombc_${ancombc_formula}/q_val_slice.csv genus_level_ancombc_${ancombc_formula}_summary.tsv ${metadata} heatmap_ancombc_genus_level_${ancombc_formula}
+    13a_q2_ancombc.sh ${asv_table} ${metadata} ${params.use_custom_reference} ${ref_level} ${params.p_adj_method} ${params.max_iter} ${params.alpha} ${ancombc_formula} ancombc_output_${ancombc_formula}.qza asv_level_ancombc_${ancombc_formula} ${taxonomy} ancombc_table_family_${ancombc_formula}.qza ancombc_output_family_${ancombc_formula}.qza family_level_ancombc_${ancombc_formula} ancombc_table_genus_${ancombc_formula}.qza ancombc_output_genus_${ancombc_formula}.qza genus_level_ancombc_${ancombc_formula} completecmd &> q2_ancom.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/13b_ancombc_summary_asv.R ${ancombc_formula} asv_level_ancombc_${ancombc_formula}/lfc_slice.csv asv_level_ancombc_${ancombc_formula}/q_val_slice.csv asv_level_ancombc_${ancombc_formula}_summary.tsv ${ref_level} heatmap_ancombc_asv_${ancombc_formula} ${metadata} &> ancombc_heatmap_asv.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/13c_ancombc_summary_tax.R ${ancombc_formula} family_level_ancombc_${ancombc_formula}/lfc_slice.csv family_level_ancombc_${ancombc_formula}/q_val_slice.csv family_level_ancombc_${ancombc_formula}_summary.tsv ${ref_level} Family heatmap_ancombc_family_${ancombc_formula} ${metadata} &> ancombc_heatmap_family.log 2>&1
+    Rscript --vanilla ${baseDir}/bin/13c_ancombc_summary_tax.R ${ancombc_formula} genus_level_ancombc_${ancombc_formula}/lfc_slice.csv genus_level_ancombc_${ancombc_formula}/q_val_slice.csv genus_level_ancombc_${ancombc_formula}_summary.tsv ${ref_level} Genus heatmap_ancombc_genus_${ancombc_formula} ${metadata} &> ancombc_heatmap_genus.log 2>&1
     """
 
 }

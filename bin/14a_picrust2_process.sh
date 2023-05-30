@@ -26,6 +26,10 @@ add_descriptions.py -i ${PICRUST2_OUTPUT}/EC_metagenome_out/pred_metagenome_unst
 add_descriptions.py -i ${PICRUST2_OUTPUT}/KO_metagenome_out/pred_metagenome_unstrat.tsv.gz -m KO -o ${PICRUST2_OUTPUT}/KO_metagenome_out/pred_metagenome_unstrat_descrip.tsv.gz ;
 add_descriptions.py -i ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat.tsv.gz -m METACYC -o ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat_descrip.tsv.gz;
 add_descriptions.py -i ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat.tsv.gz --custom_map_tabl ${TOP_PATHWAY} -o ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat_descrip_top_level.tsv.gz;
-add_descriptions.py -i ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat.tsv.gz --custom_map_tabl ${SEC_PATHWAY} -o ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat_descrip_secondary_level.tsv.gz"
+add_descriptions.py -i ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat.tsv.gz --custom_map_tabl ${SEC_PATHWAY} -o ${PICRUST2_OUTPUT}/pathways_out/path_abun_unstrat_descrip_secondary_level.tsv.gz ;
+if [[ ${TRAITS_DB} =~ "COG" ]] ; then add_descriptions.py -i ${PICRUST2_OUTPUT}/COG_metagenome_out/pred_metagenome_unstrat.tsv.gz -m COG -o ${PICRUST2_OUTPUT}/COG_metagenome_out/pred_metagenome_unstrat_descrip.tsv.gz ; fi ;
+if [[ ${TRAITS_DB} =~ "PFAM" ]] ; then add_descriptions.py -i ${PICRUST2_OUTPUT}/PFAM_metagenome_out/pred_metagenome_unstrat.tsv.gz -m PFAM -o ${PICRUST2_OUTPUT}/PFAM_metagenome_out/pred_metagenome_unstrat_descrip.tsv.gz ; fi ;
+if [[ ${TRAITS_DB} =~ "TIGRFAM" ]] ; then add_descriptions.py -i ${PICRUST2_OUTPUT}/TIGRFAM_metagenome_out/pred_metagenome_unstrat.tsv.gz -m TIGRFAM -o ${PICRUST2_OUTPUT}/TIGRFAM_metagenome_out/pred_metagenome_unstrat_descrip.tsv.gz ; fi ;
+"
 echo ${CMD} > ${LOGCMD}
 eval ${CMD}

@@ -1,6 +1,6 @@
 FROM amd64/ubuntu:20.04
 LABEL authors="samba-sebimer@ifremer.fr" \
-      description="Docker image containing R v4.2.2 and all R packages required for the samba pipeline"
+      description="Docker image containing R v4.2.3 and all R packages required for the samba pipeline"
 
 RUN apt-get -y update
 RUN apt-get -y install wget
@@ -12,9 +12,9 @@ RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 ENV PATH="$PATH:/opt/conda/bin"
 
-RUN conda create -n R-4.2.2 -c conda-forge r-base procps-ng
+RUN conda create -n R-4.2.3 -c conda-forge r-base procps-ng
 
-SHELL ["conda", "run", "-n", "R-4.2.2", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "R-4.2.3", "/bin/bash", "-c"]
 RUN conda install -c conda-forge mamba
 RUN mamba install -c conda-forge r-stringr
 RUN mamba install -c conda-forge r-dplyr
@@ -46,6 +46,8 @@ RUN mamba install -c conda-forge r-upsetr
 RUN mamba install -c conda-forge r-plotly
 RUN mamba install -c r r-htmlwidgets
 RUN R --vanilla -e 'BiocManager::install("microbiome")'
+RUN R --vanilla -e 'remotes::install_github("vmikk/metagMisc")'
+RUN R --vanilla -e 'BiocManager::install("DESeq2")'
 
 RUN conda clean -a
-ENV PATH /opt/conda/envs/R-4.2.2/bin:$PATH
+ENV PATH /opt/conda/envs/R-4.2.3/bin:$PATH

@@ -54,7 +54,7 @@ process nanopore_phyloseq_obj {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_04a_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04a_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} ${tax_to_filter} &> stats_prepare_data.log 2&>1
     cp ${baseDir}/bin/NANOPORE_04a_phyloseq.R completecmd
 
     ## get statistics libraries version for report
@@ -204,15 +204,14 @@ process nanopore_alpha_diversity {
 
 }
 
-process beta_diversity {
+process illumina_beta_diversity {
 
     tag "${var}_${normalisation}"
     label 'R_env'
 
-    publishDir "${params.outdir}/${params.r_results}/02_analysis/04_ordination_plots", mode: 'copy', pattern: '*.png'
-    publishDir "${params.outdir}/${params.report_results}/figures", mode: 'copy', pattern: '*.png'
-    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs :
- { complete_cmd_ordination_plots -> "17_${task.process}_complete.sh" }
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/02_ordination_plots", mode: 'copy', pattern: 'ordination_*'
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/02_ordination_plots", mode: 'copy', pattern: 'permanova_table_*'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_ordination_plots -> "17_${task.process}_complete.sh" }
 
     input:
         path(phyloseq)
@@ -220,14 +219,14 @@ process beta_diversity {
         each(var)
 
     output:
-        path('*_NMDS_bray*'), emit: ordi_plots
-        path('*_permanova_table.png')
+        path('ordination_*'), emit: ordi_plots
+        path('permanova_table_*')
         path('completecmd')
         val('report_ok'), emit: report_ok
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/17_beta_diversity.R ${phyloseq} ${normalisation} ${var} ${params.projectName} &> ordination_plots.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/17_beta_diversity.R ${phyloseq} ${normalisation} ${var} &> ordination_plots.log 2&>1
     cp ${baseDir}/bin/17_beta_diversity.R completecmd
     touch report_ok
     """

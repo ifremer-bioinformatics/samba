@@ -11,12 +11,17 @@ for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
 
-create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned, db) {
+create_phyloseq <- function(phyloseq_rds, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned, db, tax2filter) {
   
   # Input data
   nanopore_metadata = read.table(metadata, row.names=1, h=T, sep="\t", check.names=FALSE)
   rawtable = read.table(nanopore_count_table, h=T, sep="\t", dec=".", check.names=FALSE, quote="")
   rawtable = rawtable %>% select (c(-Identity, -Coverage))
+  tax_to_filter = unlist(strsplit(tax2filter,","))
+  if(length(tax_to_filter) > 0) {
+      tax_to_filter_collapsed = paste(tax_to_filter, collapse='|')
+      rawtable = rawtable[!grepl(tax_to_filter_collapsed, rawtable$Taxonomy),]
+  }
   if(db == "silva") {
     rawtable = data.frame(rawtable[,1:(length(rawtable)-2)], rawtable[,length(rawtable)], do.call(rbind, list(str_split_fixed(rawtable$Taxonomy, ";",7))), check.names=FALSE)
     colnames(rawtable)[(length(rawtable)-7):length(rawtable)] = c("Assignation", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
@@ -237,7 +242,8 @@ main <- function() {
   final_table_all_assignation = args[4]
   final_table_only_assigned = args[5]
   db = args[6]
-  create_phyloseq(phyloseq_rds, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned, db)
+  tax2filter = args[7]
+  create_phyloseq(phyloseq_rds, nanopore_count_table, metadata, final_table_all_assignation, final_table_only_assigned, db, tax2filter)
 }
 
 if (!interactive()) {

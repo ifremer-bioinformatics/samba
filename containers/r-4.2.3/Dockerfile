@@ -16,6 +16,11 @@ RUN conda create -n R-4.2.3 -c conda-forge r-base procps-ng
 
 SHELL ["conda", "run", "-n", "R-4.2.3", "/bin/bash", "-c"]
 RUN conda install -c conda-forge mamba
+RUN mamba install -c conda-forge glib
+RUN mamba install -c conda-forge r-base
+RUN mamba install -c conda-forge r-jpeg
+RUN mamba install -c conda-forge r-futile.logger
+RUN mamba install -c bioconda bioconductor-deseq2
 RUN mamba install -c conda-forge r-stringr
 RUN mamba install -c conda-forge r-dplyr
 RUN mamba install -c conda-forge r-vegan
@@ -47,7 +52,7 @@ RUN mamba install -c conda-forge r-plotly
 RUN mamba install -c r r-htmlwidgets
 RUN R --vanilla -e 'BiocManager::install("microbiome")'
 RUN R --vanilla -e 'remotes::install_github("vmikk/metagMisc")'
-RUN R --vanilla -e 'BiocManager::install("DESeq2")'
+
 
 RUN conda clean -a
 ENV PATH /opt/conda/envs/R-4.2.3/bin:$PATH

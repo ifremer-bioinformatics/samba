@@ -52,7 +52,7 @@ RUN mamba install -c conda-forge r-plotly
 RUN mamba install -c r r-htmlwidgets
 RUN R --vanilla -e 'BiocManager::install("microbiome")'
 RUN R --vanilla -e 'remotes::install_github("vmikk/metagMisc")'
-
+RUN R --vanilla -e 'remotes::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")'
 
 RUN conda clean -a
 ENV PATH /opt/conda/envs/R-4.2.3/bin:$PATH

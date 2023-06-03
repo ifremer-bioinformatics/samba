@@ -235,3 +235,29 @@ process illumina_beta_diversity {
     """
 
 }
+
+process intersecting_sets {
+
+    tag "${var}"
+    label 'R_env'
+
+    publishDir "${params.outdir}/${params.r_results}/02_analysis/03_intersecting_sets/${var}", mode: 'copy', pattern: '*_UpSetR_*.png'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_pie_class -> "18_${task.process}_complete.sh" }
+
+    input:
+        path(phyloseq)
+        each(var)
+
+    output :
+        path('*_UpSetR_*.png')
+        path('completecmd')
+        val('report_ok'), emit: report_ok
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/bin/18_intersecting_sets.R ${phyloseq} ${var} ${params.db_name} &> UpSetR.log 2&>1
+    cp ${baseDir}/bin/18_intersecting_sets.R completecmd
+    touch report_ok
+    """
+
+}

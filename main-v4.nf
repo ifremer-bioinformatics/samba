@@ -507,6 +507,7 @@ include { create_phyloseq } from './modules/R.nf'
 include { q2_merge } from './modules/qiime2.nf'
 include { illumina_alpha_diversity } from './modules/R.nf'
 include { illumina_beta_diversity } from './modules/R.nf'
+include { intersecting_sets } from './modules/R.nf'
 
 /* Nanopore modules */
 include { nanopore_read_length_filter } from './modules/nanopore.nf'
@@ -656,6 +657,9 @@ workflow {
 
         /* Beta diversity analysis */
             illumina_beta_diversity(create_phyloseq.out.phyloseq,norm_type_ch,stat_var_ch)
+
+        /* UpSetR */
+            intersecting_sets(create_phyloseq.out.phyloseq,stat_var_ch)
 
     }
 

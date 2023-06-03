@@ -515,8 +515,9 @@ include { nanopore_mapping } from './modules/nanopore.nf'
 include { nanopore_getfasta } from './modules/nanopore.nf'
 include { nanopore_count_table } from './modules/nanopore.nf'
 include { nanopore_phyloseq_obj } from './modules/R.nf'
-include { nanopore_alpha_diversity } from './modules/R.nf'
 include { agglomerate_phyloseq } from './modules/R.nf'
+include { nanopore_alpha_diversity } from './modules/R.nf'
+include { nanopore_beta_diversity } from './modules/R.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -712,6 +713,9 @@ workflow {
 
         /* Run alpha diversity analyses */
            nanopore_alpha_diversity(nanopore_phyloseq_obj.out.phy_obj.collect(),agglomerate_phyloseq.out.phy_obj_taxlevel.collect(),stat_var_ch)
+
+        /* Run beta diversity analyses */
+           nanopore_beta_diversity(agglomerate_phyloseq.out.phy_obj_taxlevel.collect(),norm_type_ch,stat_var_ch)
 
     }
 

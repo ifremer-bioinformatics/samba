@@ -54,7 +54,7 @@ process nanopore_phyloseq_obj {
 
     script:
     """
-    Rscript --vanilla ${baseDir}/bin/NANOPORE_04a_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} ${tax_to_filter} &> stats_prepare_data.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_04a_phyloseq.R phyloseq_ ${asv_table_tsv} ${metadata} count_table_for_stats_all_assignation.tsv count_table_for_stats_only_assigned.tsv ${params.db_name} ${params.tax_to_filter} &> stats_prepare_data.log 2&>1
     cp ${baseDir}/bin/NANOPORE_04a_phyloseq.R completecmd
 
     ## get statistics libraries version for report
@@ -235,6 +235,44 @@ process illumina_beta_diversity {
     """
 
 }
+
+process nanopore_beta_diversity {
+
+    tag "${var}_${normalisation}"
+    label 'R_env'
+
+    publishDir "${params.outdir}/${params.nanopore_r_results}/01_data", mode: 'copy', pattern: 'asv_table_for_stats_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/02_beta_diversity/${normalisation}/${var}", mode: 'copy', pattern: '*_pairwiseAdonis_result_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/02_beta_diversity/${normalisation}/${var}", mode: 'copy', pattern: '*_permanova_result_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/02_beta_diversity/${normalisation}/${var}/NMDS", mode: 'copy', pattern: 'ordination_NMDS_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/02_beta_diversity/${normalisation}/${var}/PCoA", mode: 'copy', pattern: 'ordination_PCoA_*'
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/02_beta_diversity/${normalisation}", mode: 'copy', pattern: 'permanova_table_*.png'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_ordination_plots -> "06_${task.process}_complete.sh" }
+
+    input:
+        path(phyloseq_taxlevel)
+        each(normalisation)
+        each(var)
+
+    output:
+        path('asv_table_for_stats_*')
+        path('ordination_*'), emit: ordi_plots
+        path('*_permanova_result_*')
+        path('*_pairwiseAdonis_result_*')
+        path('permanova_table_*.png')
+        path('completecmd')
+        val('report_ok'), emit: report_ok
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_06_beta_diversity.R phyloseq_all_assignation_Species.rds ${normalisation} ${var} &> beta_diversity_all_assignation.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_06_beta_diversity.R phyloseq_only_assigned_Species.rds ${normalisation} ${var} &> beta_diversity_only_assigned.log 2&>1
+    cp ${baseDir}/bin/NANOPORE_06_beta_diversity.R completecmd
+    touch report_ok
+    """
+
+}
+
 
 process intersecting_sets {
 

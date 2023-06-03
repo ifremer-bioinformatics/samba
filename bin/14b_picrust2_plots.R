@@ -47,7 +47,7 @@ functional_predictions <- function(pred,table,metadata,pred_plot,name,var) {
 
   # Plot
   cols = adjustcolor(c("darkolivegreen3", "cornflowerblue", "darkorange2", "red", "deepskyblue4", "deeppink", "gray55", "khaki1", "mediumpurple4", "peachpuff2"), alpha.f=0.8)
-  cols_var = cols[1:length(unique(metadata_filtered[, var])]
+  cols_var = cols[1:length(unique(metadata_filtered[, var]))]
 
   plot = ggord(rda_signif, metadata_filtered[, var], cols=cols_var, txt=4, arrow=0.2, addsize=-5, size=3, hull=FALSE, alpha_el=0.2, repel=F, ext=1, vec_ext=1) +
     theme_light() +

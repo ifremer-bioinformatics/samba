@@ -24,17 +24,9 @@ process format_final_outputs {
 
     script :
     """
-    if "${params.filter_contaminants_enable}"
-    then
-        cp ${asv_table_tsv} final_asv_table.tsv
-        sed -i "s/'//g" final_asv_table.tsv
-        sed -i 's/; /;/g' final_asv_table.tsv
-    else
-        sed '1d' ${asv_table_tsv} > final_asv_table.tsv
-        sed -i 's/#OTU ID/ASV_ID/g' final_asv_table.tsv
-        sed -i "s/'//g" final_asv_table.tsv
-        sed -i 's/; /;/g' final_asv_table.tsv
-    fi
+    cp ${asv_table_tsv} final_asv_table.tsv
+    sed -i "s/'//g" final_asv_table.tsv
+    sed -i 's/; /;/g' final_asv_table.tsv
     cp ${asv_seqs_fasta} final_asv_sequences.fasta
     cp ${asv_table_biom} final_asv_table.biom
     cp ${asv_table_qza} final_asv_table.qza

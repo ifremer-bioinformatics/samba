@@ -9,7 +9,7 @@
 args = commandArgs(trailingOnly=TRUE)
 
 ## Load up the needed packages ####
-requiredPackages = c("phyloseq", "metagMisc", "vegan","ggplot2","stringr","metagenomeSeq","gridExtra","dplyr","grid")
+requiredPackages = c("phyloseq", "metagMisc", "DESeq2", "vegan","ggplot2","stringr","metagenomeSeq","gridExtra","dplyr","grid", "pairwiseAdonis")
 for(package in requiredPackages){
   library(package,character.only = TRUE)
 }
@@ -78,10 +78,16 @@ for(idx in index_2) {
 # ~~~~~~~~~~~~~~~~~~~~~ #
 
 ### using user-specified variable #### 
-group <- get_variable(PHYLOSEQ_norm, args[3])
+assign(args[3], get_variable(PHYLOSEQ_norm, args[3]))
 
 for(idx in all_index) {
-    assign(paste0("adonis_result", idx), adonis2(distance(PHYLOSEQ_norm, idx) ~ group, permutations = 999)
+    assign(paste0("adonis_result_", idx), adonis2(phyloseq::distance(PHYLOSEQ_norm, idx) ~ eval(parse(text=args[3])), permutations = 999))
+    adonis_result = eval(parse(text=paste0("adonis_result_", idx)))
+    rownames(adonis_result)[1] <- args[3]
+    assign(paste0("adonis_result_", idx), adonis_result)
+    write.table(eval(parse(text=paste0("adonis_result_", idx))), paste0(args[3], "_permanova_result_", args[2], ".tsv"), col.names=NA, sep="\t", quote=F)
+    assign(paste0("pairwiseadonis_result_", idx), pairwise.adonis(phyloseq::distance(PHYLOSEQ_norm, idx), eval(parse(text=args[3])), p.adjust.m = "bonferroni"))
+    write.table(eval(parse(text=paste0("pairwiseadonis_result_", idx))), paste0(args[3], "_pairwiseAdonis_result_", args[2], ".tsv"), col.names=T, row.names=F, sep="\t", quote=F)
 }
 
 ### using all available variables ###
@@ -113,7 +119,7 @@ justify <- function(x, hjust="center", vjust="center", draw=TRUE){
 
 
 for(idx in all_index) {
-    f  <- paste("distance(PHYLOSEQ_norm, idx)"," ~ ", variables)
+    f  <- paste("phyloseq::distance(PHYLOSEQ_norm, idx)"," ~ ", variables)
     permanova_result <- adonis2(as.formula(f), data=data.frame(sample_data(PHYLOSEQ_norm)), permutations=999, by="terms")
     assign(paste0("permanova_result_", idx), permanova_result)
     permanova_result_summary <- permanova_result[1:length(permanova_result$R2)-1,c(3,5)]
@@ -128,12 +134,12 @@ for(idx in all_index) {
                                                                 fg_params=list(col="white", fontface=4L, fontsize=6)),
                                                    rowhead=list(fg_params=list(col="#00609B", fontface=3L, fontsize=6))))
 
-    plot_df_permanova <- list(df_permanova))
+    plot_df_permanova <- list(df_permanova)
     plot_df_permanova <- lapply(plot_df_permanova, justify, vjust="center", draw=FALSE)
     plot_h <- grid::convertHeight(sum(df_permanova$heights)*1.1, "in", TRUE)
     plot_w <- grid::convertWidth(sum(df_permanova$widths)*2.5, "in", TRUE) 
 
-    ggsave(paste0("permanova_table_", idx, "_", args[3]), grid.arrange(grobs=plot_df_permanova, ncol=2), height=plot_h, width=plot_w, device="png")
+    ggsave(paste0("permanova_table_", idx, "_", args[2], ".png"), grid.arrange(grobs=plot_df_permanova, ncol=2), height=plot_h, width=plot_w, device="png")
 
 }
 
@@ -142,29 +148,48 @@ for(idx in all_index) {
 # ~~~~~~~~~~~~~~~~~~~~~~~~ #
 
 ## function ####
-plot.ordi <- function(physeq, ordination, ordi_type, idx, var, ordi_color, permanova_result) {
-  plot_ordination(physeq, ordination, type="samples", color=var) +
-    theme_classic() +
-    geom_point(size=5) +
-    theme(legend.text=element_text(size=13)) +
-    theme(legend.title=element_text(size=14)) +
-    labs(color=var) +
-    theme(axis.text=element_text(size=12,color="black")) +
-    scale_fill_manual(values=alpha(ordi_color,0.4)) +
-    scale_color_manual(values=ordi_color) +
-    stat_ellipse(geom="polygon", alpha=0.1, type="t", aes_string(fill=var)) +
-    theme(plot.caption = element_text(size=14)) +
-    labs(caption = paste("Stress:",round(ordination$stress,4),
-                         "\nPermutation test R2:",round(permanova_result$R2[R2_var]*100,2),
-                         paste("\n", var, "variable significance: p-value"),permanova_result$`Pr(>F)`[R2_var], sep=" "))
-  ggsave(filename=paste0("ordination_", ordi_type, "_", idx, "_", var, ".svg",sep=""), device="svg", width=12, height=10)
-  ggsave(filename=paste0("ordination_", ordi_type, "_", idx, "_", var, ".png",sep=""), device="png", width=12, height=10)
+plot.ordi <- function(physeq, ordination, ordi_type, idx, var, ordi_color, permanova_result, norm) {
+  assign("R2_var", eval(parse(text=paste0("permanova_result_", idx)))[var, 3] * 100)
+  if(ordi_type == "NMDS") {
+      plot_ordination(physeq, ordination, type="samples", color=var) +
+        theme_classic() +
+        geom_point(size=5) +
+        theme(legend.text=element_text(size=13)) +
+        theme(legend.title=element_text(size=14)) +
+        labs(color=var) +
+        theme(axis.text=element_text(size=12,color="black")) +
+        scale_fill_manual(values=alpha(ordi_color,0.4)) +
+        scale_color_manual(values=ordi_color) +
+        stat_ellipse(geom="polygon", alpha=0.1, type="t", aes_string(fill=var)) +
+        theme(plot.caption = element_text(size=14)) +
+        labs(caption = paste("Stress:",round(ordination$stress,4),
+                             "\nPermutation test R2:",round(R2_var,2),
+                             paste("\n", var, "variable significance: p-value"),permanova_result[var,]$`Pr(>F)`, sep=" "))
+      ggsave(filename=paste0("ordination_", ordi_type, "_", idx, "_", var, "_", norm ,".svg",sep=""), device="svg", width=12, height=10)
+      ggsave(filename=paste0("ordination_", ordi_type, "_", idx, "_", var, "_", norm, ".png",sep=""), device="png", width=12, height=10)
+  } else {
+      plot_ordination(physeq, ordination, type="samples", color=var) +
+        theme_classic() +
+        geom_point(size=5) +
+        theme(legend.text=element_text(size=13)) +
+        theme(legend.title=element_text(size=14)) +
+        labs(color=var) +
+        theme(axis.text=element_text(size=12,color="black")) +
+        scale_fill_manual(values=alpha(ordi_color,0.4)) +
+        scale_color_manual(values=ordi_color) +
+        stat_ellipse(geom="polygon", alpha=0.1, type="t", aes_string(fill=var)) +
+        theme(plot.caption = element_text(size=14)) +
+        labs(caption = paste("Permutation test R2:",round(R2_var,2), 
+                             paste("\n", var, "variable significance: p-value"),permanova_result[var,]$`Pr(>F)`, sep=" "))
+      ggsave(filename=paste0("ordination_", ordi_type, "_", idx, "_", var, "_", norm, ".svg",sep=""), device="svg", width=12, height=10)
+      ggsave(filename=paste0("ordination_", ordi_type, "_", idx, "_", var, "_", norm, ".png",sep=""), device="png", width=12, height=10)
+  }
 }
 
 ## plotting ####
 ordi_color = adjustcolor(c("darkolivegreen3", "cornflowerblue", "darkorange2", "red", "deepskyblue4", "deeppink", "gray55", "khaki1", "mediumpurple4", "peachpuff2"), alpha.f=0.8)
 
 for(dist in all_index) {
-    plot.ordi(PHYLOSEQ_norm, eval(parse(text=paste0("ordination_NMDS_", dist))), "NMDS", dist, args[3], ordi_color, eval(parse(text=paste0("permanova_result_", dist))))
-    plot.ordi(PHYLOSEQ_norm, eval(parse(text=paste0("ordination_PCoA_", dist))), "PCoA", dist, args[3], ordi_color, eval(parse(text=paste0("permanova_result_", dist))))
+    plot.ordi(PHYLOSEQ_norm, eval(parse(text=paste0("ordination_NMDS_", dist))), "NMDS", dist, args[3], ordi_color, eval(parse(text=paste0("permanova_result_", dist))), args[2])
+    plot.ordi(PHYLOSEQ_norm, eval(parse(text=paste0("ordination_PCoA_", dist))), "PCoA", dist, args[3], ordi_color, eval(parse(text=paste0("permanova_result_", dist))), args[2])
 }

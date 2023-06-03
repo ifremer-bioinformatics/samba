@@ -16,15 +16,11 @@ functional_predictions <- function(pred,table,metadata,pred_plot,name,var) {
   # Format functional predictions tables ####
   rownames(pred) = pred[,1]
   pred = pred %>% select(-1)
-  pred$total_prediction = rowSums(pred)
-  pred = pred[order(pred$total_prediction, decreasing=TRUE),]
-  top_pred = pred[1:100,]
-  top_pred = top_pred %>% select(-total_prediction)
-  pred_clr = clr(top_pred)
+  pred_clr = clr(pred)
   t_pred_clr = as.data.frame(t(pred_clr))
 
   # Format ASV table
-  asv_table = read.table(table, h=T, sep="\t", row.names=1)
+  asv_table = read.table(table, h=T, sep="\t", row.names=1, check.names=F)
   asv_table = asv_table[-length(asv_table)]
   t_asv_table = t(asv_table)
 
@@ -33,25 +29,27 @@ functional_predictions <- function(pred,table,metadata,pred_plot,name,var) {
   metadata_filtered = metadata[metadata[,1] %in% rownames(t_pred_clr),]
 
   # RDA analysis
-  rda = rda(t_asv_table ~ ., data=t_pred_clr)
+  rda_intercept = rda(t_asv_table ~ 1, data=t_pred_clr)
+  rda_all_var_exp = rda(t_asv_table ~ ., data=t_pred_clr)
 
   # Forward selection of significant predictions
-  fwd.sel = ordiR2step(rda(t_asv_table ~ 1, data=t_pred_clr), scope=formula(rda), direction="forward", R2scope=FALSE, pstep=100, trace=FALSE)
+  fwd.sel = ordiR2step(rda_intercept, scope=rda_all_var_exp, R2scope=FALSE, perm.max=1000, trace=FALSE)
   f = str_split(as.character(fwd.sel$call), "~", 1)[[2]]
   rda_signif = rda(as.formula(f), data=t_pred_clr)
   R2 = RsquareAdj(rda_signif)
 
   # Test significance of model and terms
   anova_model = anova.cca(rda_signif, perm.max=500)
-  anova_terms = anova.cca(rda_signif, permu=200, by="term")
+  anova_terms = anova.cca(rda_signif, permu=500, by="term")
   sink(file=paste("significance_",name,".txt",sep="") , type = "output")
   print(anova_terms)
   sink()
 
   # Plot
   cols = adjustcolor(c("darkolivegreen3", "cornflowerblue", "darkorange2", "red", "deepskyblue4", "deeppink", "gray55", "khaki1", "mediumpurple4", "peachpuff2"), alpha.f=0.8)
+  cols_var = cols[1:length(unique(metadata_filtered[, var])]
 
-  plot = ggord(rda_signif, metadata_filtered[, var], cols=cols, txt=3, arrow=0.1, addsize=-5, size=2, hull=FALSE, alpha_el=0.2, repel=F, ext=1.1, vec_ext=0.4) +
+  plot = ggord(rda_signif, metadata_filtered[, var], cols=cols_var, txt=4, arrow=0.2, addsize=-5, size=3, hull=FALSE, alpha_el=0.2, repel=F, ext=1, vec_ext=1) +
     theme_light() +
     theme(legend.title=element_blank()) +
     labs(caption=paste("Model significance pvalue: ", anova_model$`Pr(>F)`[1],"\n",

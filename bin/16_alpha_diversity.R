@@ -16,22 +16,25 @@ for(package in requiredPackages){
 color_set = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
 
 ## Functions ####
+
 format_data_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb) {
   PHYLOSEQ_GROUP <- merge_samples(PHYLOSEQ, env_var)
   asvtab <- t(otu_table(PHYLOSEQ_GROUP))
   asvtab <- as(asvtab, "matrix")
   asvtab <- apply(asvtab, 2, function(x) x / sum(x))
+  ## Reformat ASV table (using melt function of the reshape2 package)
+  mdf <- melt(asvtab, varnames=c("ASV", env_var))
+  colnames(mdf)[3] <- "Abundance"
+  ## Add taxonomic information and replace NA and unclassified Unknown
   taxtab <- tax_table(PHYLOSEQ_GROUP)
   taxtab <- as(taxtab, "matrix")
-  rownames(asvtab) <- taxtab[, taxa]
-  rownames(taxtab) <- taxtab[, taxa]
-  taxtab <- taxtab[, 1:which(colnames(taxtab)==taxa)]
-  ## Reformat ASV table (using melt function of the reshape2 package)
-  mdf <- melt(asvtab, varnames=c(taxa, env_var))
-  colnames(mdf)[3] <- "Abundance"
-  ## Add taxonomic information
-  mdf <- merge(mdf, taxtab, by=taxa)
-  ## Calculate the total abundance at the class level
+  taxtab[, taxa][is.na(taxtab[, taxa])] <- unknown
+  taxtab[, taxa][taxtab[, taxa] %in% c("", "unclassified", "Unclassified", "uncultured", "Uncultured")] <- unknown
+  taxtab <- data.frame(ASV = rownames(taxtab), taxtab)
+  mdf <- merge(mdf, taxtab, by="ASV")
+  ## Aggregate at Genus level
+  formula_mdf_agg <- paste(paste("Abundance", env_var, sep="~"), taxa, sep="+")
+  mdf <- aggregate(as.formula(formula_mdf_agg), data=mdf, FUN=sum)
   formula_total_abund <- paste("Abundance", taxa, sep="~")
   total_abundance <- aggregate(as.formula(formula_total_abund), data=mdf, FUN=sum)
   ## Keep only taxa_nb top taxa and aggregate the rest as "Other"
@@ -42,17 +45,16 @@ format_data_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb) {
   top <- list_ordered_abund[1:min(length(list_ordered_abund), taxa_nb)]
   mdf[, taxa] <- as.character(mdf[ , taxa])
   ii <- (mdf[, taxa] %in% c(top, unknown))
-  Others_lab <- paste("Others (", taxa, " <", min_top_abund, "%)", sep="") 
+  Others_lab <- paste("Others (", taxa, " <", min_top_abund, "%)", sep="")
   mdf[!ii , taxa] <- Others_lab
-  formula_mdf <- paste(paste("Abundance", env_var, sep="~"), taxa, sep="+")
-  mdf <- aggregate(as.formula(formula_mdf), data=mdf, FUN=sum)
+  mdf <- aggregate(as.formula(formula_mdf_agg), data=mdf, FUN=sum)
   mdf[, taxa] <- factor(mdf[, taxa], levels=c(sort(top), Others_lab, unknown))
   ## Sort the entries by abundance to produce nice stacked bars in ggplot2
   mdf <- mdf[ order(mdf[, taxa], mdf$Abundance, decreasing=TRUE), ]
   return(mdf)
 }
 
-ggplot_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_pie, pie_data_filename, pie_plot_filename) {
+ggplot_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_pie, pie_data_filename) {
   formated_data <- format_data_pie(PHYLOSEQ, env_var, taxa, unknown, taxa_nb)
   formated_data$Abundance <- formated_data$Abundance*100
   Others_lab <- as.character(unique(formated_data[grepl("Others", formated_data[, taxa]), taxa]))
@@ -71,7 +73,7 @@ ggplot_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_pie, pie
   formated_data <- formated_data %>% group_by_at(group_formula) %>% summarise()
   dcast_formula <- paste(taxa, env_var, sep="~")
   pie_data <- dcast(formated_data, as.formula(dcast_formula))
-  write.table(pie_data, pie_data_filename, col.names=T, row.names=F, sep="\t", quote=F)
+  write.table(pie_data, paste0("pie_data_", env_var, "_", taxa, ".tsv"), col.names=T, row.names=F, sep="\t", quote=F)
   
   ggplot(formated_data, aes_string(x=1, y="Abundance", fill=taxa)) +
     geom_bar(position="stack", stat="identity", width=2) +
@@ -87,8 +89,8 @@ ggplot_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_pie, pie
     theme(legend.text = element_text(size=12)) +
     theme(plot.background = element_rect(fill="white", color="white")) +
     theme(panel.background = element_rect(fill="white", color="white"))
-  ggsave(filename=paste(pie_plot_filename,"_",env_var,"_",taxa,".svg",sep=""), device="svg", width=14, height=10)
-  ggsave(filename=paste(pie_plot_filename,"_",env_var,"_",taxa,".png",sep=""), device="png", width=14, height=10)
+  ggsave(filename=paste("pie_",env_var,"_",taxa,".svg",sep=""), device="svg", width=14, height=10)
+  ggsave(filename=paste("pie_",env_var,"_",taxa,".png",sep=""), device="png", width=14, height=10)
   
 }
 
@@ -131,7 +133,7 @@ format_data_barplot <- function(PHYLOSEQ, taxa, unknown, taxa_nb) {
   return(mdf)
 }
 
-ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar, abundance_data_filename, barplot_filename) {
+ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar, abundance_data_filename) {
   formated_data <- format_data_barplot(PHYLOSEQ, taxa, unknown, taxa_nb)
   formated_data$Abundance <- formated_data$Abundance*100
   Others_lab <- as.character(unique(formated_data[grepl("Others", formated_data[, taxa]), taxa]))
@@ -149,7 +151,7 @@ ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar,
   sample_abund <- formated_data[, c("Samples", taxa, "Abundance")]
   dcast_formula <- paste(taxa, "Samples", sep="~")
   abundance_data <- dcast(sample_abund, as.formula(dcast_formula))
-  write.table(abundance_data, abundance_data_filename, col.names=T, row.names=F, sep="\t", quote=F)
+  write.table(abundance_data, paste0("barplot_data_", env_var, "_", taxa, ".tsv"), col.names=T, row.names=F, sep="\t", quote=F)
   
   ggplot(formated_data, aes_string(x="Samples", y="Abundance", fill=taxa)) +
     geom_bar(position="stack", stat="identity", width=0.6) +
@@ -172,8 +174,8 @@ ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar,
     labs(x="", y="Relative abundance (%)") +
     theme(axis.text.x = element_text(color="black", size=14, angle=60, hjust=1, vjust=1.2)) +
     theme(axis.text.y = element_text(color="black", size=14))
-  ggsave(filename=paste(barplot_filename,"_",env_var,"_",taxa,".svg",sep=""), device="svg", width=14, height=10)
-  ggsave(filename=paste(barplot_filename,"_",env_var,"_",taxa,".png",sep=""), device="png", width=14, height=10)
+  ggsave(filename=paste("barplot_",env_var,"_",taxa,".svg",sep=""), device="svg", width=14, height=10)
+  ggsave(filename=paste("barplot_",env_var,"_",taxa,".png",sep=""), device="png", width=14, height=10)
   
 }
 
@@ -183,21 +185,6 @@ ggplot_barplot <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb, color_bar,
 
 ## Phyloseq objects import ####
 PHYLOSEQ = readRDS(args[1])
-if(args[11] == "silva") {
-  PHYLOSEQ_PHYLUM = tax_glom(PHYLOSEQ, "Phylum")
-}
-PHYLOSEQ_CLASS = tax_glom(PHYLOSEQ, "Class")
-PHYLOSEQ_ORDER = tax_glom(PHYLOSEQ, "Order")
-PHYLOSEQ_FAMILY = tax_glom(PHYLOSEQ, "Family")
-PHYLOSEQ_GENUS = tax_glom(PHYLOSEQ, "Genus")
-PHYLOSEQ_SPECIES = tax_glom(PHYLOSEQ, "Species")
-if(args[11] == "pr2-4" || args[11] == "pr2-5") {
-  PHYLOSEQ_SUPERGROUP = tax_glom(PHYLOSEQ, "Supergroup")
-  PHYLOSEQ_DIVISION = tax_glom(PHYLOSEQ, "Division")
-}
-if(args[11] == "pr2-5") {
-  PHYLOSEQ_SUBDIVISION = tax_glom(PHYLOSEQ, "Subdivision")
-}
 
 ## Calcul of diversity indexes (Chao1, Shannon, InvSimpson) ####
 alpha_rich = estimate_richness(PHYLOSEQ, measures=c("Observed", "Chao1", "ACE", "Shannon", "InvSimpson"))
@@ -268,46 +255,46 @@ ggsave(filename=paste(args[5],"_",args[3],".png", sep=""), FINAL_rarefaction_cur
 
 ## Pie graph with sample grouped by env_var 
 tmp_df <- data.frame(tax_table(PHYLOSEQ))
-if(args[11] == "silva") {
+if(args[7] == "silva") {
   if(length(tmp_df[tmp_df$Kingdom=="Bacteria",]$Kingdom) > length(tmp_df[tmp_df$Kingdom=="Eukaryota",]$Kingdom)) {
     unknown = "Unknown Bacteria"
   } else {
     unknown = "Unknown Eukaryota"
   }
 }
-if(args[11] == "pr2-4" || args[11] == "pr2-5") {
+if(args[7] == "pr2-4" || args[7] == "pr2-5") {
     unknown = "Unknown Eukaryota"
 }
 
-if(args[11] == "silva") {
-  ggplot_pie(PHYLOSEQ_PHYLUM, args[3], "Phylum", unknown, args[6], color_set, paste(args[7],args[3],"Phylum.tsv", sep="_"), args[8])
+if(args[7] == "silva") {
+  ggplot_pie(PHYLOSEQ, args[3], "Phylum", unknown, args[6], color_set)
 }
-ggplot_pie(PHYLOSEQ_CLASS, args[3], "Class", unknown, args[6], color_set, paste(args[7],args[3],"Class.tsv", sep="_"), args[8])
-ggplot_pie(PHYLOSEQ_ORDER, args[3], "Order", unknown, args[6], color_set, paste(args[7],args[3],"Order.tsv", sep="_"), args[8])
-ggplot_pie(PHYLOSEQ_FAMILY, args[3], "Family", unknown, args[6], color_set, paste(args[7],args[3],"Family.tsv", sep="_"), args[8])
-ggplot_pie(PHYLOSEQ_GENUS, args[3], "Genus", unknown, args[6], color_set, paste(args[7],args[3],"Genus.tsv", sep="_"), args[8])
-ggplot_pie(PHYLOSEQ_SPECIES, args[3], "Species", unknown, args[6], color_set, paste(args[7],args[3],"Species.tsv", sep="_"), args[8])
-if(args[11] == "pr2-4" || args[11] == "pr2-5") {
-  ggplot_pie(PHYLOSEQ_SUPERGROUP, args[3], "Supergroup", unknown, args[6], color_set, paste(args[7],args[3],"Supergroup.tsv", sep="_"), args[8])
-  ggplot_pie(PHYLOSEQ_DIVISION, args[3], "Division", unknown, args[6], color_set, paste(args[7],args[3],"Division.tsv", sep="_"), args[8])
+ggplot_pie(PHYLOSEQ, args[3], "Class", unknown, args[6], color_set)
+ggplot_pie(PHYLOSEQ, args[3], "Order", unknown, args[6], color_set)
+ggplot_pie(PHYLOSEQ, args[3], "Family", unknown, args[6], color_set)
+ggplot_pie(PHYLOSEQ, args[3], "Genus", unknown, args[6], color_set)
+ggplot_pie(PHYLOSEQ, args[3], "Species", unknown, args[6], color_set)
+if(args[7] == "pr2-4" || args[7] == "pr2-5") {
+  ggplot_pie(PHYLOSEQ, args[3], "Supergroup", unknown, args[6], color_set)
+  ggplot_pie(PHYLOSEQ, args[3], "Division", unknown, args[6], color_set)
 }
-if(args[11] == "pr2-5") {
-  ggplot_pie(PHYLOSEQ_SUBDIVISION, args[3], "Subdivision", unknown, args[6], color_set, paste(args[7],args[3],"Subdivision.tsv", sep="_"), args[8])
+if(args[7] == "pr2-5") {
+  ggplot_pie(PHYLOSEQ, args[3], "Subdivision", unknown, args[6], color_set)
 }
 
 ## Taxonomic barplot for all samples facetted by env_var
-if(args[11] == "silva") {
-  ggplot_barplot(PHYLOSEQ, args[3], "Phylum", unknown, args[6], color_set, paste(args[9],args[3],"Phylum.tsv", sep="_"), args[10])
+if(args[7] == "silva") {
+  ggplot_barplot(PHYLOSEQ, args[3], "Phylum", unknown, args[6], color_set)
 }
-ggplot_barplot(PHYLOSEQ, args[3], "Class", unknown, args[6], color_set, paste(args[9],args[3],"Class.tsv", sep="_"), args[10])
-ggplot_barplot(PHYLOSEQ, args[3], "Order", unknown, args[6], color_set, paste(args[9],args[3],"Order.tsv", sep="_"), args[10])
-ggplot_barplot(PHYLOSEQ, args[3], "Family", unknown, args[6], color_set, paste(args[9],args[3],"Family.tsv", sep="_"), args[10])
-ggplot_barplot(PHYLOSEQ, args[3], "Genus", unknown, args[6], color_set, paste(args[9],args[3],"Genus.tsv", sep="_"), args[10])
-ggplot_barplot(PHYLOSEQ, args[3], "Species", unknown, args[6], color_set, paste(args[9],args[3],"Species.tsv", sep="_"), args[10])
-if(args[11] == "pr2-4" || args[11] == "pr2-5") {
-  ggplot_barplot(PHYLOSEQ, args[3], "Supergroup", unknown, args[6], color_set, paste(args[9],args[3],"Supergroup.tsv", sep="_"), args[10])
-  ggplot_barplot(PHYLOSEQ, args[3], "Division", unknown, args[6], color_set, paste(args[9],args[3],"Division.tsv", sep="_"), args[10])
+ggplot_barplot(PHYLOSEQ, args[3], "Class", unknown, args[6], color_set)
+ggplot_barplot(PHYLOSEQ, args[3], "Order", unknown, args[6], color_set)
+ggplot_barplot(PHYLOSEQ, args[3], "Family", unknown, args[6], color_set)
+ggplot_barplot(PHYLOSEQ, args[3], "Genus", unknown, args[6], color_set)
+ggplot_barplot(PHYLOSEQ, args[3], "Species", unknown, args[6], color_set)
+if(args[7] == "pr2-4" || args[7] == "pr2-5") {
+  ggplot_barplot(PHYLOSEQ, args[3], "Supergroup", unknown, args[6], color_set)
+  ggplot_barplot(PHYLOSEQ, args[3], "Division", unknown, args[6], color_set)
 }
-if(args[11] == "pr2-5") {
-  ggplot_barplot(PHYLOSEQ, args[3], "Subdivision", unknown, args[6], color_set, paste(args[9],args[3],"Subdivision.tsv", sep="_"), args[10])
+if(args[7] == "pr2-5") {
+  ggplot_barplot(PHYLOSEQ, args[3], "Subdivision", unknown, args[6], color_set)
 }

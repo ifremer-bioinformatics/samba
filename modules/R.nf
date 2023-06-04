@@ -299,3 +299,30 @@ process intersecting_sets {
     """
 
 }
+
+process nanopore_intersecting_sets {
+
+    tag "${var}"
+    label 'R_env'
+
+    publishDir "${params.outdir}/${params.nanopore_r_results}/02_analysis/03_intersecting_sets/${var}", mode: 'copy', pattern: '*_UpSetR_*.png'
+    publishDir "${params.outdir}/${params.report_dirname}/99_completecmd", mode: 'copy', pattern : 'completecmd', saveAs : { complete_cmd_pie_class -> "07_${task.process}_complete.sh" }
+
+    input:
+        path(phyloseq_taxlevel)
+        each(var)
+
+    output :
+        path('*_UpSetR_*.png')
+        path('completecmd')
+        val('report_ok'), emit: report_ok
+
+    script:
+    """
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_07_intersecting_sets.R all_assignation ${params.db_name} ${var} &> UpSetR_all_assignation.log 2&>1
+    Rscript --vanilla ${baseDir}/bin/NANOPORE_07_intersecting_sets.R only_assigned ${params.db_name} ${var} &> UpSetR_only_assigned.log 2&>1
+    cp ${baseDir}/bin/NANOPORE_07_intersecting_sets.R completecmd
+    touch report_ok
+    """
+
+}

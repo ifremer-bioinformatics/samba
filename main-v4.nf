@@ -518,6 +518,7 @@ include { nanopore_phyloseq_obj } from './modules/R.nf'
 include { agglomerate_phyloseq } from './modules/R.nf'
 include { nanopore_alpha_diversity } from './modules/R.nf'
 include { nanopore_beta_diversity } from './modules/R.nf'
+include { nanopore_intersecting_sets } from './modules/R.nf'
 
 /*
  * RUN MAIN WORKFLOW
@@ -716,6 +717,9 @@ workflow {
 
         /* Run beta diversity analyses */
            nanopore_beta_diversity(agglomerate_phyloseq.out.phy_obj_taxlevel.collect(),norm_type_ch,stat_var_ch)
+
+        /* UpSetR */
+           nanopore_intersecting_sets(agglomerate_phyloseq.out.phy_obj_taxlevel.collect(),stat_var_ch)
 
     }
 

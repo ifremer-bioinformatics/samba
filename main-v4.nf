@@ -118,7 +118,6 @@ def helpMessage() {
 	--min_reads			[int]	Minimum number of reads across all samples for each input ASV (default = "1").
 	--min_samples			[int]	Minimum number of samples that an ASV needs to be identfied within (default = "1").
 	--picrust2_tested_variable	[str]	Variable(s) of interest for functional predictions (comma-separated list).
-	--top_level_mapfile		[path]	Path to the METACYC mapping file of the top level pathways
 	--secondary_level_mapfile	[path]	Path to the METACYC mapping file of the secondary level pathways
 
 	@@ PROCESS OPTIONS FOR ILLUMINA MERGED RUNS ANALYSIS @@
@@ -372,8 +371,8 @@ if (params.data_type == 'illumina') {
 
     /* Verify parameters for functional predictions if it is activated */
     if (params.picrust2_enable) {
-        if (params.nsti.isEmpty() || params.hsp_method.isEmpty() || params.min_reads.isEmpty() || params.min_samples.isEmpty() || params.picrust2_tested_variable.isEmpty() || params.top_level_mapfile.isEmpty() || params.secondary_level_mapfile.isEmpty()) {
-            log.error "ERROR: At least one of the parameters for the functional predictions process is empty. Please check and configure the '--nsti', '--hsp_method', '--min_reads', '--min_samples', '--picrust2_tested_variable', '--top_level_mapfile' and/or '--secondary_level_mapfile' parameters in the illumina.config file"
+        if (params.nsti.isEmpty() || params.hsp_method.isEmpty() || params.min_reads.isEmpty() || params.min_samples.isEmpty() || params.picrust2_tested_variable.isEmpty() || params.secondary_level_mapfile.isEmpty()) {
+            log.error "ERROR: At least one of the parameters for the functional predictions process is empty. Please check and configure the '--nsti', '--hsp_method', '--min_reads', '--min_samples', '--picrust2_tested_variable' and/or '--secondary_level_mapfile' parameters in the illumina.config file"
             exit 1
         }
     }

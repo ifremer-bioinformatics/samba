@@ -163,21 +163,6 @@ if (!interactive()) {
   main_metacyc()
 }
 
-main_metacyc_top <- function(){
-  pred_path_top = read.table("14_PICRUSt2_predictions_output/pathways_out/path_abun_unstrat_descrip_top_level.tsv.gz", h=T, sep="\t", check.names=F, quote="")
-  pred_path_top = data.frame(pred_path_top[,2:length(pred_path_top)] %>% group_by(description) %>% summarise_all(.funs = sum), check.names=F)
-  table = args[2]
-  metadata = args[3]
-  pred_plot = args[4]
-  var = args[5]
-  name = "MetaCyc_top_level"
-  functional_predictions(pred_path_top,table,metadata,pred_plot,name,var)
-}
-
-if (!interactive()) {
-  main_metacyc_top()
-}
-
 main_metacyc_sec <- function(){
   pred_path_sec = read.table("14_PICRUSt2_predictions_output/pathways_out/path_abun_unstrat_descrip_secondary_level.tsv.gz", h=T, sep="\t", check.names=F, quote="")
   pred_path_sec = data.frame(pred_path_sec[,2:length(pred_path_sec)] %>% group_by(description) %>% summarise_all(.funs = sum), check.names=F)

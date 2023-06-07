@@ -1,5 +1,6 @@
 process picrust2 {
 
+    tag "${var}"
     label 'picrust2_env'
     label 'medRAM'
 
@@ -21,7 +22,7 @@ process picrust2 {
 
     script:
     """
-    14a_picrust2_process.sh ${asv_seqs_fasta} ${asv_table_biom} 14_PICRUSt2_predictions_output ${task.cpus} ${params.traits_db} ${params.nsti} ${params.hsp_method} ${params.min_reads} ${params.min_samples} ${params.top_level_mapfile} ${params.secondary_level_mapfile} completecmd >& picrust2_process.log 2>&1
+    14a_picrust2_process.sh ${asv_seqs_fasta} ${asv_table_biom} 14_PICRUSt2_predictions_output ${task.cpus} ${params.traits_db} ${params.nsti} ${params.hsp_method} ${params.min_reads} ${params.min_samples} ${params.secondary_level_mapfile} completecmd >& picrust2_process.log 2>&1
     Rscript --vanilla ${baseDir}/bin/14b_picrust2_plots.R ${params.traits_db} ${asv_table} ${metadata} _predictions_RDA_ ${var} >& picrust2_plots.log 2>&1
     mkdir -p 14_PICRUSt2_predictions_output/RDA_plots
     mv *predictions_RDA_* 14_PICRUSt2_predictions_output/RDA_plots

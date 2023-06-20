@@ -96,38 +96,38 @@ format_data_barplot <- function(PHYLOSEQ, taxa, unknown, taxa_nb) {
   asvtab <- otu_table(PHYLOSEQ)
   asvtab <- as(asvtab, "matrix")
   asvtab <- apply(asvtab, 2, function(x) x / sum(x))
-  taxtab <- tax_table(PHYLOSEQ)
-  taxtab <- as(taxtab, "matrix")
-  rownames(asvtab) <- taxtab[, taxa]
-  rownames(taxtab) <- taxtab[, taxa]
-  taxtab <- taxtab[, 1:which(colnames(taxtab)==taxa)]
   ## Reformat ASV table (using melt function of the reshape2 package)
-  mdf <- melt(asvtab, varnames=c(taxa, "Samples"))
+  mdf <- melt(asvtab, varnames=c("ASV", "Samples"))
   colnames(mdf)[3] <- "Abundance"
-  ## Add taxonomic information
-  mdf <- merge(mdf, taxtab, by=taxa)
-  ## Calculate the total abundance at the class level
+  ## Add taxonomic information and replace NA and unclassified Unknown
+  taxtab <- as(tax_table(PHYLOSEQ), "matrix")
+  taxtab[, taxa][is.na(taxtab[, taxa])] <- unknown
+  taxtab[, taxa][taxtab[, taxa] %in% c("", "unclassified", "Unclassified", "uncultured", "Uncultured")] <- unknown
+  taxtab <- data.frame(ASV = rownames(taxtab), taxtab)
+  mdf <- merge(mdf, taxtab, by="ASV")
+  ## Aggregate at Genus level
+  formula_mdf_agg <- paste("Abundance ~ Samples", taxa, sep="+")
+  mdf <- aggregate(as.formula(formula_mdf_agg), data=mdf, FUN=sum)
   formula_total_abund <- paste("Abundance", taxa, sep="~")
   total_abundance <- aggregate(as.formula(formula_total_abund), data=mdf, FUN=sum)
-  ## Keep only taxa_nb top taxa and aggregate the rest as "Other"
+  ## Keep only taxa_nb top class and aggregate the rest as "Other"
   ordered_abund <- total_abundance[ order(total_abundance[, "Abundance"], decreasing=TRUE),]
   min_top_abund <- round(ordered_abund[10, "Abundance"] / sum(ordered_abund$Abundance) * 100, 2)
-  list_ordered_abund <- as.character(ordered_abund[, taxa])
-  list_ordered_abund <- list_ordered_abund[list_ordered_abund != unknown]
-  top <- list_ordered_abund[1:min(length(list_ordered_abund), taxa_nb)]
+  list_order_abund <- as.character(ordered_abund[, taxa])
+  list_order_abund <- list_order_abund[list_order_abund != unknown]
+  top <- list_order_abund[1:min(length(list_order_abund), taxa_nb)]
   mdf[, taxa] <- as.character(mdf[ , taxa])
   ii <- (mdf[, taxa] %in% c(top, unknown))
   Others_lab <- paste("Others (", taxa, " <", min_top_abund, "%)", sep="") 
   mdf[!ii , taxa] <- Others_lab
-  formula_mdf <- paste("Abundance ~ Samples", taxa, sep="+")
-  mdf <- aggregate(as.formula(formula_mdf), data=mdf, FUN=sum)
+  mdf <- aggregate(as.formula(formula_mdf_agg), data=mdf, FUN=sum)
   mdf[, taxa] <- factor(mdf[, taxa], levels=c(sort(top), Others_lab, unknown))
   ## Add metadata
   metadata <- as(sample_data(PHYLOSEQ), "data.frame")
   metadata$Samples <- sample_names(PHYLOSEQ)
   mdf <- merge(mdf, metadata, by.x = "Samples")
-  ## Sort the entries by abundance to produce nice stacked bars in ggplot2
-  mdf <- mdf[ order(mdf[, taxa], mdf$Abundance, decreasing=TRUE), ]
+  ## Sort the entries by abundance to produce nice stacked bars in ggplot
+  mdf <- mdf[ order(mdf[ , taxa], mdf$Abundance, decreasing = TRUE), ]
   return(mdf)
 }
 

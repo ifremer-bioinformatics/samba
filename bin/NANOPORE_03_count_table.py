@@ -135,7 +135,7 @@ def write_taxo(hit_to_taxo, outfile, rank, ranks):
             lr_coverage = hit_to_taxo[sample][lr_read_name]['query_coverage']
             # Ensure the minimal rank to be 'Assigned' is fulfilled
             rank_level = ranks[rank]
-            if len(lr_tax.split(';')) < rank_level:
+            if len(lr_tax.split(';')) < rank_level and lr_type != 'Unmapped':
                 lr_type = 'Ambiguous'
             # Writing
             taxify.write(f'{lr_read_name}\t{tab.join(sample_count)}\t{lr_tax}\t{lr_type}\t{lr_identity}\t{lr_coverage}\n')

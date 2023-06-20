@@ -16,22 +16,25 @@ for(package in requiredPackages){
 color_set = unlist(mapply(brewer.pal, brewer.pal.info[brewer.pal.info$category == 'qual',]$maxcolors, rownames(brewer.pal.info[brewer.pal.info$category == 'qual',])))
 
 ## Functions ####
+
 format_data_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb) {
   PHYLOSEQ_GROUP <- merge_samples(PHYLOSEQ, env_var)
   asvtab <- t(otu_table(PHYLOSEQ_GROUP))
   asvtab <- as(asvtab, "matrix")
   asvtab <- apply(asvtab, 2, function(x) x / sum(x))
+  ## Reformat ASV table (using melt function of the reshape2 package)
+  mdf <- melt(asvtab, varnames=c("ASV", env_var))
+  colnames(mdf)[3] <- "Abundance"
+  ## Add taxonomic information and replace NA and unclassified Unknown
   taxtab <- tax_table(PHYLOSEQ_GROUP)
   taxtab <- as(taxtab, "matrix")
-  rownames(asvtab) <- taxtab[, taxa]
-  rownames(taxtab) <- taxtab[, taxa]
-  taxtab <- taxtab[, 1:which(colnames(taxtab)==taxa)]
-  ## Reformat ASV table (using melt function of the reshape2 package)
-  mdf <- melt(asvtab, varnames=c(taxa, env_var))
-  colnames(mdf)[3] <- "Abundance"
-  ## Add taxonomic information
-  mdf <- merge(mdf, taxtab, by=taxa)
-  ## Calculate the total abundance at the class level
+  taxtab[, taxa][is.na(taxtab[, taxa])] <- unknown
+  taxtab[, taxa][taxtab[, taxa] %in% c("", "unclassified", "Unclassified", "uncultured", "Uncultured")] <- unknown
+  taxtab <- data.frame(ASV = rownames(taxtab), taxtab)
+  mdf <- merge(mdf, taxtab, by="ASV")
+  ## Aggregate at Genus level
+  formula_mdf_agg <- paste(paste("Abundance", env_var, sep="~"), taxa, sep="+")
+  mdf <- aggregate(as.formula(formula_mdf_agg), data=mdf, FUN=sum)
   formula_total_abund <- paste("Abundance", taxa, sep="~")
   total_abundance <- aggregate(as.formula(formula_total_abund), data=mdf, FUN=sum)
   ## Keep only taxa_nb top taxa and aggregate the rest as "Other"
@@ -42,10 +45,9 @@ format_data_pie <- function(PHYLOSEQ, env_var, taxa, unknown, taxa_nb) {
   top <- list_ordered_abund[1:min(length(list_ordered_abund), taxa_nb)]
   mdf[, taxa] <- as.character(mdf[ , taxa])
   ii <- (mdf[, taxa] %in% c(top, unknown))
-  Others_lab <- paste("Others (", taxa, " <", min_top_abund, "%)", sep="") 
+  Others_lab <- paste("Others (", taxa, " <", min_top_abund, "%)", sep="")
   mdf[!ii , taxa] <- Others_lab
-  formula_mdf <- paste(paste("Abundance", env_var, sep="~"), taxa, sep="+")
-  mdf <- aggregate(as.formula(formula_mdf), data=mdf, FUN=sum)
+  mdf <- aggregate(as.formula(formula_mdf_agg), data=mdf, FUN=sum)
   mdf[, taxa] <- factor(mdf[, taxa], levels=c(sort(top), Others_lab, unknown))
   ## Sort the entries by abundance to produce nice stacked bars in ggplot2
   mdf <- mdf[ order(mdf[, taxa], mdf$Abundance, decreasing=TRUE), ]

@@ -7,6 +7,9 @@
 [![Run with with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![SeBiMER Docker](https://img.shields.io/badge/docker%20build-SeBiMER-yellow?labelColor=000000)](https://hub.docker.com/u/sebimer)
 
+
+** [DEPRECATED] Now use the samba v4 version : https://gitlab.ifremer.fr/bioinfo/workflows/samba**
+
 ## Introduction
 
 SAMBA is a FAIR scalable workflow integrating, into a unique tool, state-of-the-art bioinformatics and statistical methods to conduct reproducible eDNA analyses using [Nextflow](https://www.nextflow.io). SAMBA starts processing by verifying integrity of raw reads and metadata. Then all bioinformatics processing is done using commonly used procedure ([QIIME 2](https://qiime2.org/) and [DADA2](https://docs.qiime2.org/2019.10/plugins/available/dada2/)) but adds new steps relying on [dbOTU3](https://github.com/swo/dbotu3) and [microDecon](https://github.com/donaldtmcknight/microDecon) to build high quality ASV count tables. Extended statistical analyses are also performed. Finally, SAMBA produces a full dynamic HTML report including resources used, commands executed, intermediate results, statistical analyses and figures.

@@ -8,7 +8,7 @@
 [![SeBiMER Docker](https://img.shields.io/badge/docker%20build-SeBiMER-yellow?labelColor=000000)](https://hub.docker.com/u/sebimer)
 
 
-** [DEPRECATED] Now use the samba v4 version : https://gitlab.ifremer.fr/bioinfo/workflows/samba**
+# **[DEPRECATED] Now use the samba v4 version : https://gitlab.ifremer.fr/bioinfo/workflows/samba**
 
 ## Introduction
 
